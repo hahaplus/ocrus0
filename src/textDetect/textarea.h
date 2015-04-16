@@ -131,6 +131,7 @@ bool isQuadr2(vector<cv::Vec4i> lines, int minB1, int maxB1, int i, int j,
 }
 
 vector<cv::Vec4i> gLines;
+//Height of median of lines
 int compareLineVert(const void * a, const void * b) {
 	int ai = *(int*) a;
 	int bi = *(int*) b;
@@ -148,7 +149,8 @@ int compareLineVert(const void * a, const void * b) {
 vector<Vec4i> block;
 int* gSortedLines;
 
-float xielv(map<int, int>& dict, int type) {
+//calculate the slopes with a dictionary of edge points
+float slope(map<int, int>& dict, int type) {
 	if (dict.size() == 1)
 		return 200;
 	int vertN = 0;
@@ -206,7 +208,7 @@ float xielv(map<int, int>& dict, int type) {
 				maxCt = tpN[i];
 			}
 		}
-		cout << "xielv max: " << maxCt << endl;
+		cout << "slope max: " << maxCt << endl;
 
 		if (vertN > maxCt)
 			return 999999.9;
@@ -251,12 +253,6 @@ int chonghe(int line0, int line2, int l2, int r2) {
 }
 int sampleLeft(Mat& src, vector<cv::Vec4i>& lines, float& k) {
 
-	int vsize = 0;
-	vector<double> tpK(1000);
-	vector<int> tpN(1000);
-
-	int vertN = 0;
-
 	int sortedLines[lines.size()];
 	for (int i = 0; i < lines.size(); i++)
 		sortedLines[i] = i;
@@ -265,6 +261,7 @@ int sampleLeft(Mat& src, vector<cv::Vec4i>& lines, float& k) {
 	qsort(sortedLines, lines.size(), sizeof(int), compareLineVert);
 	gSortedLines = sortedLines;
 	block.clear();
+	//blocking by near lines
 	vector<vector<Vec4i> > blocks;
 	vector<float> lastY, firstY;
 	vector<int> left, right, lefty;
@@ -274,10 +271,10 @@ int sampleLeft(Mat& src, vector<cv::Vec4i>& lines, float& k) {
 	//merge lines
 	for (int i = 0; i < lines.size(); i++) {
 		Vec4i line = lines[sortedLines[i]];
-		float xm = (line[0] + line[2]) / 2.0;
-		float ym = (line[1] + line[3]) / 2.0;
-		float myleft = min(line[0], line[2]);
-		float mylefty = myleft == line[0] ? line[1] : line[3];
+		float xm = (line[0] + line[2]) / 2.0;//X median
+		float ym = (line[1] + line[3]) / 2.0;//Y median: as the y of the line!
+		float myleft = min(line[0], line[2]);//most Left point
+		float mylefty = myleft == line[0] ? line[1] : line[3];//Y of most left point
 
 		bool found = false;
 		for (int j = 0; j < blocks.size(); j++) {
@@ -317,7 +314,7 @@ int sampleLeft(Mat& src, vector<cv::Vec4i>& lines, float& k) {
 //		waitKey();
 	}
 
-	//merge blocks
+	//merge blocks: big block contains small ones
 	set<int> subs;
 
 	for (int i = 0; i < blocks.size(); i++) {
@@ -373,8 +370,8 @@ int sampleLeft(Mat& src, vector<cv::Vec4i>& lines, float& k) {
 //	k = ks[maxTp];
 
 //find K value of lines
-//k = xielv();
-//cout<<"xielv left: "<<k<<endl;
+//k = slope();
+//cout<<"slope left: "<<k<<endl;
 	if (k > 99999)
 		return 2;
 	return 1;
@@ -448,6 +445,7 @@ int sampleLeft(Mat& src, vector<cv::Vec4i>& lines, float& k) {
 	 */
 }
 
+//get right slope!
 int sampleRight(vector<cv::Vec4i>& lines, float& k) {
 	int vsize = 0;
 	vector<double> tpK(2000);
@@ -515,12 +513,12 @@ int sampleRight(vector<cv::Vec4i>& lines, float& k) {
 	}
 	cout << maxCt << endl;
 	if (vertN > 70) {
-		//cout<<"xielv right: inf"<<endl;
+		//cout<<"slope right: inf"<<endl;
 		k = 99999.9;
 		return 2;
 	}
 	if (maxCt >= 0) {
-		//cout<<"xielv right: "<<tpK[maxTp]<<endl;
+		//cout<<"slope right: "<<tpK[maxTp]<<endl;
 		k = tpK[maxTp];
 		return 1;
 	}
@@ -762,11 +760,11 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 	//waitKey();
 
 	int vsize = 0;
-	vector<double> tpK(1000);
-	vector<int> tpN(1000);
-	vector<vector<int> > tpV(1000);
+	vector<double> tpK(1000);//slope cluster
+	vector<int> tpN(1000);//element number of each cluster
+	vector<vector<int> > tpV(1000);//store the line indices of each cluster
 
-	int vertN = 0;
+	int vertN = 0;//vertical lines (without slope)
 	vector<int> verts;
 
 	for (int i = 0; i < lines.size(); i++) {
@@ -807,6 +805,7 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 	int secTp = -1;
 	int secCt = 0;
 
+	//find max cluster
 	for (int i = 0; i < vsize; i++) {
 		if (tpN[i] > maxCt) {
 			if (maxCt > secCt) {
@@ -816,6 +815,7 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 			maxCt = tpN[i];
 			maxTp = i;
 		} else if (tpN[i] > secCt) {
+			//second largest cluster
 			secCt = tpN[i];
 			secTp = i;
 		}
@@ -827,15 +827,15 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 			secTp = maxTp;
 		}
 		maxCt = vertN;
-		maxTp = -1;
+		maxTp = -1;//Vertical lines is the biggest cluster
 	} else {
 		if (vertN > secCt) {
 			secCt = vertN;
 			secTp = -1;
 		}
 	}
-	//Test Paper or graph photo
 
+	//Test Paper-photo (main part is words) or graph photo (main part is not words)
 	cout << "is paper? " << maxCt << " " << secCt << " " << (maxCt >= 2 * secCt)
 			<< endl;
 	if (maxTp != -1 && fabs(tpK[maxTp]) > 0.5
@@ -846,12 +846,12 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 		secCt = 0;
 	}
 
-	if (maxCt > 600 || maxCt < 90 || maxCt < 2 * secCt
+	if (/*maxCt > 600 || maxCt < 90 ||*/ maxCt < 1.5 * secCt
 			|| !(maxTp == -1 || fabs(tpK[maxTp]) < 0.5)) {
-		return -1;
+		return -1;//Return: NOT paper-photo
 	}
 
-	//vertical direction
+	//vertical direction is the main word direction
 	if (maxTp == -1) {
 //		Mat src2 = src.clone();
 //		for(int i=0;i<verts.size();i++){
@@ -861,13 +861,14 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 //
 //		imshow("image1", src2);
 //		waitKey();
-		return 0;
+		return 0;//Return: this paper is paper-photo, but the word direction is vertical (like Japanese books),we don't consider such cases currently!
 	}
 
-	//horizontal direction
+	//horizontal direction, we only find blocks for such kinds of words
 	if (maxTp != -1) {
 		float k = 0.0;
-		float k0 = maxTp != -1 ? tpK[maxTp] : 99999.9;
+		float k0 = tpK[maxTp];
+		//all 'word' lines
 		vector<Vec4i> tosample;
 
 		for (int i = 0; i < tpV[maxTp].size(); i++) {
@@ -875,7 +876,7 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 			tosample.push_back(vec);
 		}
 
-		int doctype = sampleDirection(src, tosample, k);
+		int doctype = sampleDirection(src, tosample, k);//only used to get block!
 
 		//cout<<"doctype "<<doctype<<endl;
 
@@ -998,7 +999,7 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 
 		float kl = 99999.9;
 		if (!edgeFail)
-			kl = xielv(dict, 1);
+			kl = slope(dict, 1);
 
 		dict.clear();
 		for (int i = 0; i < nonZeroCoordinates.total(); i++) {
@@ -1053,8 +1054,8 @@ int detectText2(Mat& orig, Mat& src, vector<Mat>& rst, bool border) {
 
 		float kr = 99999.9;
 		if (!edgeFail)
-			xielv(dict, 1);
-//		cout<<"xielv: "<<kl<<" "<<kr<<endl;
+			slope(dict, 1);
+//		cout<<"slope: "<<kl<<" "<<kr<<endl;
 //		waitKey();
 
 		result = 1;
@@ -1101,6 +1102,6 @@ int textDetect(Mat& src, vector<Mat>& textPieces, bool border) {
 	} else if (ret == -1) {
 		TextExtraction te;
 		vector<Rect> regions = te.textExtract(src);
-		textPieces = te.findRegions(src, regions);
+		textPieces = te.findMergedRegions(src, regions);
 	}
 }

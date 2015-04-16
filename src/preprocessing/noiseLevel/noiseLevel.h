@@ -30,8 +30,11 @@ void my_convmtx2(Mat& kernal, Mat& conv, int m, int n){
 	for(int i=0;i<m-s1+1;i++){
 		for(int j=0;j<n-s2+1;j++){
 			for(int p=0;p<s1;p++){
-				for(int q=0;q<s2;q++)
-					conv.at<double>(k,(i+p)*n+j+q)=kernal.at<double>(p,q);
+				Mat roiPart1 = kernal.rowRange(p,p+1).colRange(0,s2);
+				Mat roiPart2 = conv.rowRange(k,k+1).colRange((i+p)*n+j,(i+p)*n+j+s2);
+				roiPart1.copyTo(roiPart2);
+//				for(int q=0;q<s2;q++)
+//					conv.at<double>(k,(i+p)*n+j+q)=kernal.at<double>(p,q);
 			}
 			k++;
 		}
@@ -73,14 +76,16 @@ Mat SortRows(Mat FeatureMatrix)
 {
 	// Bubble Sorting
 	Mat SortedFeatureMatrix(FeatureMatrix.rows,FeatureMatrix.cols, FeatureMatrix.type());
+//	cout<<"matrix size: "<<FeatureMatrix.rows<<" "<<FeatureMatrix.cols<<endl;
 	FeatureMatrix.row(0).copyTo(SortedFeatureMatrix.row(0));
 	for (int i = 1; i < FeatureMatrix.rows; i++) {
 		int index = i;
-		//cout<<"sorting "<<i<<endl;
+
 		while(index>0)
 		{
 			bool cmp = false;
 			for (int j = 0; j < FeatureMatrix.cols; j++) {
+
 				if(FeatureMatrix.at<double>(i, j)==SortedFeatureMatrix.at<double>(index-1, j))
 				{
 					continue;
@@ -175,9 +180,10 @@ int noiseLevel(Mat& img, vector<double>& rst, int itr, double conf, int decim, i
 	SVD::compute(DD,matS);
 
 	matS = matS.t();
-	//cout<<matS.rows<<" "<<matS.cols<<endl;
+//	cout<<matS.rows<<" "<<matS.cols<<endl;
 	double tol = getRankTol(DD,matS);
 	int r = 0;
+
 	for(int i=0;i<matS.cols;i++)
 		if(matS.at<double>(0,i)>tol)
 			r++;
@@ -215,18 +221,22 @@ int noiseLevel(Mat& img, vector<double>& rst, int itr, double conf, int decim, i
 		}
 
 		if(decim > 0){
-			Mat XtrX;
+
+			Mat XtrX, XtrXT;
 			vconcat(Xtr,X,XtrX);
-			XtrX = SortRows(XtrX.t()).t();
+			//XtrX = SortRows(XtrX.t()).t();
+			XtrXT = XtrX.t();
 			int p = XtrX.cols/(decim+1);
 
-			Mat sample = XtrX.col(0);
+//			Mat sample = XtrX.col(0);
+			Mat sample = XtrXT.row(0).clone();
 
 			for(int i=1;i<p;i++){
 				int idx =i*(decim+1);
-				hconcat(sample,XtrX.col(idx),sample);
+				//hconcat(sample,XtrX.col(idx),sample);
+				sample.push_back(XtrXT.row(idx));
 			}
-
+			sample = sample.t();
 			Xtr = sample.rowRange(0,1);
 			X = sample.rowRange(1,sample.rows);
 		}

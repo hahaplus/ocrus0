@@ -45,6 +45,13 @@ public:
 	const static string CCA;
 
 	static string lang;
+//	static int time01;
+//	static int time02;
+//	static int time1;
+//	static int time2;
+//	static int time3;
+//	static int time4;
+//	static int nopic;
 
 	static void usage() {
 		cout << "Please add parameters:" << endl;
@@ -115,10 +122,12 @@ public:
 			if (!ocrOutput.empty()) {
 				string textPath = ocrOutput + "/"
 						+ FileUtil::getFileNameNoSuffix(input) + ".txt";
+//				time_t t1 = time(NULL);
 				cout << "OCR to: " << textPath << endl;
 
 				string text = ocrMats(dsts);
-
+//				time_t t2 = time(NULL);
+//				time4+=(t2-t1);
 				FileUtil::writeToFile(text, textPath);
 			}
 		} else {
@@ -128,15 +137,26 @@ public:
 					vector<Mat> mats = processFile(input + "/" + files[i],
 							config);
 					if (!ocrOutput.empty()) {
+//						time_t t1 = time(NULL);
 						string text = ocrMats(mats);
 						string textPath = ocrOutput + "/"
 								+ FileUtil::getFileNameNoSuffix(files[i])
 								+ ".txt";
+//						time_t t2 = time(NULL);
+//						time4+=(t2-t1);
 						FileUtil::writeToFile(text, textPath);
 					}
 				}
 			}
 		}
+		/*
+		cout<<"Aver. Salient&Border: "<<(0.0+time1)/nopic<<endl;
+		cout<<" -Aver. Salient: "<<(0.0+time01)/nopic<<endl;
+		cout<<" -Aver. Border: "<<(0.0+time02)/nopic<<endl;
+		cout<<"Aver. Text Detection: "<<(0.0+time2)/nopic<<endl;
+		cout<<"Aver. Pre-processing: "<<(0.0+time3)/nopic<<endl;
+		cout<<"Aver. Text OCR Procs: "<<(0.0+time4)/nopic<<endl;
+		*/
 	}
 
 	//used in JNI
@@ -208,6 +228,7 @@ public:
 	static vector<Mat> processFile(string input, const Config conf) {
 		Config config = conf;
 		Mat img = imread(input);
+//		nopic++;
 		cout << "Process " << input << endl;
 		string segOut = config.getAndErase(SEG);
 		string salientOut = config.getAndErase(SALIENT);
@@ -226,17 +247,25 @@ public:
 		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
 		string segOutPath = segOut + "/" + FileUtil::getFileName(input);
 
+//		time_t t1 = time(NULL);
 		cout << "salient object..." << endl;
+
 		src.salient(img, outputSRC, seg);
 		Mat outputFileSRC = convertToVisibleMat<float>(outputSRC);
+
+//		time_t tm1 = time(NULL);
+//		time01 += (tm1-t1);
 		imwrite(segOutPath, seg);
 		imwrite(salientOutPath, outputFileSRC);
 		//cout<<outputSRC(Rect(0, 0, 500, 500))<<endl;
-
+//		time_t tm2 = time(NULL);
 		int res = procBinary(img, outputSRC, 0, crossBD, outputBD);
 		if (res == -1) {
 			res = mainProc(img, outputSRC, 0, crossBD, outputBD);
 		}
+//		time_t t2 = time(NULL);
+//		time02 += (t2-tm2);
+//		time1 += (t2-t1);
 
 		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
 		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
@@ -248,12 +277,15 @@ public:
 		outputBD.convertTo(outputBD, CV_8UC1);
 		imwrite(turnOutPath, outputBD);
 
+//		t1 = time(NULL);
 		cout << "text detection" << endl;
 		vector<Mat> textPieces;
 		textDetect(outputBD, textPieces, res == -1 ? false : true);
-
+//		t2 = time(NULL);
+//		time2 += (t2-t1);
 		//TODO process all the text pieces!
 
+//		t1 = time(NULL);
 		cout << "Preprocessing..." << endl;
 		vector<Mat> pre = vector<Mat>(textPieces.size());
 		for (unsigned int i = 0; i < pre.size(); i++) {
@@ -269,10 +301,11 @@ public:
 					+ FileUtil::getFileName(input);
 			process(pre, cur);
 			Mat all = merge(cur);
-			imwrite(outputPath, all);
+//			imwrite(outputPath, all);
 			pre = cur;
 		}
-
+//		t2 = time(NULL);
+//		time3 += (t2-t1);
 		return pre;
 	}
 	static Mat merge(vector<Mat>& mats) {

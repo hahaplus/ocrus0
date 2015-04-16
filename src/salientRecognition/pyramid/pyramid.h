@@ -16,8 +16,8 @@
 using namespace std;
 using namespace cv;
 
-const int THRESHOLD_WIDTH = 800;
-const int THRESHOLD_HEIGHT = 800;
+const int THRESHOLD_WIDTH = 500;
+const int THRESHOLD_HEIGHT = 500;
 
 class Pyramid{
 public:

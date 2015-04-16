@@ -1795,6 +1795,27 @@ int process(cv::Mat tsrc, Mat tslt, int procMode,
 	return -1;
 }
 
+int procBinaryPt(Mat src, vector<Point2f>& result){
+
+	if(10*countNonZero(src)<src.cols*src.rows)
+			return -1;
+	vector<vector<Point2f> > crosses;
+	Mat tsrc;
+	myNormalSize(src, tsrc, CV_32FC3);
+	modifyAttr(0, 0);
+	process(tsrc, tsrc, 0, crosses, true);
+	if (crosses.size() > 0) {
+		vector<Point2f> corners = crosses[0];
+		for(int i=0;i<corners.size();i++){
+			Point2f pNew;
+			pNew.x = corners[i].x/scale;
+			pNew.y = corners[i].y/scale;
+			result.push_back(pNew);
+		}
+		return 0;
+	}
+}
+
 int procBinary(Mat orig, Mat src, int procMode, Mat& cross, Mat& turned) {
 
 	//too small salient, bad!
@@ -1822,6 +1843,115 @@ int procBinary(Mat orig, Mat src, int procMode, Mat& cross, Mat& turned) {
 //		Mat::zeros(src.rows, src.cols, CV_32SC3);
 		return -1;
 	}
+}
+
+int mainProcPt(Mat src, vector<Point2f>& finalCorners){
+	vector<vector<cv::Point2f> > cross_l;
+	vector<vector<cv::Point2f> > cross_m;
+	vector<vector<cv::Point2f> > cross_s;
+
+	vector<vector<cv::Point2f> > crosses;
+	Mat tsrc;
+	myNormalSize(src, tsrc, CV_32S);
+
+	crosses.clear();
+	cross_l.clear();
+	cross_m.clear();
+	cross_s.clear();
+	tLineScore.clear();
+	tAreaScore.clear();
+	tAnglScore.clear();
+	tSpaceScore.clear();
+	doubt = true;
+
+	lighting = 180.0;
+	curphase = 0;
+	modifyAttr(0, 0);
+	int result = process(tsrc, tsrc, 0, cross_l, false);
+
+	if (doubt) {
+		lighting = 110.0;
+		curphase = 1;
+		result = process(tsrc, tsrc, 0, cross_m, false);
+	}
+	if (doubt) {
+		lighting = 40.0;
+		curphase = 2;
+		result = process(tsrc, tsrc, 0, cross_s, false);
+	}
+	for (int j = 0; j < 30 && j < cross_l.size(); j++) {
+		crosses.push_back(cross_l[j]);
+
+		tLineScore.push_back(lineScore[0][j]);
+		tAreaScore.push_back(areaScore[0][j]);
+		tAnglScore.push_back(anglScore[0][j]);
+		tSpaceScore.push_back(spaceScore[0][j]);
+	}
+
+	for (int j = 0; j < 30 && j < cross_m.size(); j++) {
+		crosses.push_back(cross_m[j]);
+
+		tLineScore.push_back(lineScore[1][j]);
+		tAreaScore.push_back(areaScore[1][j]);
+		tAnglScore.push_back(anglScore[1][j]);
+		tSpaceScore.push_back(spaceScore[1][j]);
+	}
+
+	for (int j = 0; j < 30 && j < cross_s.size(); j++) {
+		crosses.push_back(cross_s[j]);
+
+		tLineScore.push_back(lineScore[2][j]);
+		tAreaScore.push_back(areaScore[2][j]);
+		tAnglScore.push_back(anglScore[2][j]);
+		tSpaceScore.push_back(spaceScore[2][j]);
+	}
+
+	if (crosses.size() == 0) {
+		return -1;
+	}
+
+	for (int i = 0; i < 90; i++) {
+		topRank[i] = i;
+	}
+
+	qsort(topRank, min(90, (int) crosses.size()), sizeof(int),
+			compareTopScore);
+
+	vector<cv::Point2f> corners;
+
+	if (tAreaScore[topRank[0]] > 2) {
+		corners = crosses[topRank[0]];
+	} else {
+		for (int i = 0; i < 30; i++) {
+			finalRank[i] = i;
+			spaceRank[i] = i;
+			angleRank[i] = i;
+		}
+		//logic is finalscore = spacerank + anglerank!
+		qsort(spaceRank, min(30, (int) crosses.size()), sizeof(int),
+				compareSpaceScore);
+		qsort(angleRank, min(30, (int) crosses.size()), sizeof(int),
+				compareAngleScore);
+
+		for (int i = 0; i < 30 && i < crosses.size(); i++) {
+			//INDEX To RANK
+			spaceRankDic[spaceRank[i]] = i;
+			angleRankDic[angleRank[i]] = i;
+		}
+
+		qsort(finalRank, min(30, (int) crosses.size()), sizeof(int),
+				compareFinalScore);
+		corners = crosses[topRank[finalRank[0]]];
+		for(int i=0;i<corners.size();i++){
+			Point2f pNew;
+			pNew.x = corners[i].x/scale;
+			pNew.y = corners[i].y/scale;
+			finalCorners.push_back(pNew);
+		}
+	}
+
+
+	return 0;
 }
 
 //procMode: 0, default; 1, big; 2, micro; 3, deep1

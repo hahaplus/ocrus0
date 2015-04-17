@@ -14,9 +14,9 @@ static vector<Point2f> getBorder(Mat img){
 
 	src.salient(img, salientImg, seg);
 	vector<Point2f> result;
-	int res = procBinaryPt(salientImg, result);
+	int res = getBorderPtOnSalient(salientImg, result);
 	if (res == -1) {
-		res = mainProcPt(img, salientImg, result);
+		res = getBorderPtOnRaw(img, salientImg, result);
 	}
 	if(res!=-1)
 		return result;
@@ -24,7 +24,7 @@ static vector<Point2f> getBorder(Mat img){
 	return result;
 }
 
-static void transform(const Mat& src, Mat& dst, vector<Point2f> corners){
+static void transform(Mat& src, Mat& dst, vector<Point2f> corners){
 	turnImage(src, dst, corners, 1);
 }
 

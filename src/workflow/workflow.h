@@ -42,7 +42,7 @@ void Workflow::workflowTrace(string &inputFolder, string &salientFolder,
 		src.salient(input, outputSRC, segSRC);
 
 		imwrite(salientFile, outputSRC);
-		int res = mainProc(input, outputSRC, 0, crossBD, outputBD);
+		int res = getBorderImgOnRaw(input, outputSRC, 0, crossBD, outputBD);
 
 		if (res != -1) {
 			imwrite(borderFile, crossBD);
@@ -63,7 +63,7 @@ void Workflow::workflow(string &inputFile) {
 	Mat segSRC, outputSRC, crossBD, outputBD;
 	src.salient(input, outputSRC, segSRC);
 
-	int res = mainProc(input, outputSRC, 0, crossBD, outputBD);
+	int res = getBorderImgOnRaw(input, outputSRC, 0, crossBD, outputBD);
 
 	if (res != -1) {
 		Mat denoise, bin, deskew;
@@ -82,7 +82,7 @@ void Workflow::workflowDebug(string &inputFile) {
 	Mat segSRC, outputSRC, crossBD, outputBD;
 	src.salient(input, outputSRC, segSRC);
 
-	int res = mainProc(input, outputSRC, 0, crossBD, outputBD);
+	int res = getBorderImgOnRaw(input, outputSRC, 0, crossBD, outputBD);
 
 	if (res != -1) {
 		//TODO preprocess

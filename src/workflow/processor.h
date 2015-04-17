@@ -170,9 +170,9 @@ public:
 		src.salient(img, outputSRC, seg);
 		Mat outputFileSRC = convertToVisibleMat<float>(outputSRC);
 
-		int res = procBinary(img, outputSRC, 0, crossBD, outputBD);
+		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
 		if (res == -1) {
-			res = mainProc(img, outputSRC, 0, crossBD, outputBD);
+			res = getBorderImgOnRaw(img, outputSRC, crossBD, outputBD);
 		}
 
 		normalize(outputBD, outputBD, 0, 255, NORM_MINMAX);
@@ -259,9 +259,9 @@ public:
 		imwrite(salientOutPath, outputFileSRC);
 		//cout<<outputSRC(Rect(0, 0, 500, 500))<<endl;
 //		time_t tm2 = time(NULL);
-		int res = procBinary(img, outputSRC, 0, crossBD, outputBD);
+		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
 		if (res == -1) {
-			res = mainProc(img, outputSRC, 0, crossBD, outputBD);
+			res = getBorderImgOnRaw(img, outputSRC, crossBD, outputBD);
 		}
 //		time_t t2 = time(NULL);
 //		time02 += (t2-tm2);

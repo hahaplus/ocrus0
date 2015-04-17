@@ -682,7 +682,7 @@ void textBorder(Mat& orig, Mat& src, vector<Mat>& rst) {
 	std::vector<cv::Point2f> corners;
 	for (int i = 0; i < finalines.size(); i++) {
 		for (int j = i + 1; j < finalines.size(); j++) {
-			cv::Point2f pt = computeIntersect(finalines[i], finalines[j]);
+			cv::Point2f pt = computeLineIntersect(finalines[i], finalines[j]);
 
 			if (pt.x < 0 && pt.x > -10)
 				pt.x = 0;

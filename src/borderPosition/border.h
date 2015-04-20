@@ -50,7 +50,7 @@ int process(cv::Mat tsrc, Mat tslt,
 	scoreCur[2] = 0;
 	//step0: to gray picture
 
-	cv::Mat bw, bw0;
+	cv::Mat bw;
 	if (!binary)
 		cv::cvtColor(tsrc, bw, CV_BGR2GRAY);
 	else {
@@ -381,9 +381,18 @@ int process(cv::Mat tsrc, Mat tslt,
 		//release the memory
 		cvReleaseMemStorage(  & lines -> storage );
 		lines = 0;
+//		grad_x.release();
+//		grad_y.release();
+//		abs_grad_x.release();
+//		abs_grad_y.release();
+//		grad.release();
 		return 0;
 	}
-
+//	grad_x.release();
+//	grad_y.release();
+//	abs_grad_x.release();
+//	abs_grad_y.release();
+//	grad.release();
 	return -1;
 }
 

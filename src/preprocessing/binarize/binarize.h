@@ -115,7 +115,7 @@ public:
 			NiblackVersion version, int winx, int winy, double k, double dR) {
 
 		Size sz = Size(img.cols/2, img.rows/2);
-		Mat imgSmall = Mat(sz, img.type());
+		Mat imgSmall(sz, img.type());
 		cv::resize(img, imgSmall, sz);
 
 		output.create(img.size(), img.type());

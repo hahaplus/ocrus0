@@ -239,7 +239,10 @@ public:
 			cerr
 					<< "salient output or border output is empty. (in config file)!"
 					<< endl;
-			return img;
+//			img.release();
+//			return img;
+			vector<Mat> ret;
+			return ret;
 		}
 
 		SalientRec src;
@@ -306,6 +309,11 @@ public:
 		}
 //		t2 = time(NULL);
 //		time3 += (t2-t1);
+//		img.release();
+//		outputSRC.release();
+//		seg.release();
+//		crossBD.release();
+//		outputBD.release();
 		return pre;
 	}
 	static Mat merge(vector<Mat>& mats) {

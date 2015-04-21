@@ -1102,6 +1102,23 @@ int textDetect(Mat& src, vector<Mat>& textPieces, bool border) {
 	} else if (ret == -1) {
 		TextExtraction te;
 		vector<Rect> regions = te.textExtract(src);
+
+//		Mat shows = src.clone();
+//		for(int i=0;i<regions.size();i++){
+//			int x0 = regions[i].x;
+//			int y0 = regions[i].y;
+//			int x1 = x0 + regions[i].width;
+//			int y1 = y0 + regions[i].height;
+//			line(shows, Point(x0,y0), Point(x0,y1), CV_RGB(0, 0, 0), 5);
+//			line(shows, Point(x0,y0), Point(x1,y0), CV_RGB(0, 0, 0), 5);
+//			line(shows, Point(x1,y1), Point(x0,y1), CV_RGB(0, 0, 0), 5);
+//			line(shows, Point(x1,y1), Point(x1,y0), CV_RGB(0, 0, 0), 5);
+//			cout<<"REGION "<<i<<": "<<x0<<" "<<y0<<" "<<x1<<" "<<y1<<endl;
+//		}
+//		Mat shows2;
+//		myNormalSize(shows, shows2, shows.type());
+//		imshow("regions",shows2);
+//		waitKey();
 		textPieces = te.findMergedRegions(src, regions);
 	}
 }

@@ -304,7 +304,7 @@ public:
 					+ FileUtil::getFileName(input);
 			process(pre, cur);
 			Mat all = merge(cur);
-//			imwrite(outputPath, all);
+//			imwrite(outputPath, all);//output the preprocessing sub-results to folders
 			pre = cur;
 		}
 //		t2 = time(NULL);

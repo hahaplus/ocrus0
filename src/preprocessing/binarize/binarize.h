@@ -224,11 +224,11 @@ public:
 				int x2= x/2;
 				if (img.uget(x,y)>= thsurf.fget(x2,y2))
 				{
-					output.uset(x2,y2,255);
+					output.uset(x,y,255);
 				}
 				else
 				{
-					output.uset(x2,y2,0);
+					output.uset(x,y,0);
 				}
 			}
 		}

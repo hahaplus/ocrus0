@@ -77,6 +77,13 @@ void TextExtraction::debug(Mat &originalImg, vector<Rect> regions, char * title)
 //	imshow(title, originalImg);
 }
 
+bool inRect(int y, int x, int top, int left, int bottom, int right){
+
+	if(y>=top&&y<=bottom&&x>=left&&x<=right)
+		return true;
+	return false;
+}
+
 bool hasCommonPart(Rect r1, Rect r2){
 
 	int top1 = r1.y;
@@ -89,17 +96,27 @@ bool hasCommonPart(Rect r1, Rect r2){
 	int bottom2 = r2.y+r2.height;
 	int right2 = r2.x+r2.width;
 
-	if(top1<=bottom2&&left1<=right2)
+//	if(top1<=bottom2&&left1<=right2)
+//		return true;
+//
+//	if(top2<=bottom1&&left2<=right1)
+//		return true;
+//
+//	if(bottom1>=top2&&left1<=right2)
+//		return true;
+//
+//	if(bottom2>=top1&&left2<=right1)
+//		return true;
+
+	if(inRect(top1, left1, top2, left2, bottom2, right2))
+		return true;
+	if(inRect(top1, right1, top2, left2, bottom2, right2))
+		return true;
+	if(inRect(bottom1, left1, top2, left2, bottom2, right2))
+		return true;
+	if(inRect(bottom1, right1, top2, left2, bottom2, right2))
 		return true;
 
-	if(top2<=bottom1&&left2<=right1)
-		return true;
-
-	if(bottom1>=top2&&left1<=right2)
-		return true;
-
-	if(bottom2>=top1&&left2<=right1)
-		return true;
 	return false;
 }
 
@@ -193,6 +210,7 @@ vector<Mat> TextExtraction::findMergedRegions(Mat &originalImg, vector<Rect> reg
 	//4. finally generate target sub-images
 	vector<Mat> mergedRegions(mSize);
 	for(unsigned int i = 0; i < mSize; ++i){
+//		cout<<"MREGION "<<i<<": "<<mRects[i].x<<" "<<mRects[i].y<<" "<<mRects[i].x+mRects[i].width<<" "<<mRects[i].y+mRects[i].height<<endl;
 		mergedRegions[i] = Mat(originalImg, mRects[i]);
 	}
 //	cout<<"merged "<<len<<" "<<mSize<<endl;

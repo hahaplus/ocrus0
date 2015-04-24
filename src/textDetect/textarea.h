@@ -1119,6 +1119,6 @@ int textDetect(Mat& src, vector<Mat>& textPieces, bool border) {
 //		myNormalSize(shows, shows2, shows.type());
 //		imshow("regions",shows2);
 //		waitKey();
-		textPieces = te.findMergedRegions(src, regions);
+		textPieces = te.findRegions(src, regions);
 	}
 }

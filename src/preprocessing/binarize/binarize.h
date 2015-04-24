@@ -251,6 +251,7 @@ public:
 		CV_Assert(src.channels() == 1);
 		Mat tmp = src.clone();
 //		double level = getAvgNoiseLevel(src,25,0.7,19,5);
+//		double level = getAvgNoiseLevel(src);
 //		double dividor = getDividor(level);
 //		cout<<"level : " << level<<endl;
 		double dividor = 3.5;

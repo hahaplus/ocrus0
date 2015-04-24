@@ -132,18 +132,21 @@ public:
 			}
 		} else {
 			if (!input.empty()) {
+
 				vector<string> files = FileUtil::getAllFiles(input);
 				for (int i = 0; i < files.size(); i++) {
 					vector<Mat> mats = processFile(input + "/" + files[i],
 							config);
 					if (!ocrOutput.empty()) {
+
 //						time_t t1 = time(NULL);
 						string text = ocrMats(mats);
+//						time_t t2 = time(NULL);
+//						time4+=(t2-t1);
 						string textPath = ocrOutput + "/"
 								+ FileUtil::getFileNameNoSuffix(files[i])
 								+ ".txt";
-//						time_t t2 = time(NULL);
-//						time4+=(t2-t1);
+
 						FileUtil::writeToFile(text, textPath);
 					}
 				}
@@ -155,8 +158,9 @@ public:
 		cout<<" -Aver. Border: "<<(0.0+time02)/nopic<<endl;
 		cout<<"Aver. Text Detection: "<<(0.0+time2)/nopic<<endl;
 		cout<<"Aver. Pre-processing: "<<(0.0+time3)/nopic<<endl;
+
 		cout<<"Aver. Text OCR Procs: "<<(0.0+time4)/nopic<<endl;
-		*/
+		 */
 	}
 
 	//used in JNI
@@ -258,8 +262,8 @@ public:
 
 //		time_t tm1 = time(NULL);
 //		time01 += (tm1-t1);
-		imwrite(segOutPath, seg);
-		imwrite(salientOutPath, outputFileSRC);
+//		imwrite(segOutPath, seg);
+//		imwrite(salientOutPath, outputFileSRC);
 		//cout<<outputSRC(Rect(0, 0, 500, 500))<<endl;
 //		time_t tm2 = time(NULL);
 		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
@@ -270,29 +274,39 @@ public:
 //		time02 += (t2-tm2);
 //		time1 += (t2-t1);
 
-		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
-		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
+//		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
+//		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
 
 //		imshow("cross",crossBD);
 //		waitKey();
-		imwrite(borderOutPath, crossBD);
+//		imwrite(borderOutPath, crossBD);
 		normalize(outputBD, outputBD, 0, 255, NORM_MINMAX);
 		outputBD.convertTo(outputBD, CV_8UC1);
-		imwrite(turnOutPath, outputBD);
+//		imwrite(turnOutPath, outputBD);
 
 //		t1 = time(NULL);
-		cout << "text detection" << endl;
-		vector<Mat> textPieces;
-		textDetect(outputBD, textPieces, res == -1 ? false : true);
+
+		/*currently, we disable text detection to rely on Tesseract segmentation
+		 *but this function is possibly useful in future cases
+		 */
+//		cout << "text detection" << endl;
+//		vector<Mat> textPieces;
+//		textDetect(outputBD, textPieces, res == -1 ? false : true);
 //		t2 = time(NULL);
 //		time2 += (t2-t1);
 		//TODO process all the text pieces!
 
 //		t1 = time(NULL);
+		/*for pre-processing, we only use binarization
+		 *later we will consider whether we use denoise and deskew
+		 */
 		cout << "Preprocessing..." << endl;
-		vector<Mat> pre = vector<Mat>(textPieces.size());
+//        vector<Mat> pre = vector<Mat>(textPieces.size());
+		vector<Mat> pre = vector<Mat>(1);
+		pre.push_back(outputBD);
 		for (unsigned int i = 0; i < pre.size(); i++) {
-			cvtColor(textPieces[i], pre[i], COLOR_BGR2GRAY);
+//			cvtColor(textPieces[i], pre[i], COLOR_BGR2GRAY);
+			cvtColor(pre[i], pre[i], COLOR_BGR2GRAY);
 		}
 
 		for (int i = 0; i < config.size(); i++) {
@@ -307,6 +321,7 @@ public:
 //			imwrite(outputPath, all);//output the preprocessing sub-results to folders
 			pre = cur;
 		}
+
 //		t2 = time(NULL);
 //		time3 += (t2-t1);
 //		img.release();

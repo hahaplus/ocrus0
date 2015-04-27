@@ -83,6 +83,18 @@ void turnImage(Mat& src, Mat& turned, vector<Point2f> corners, double scale) {
 	int width = src.cols > bl * src.rows ? src.cols : bl * src.rows;
 	int height = (int) (width / bl);
 
+	if(width>src.cols){
+		float scale = (0.0+src.cols)/width;
+		width *= scale;
+		height *= scale;
+	}
+
+	if(height>src.rows){
+		float scale = (0.0+src.rows)/height;
+		width *= scale;
+		height *= scale;
+	}
+
 	cv::Mat quad = cv::Mat::zeros(height, width, CV_8UC3);
 	std::vector<cv::Point2f> quad_pts;
 	quad_pts.push_back(cv::Point2f(0, 0));

@@ -114,9 +114,9 @@ public:
 	static void NiblackSauvolaWolfJolion(Mat& img, Mat& output,
 			NiblackVersion version, int winx, int winy, double k, double dR) {
 
-		Size sz = Size(img.cols/2, img.rows/2);
-		Mat imgSmall(sz, img.type());
-		cv::resize(img, imgSmall, sz);
+//		Size sz = Size(img.cols/2, img.rows/2);
+//		Mat imgSmall(sz, img.type());
+//		cv::resize(img, imgSmall, sz);
 
 		output.create(img.size(), img.type());
 		double m, s, max_s;
@@ -125,18 +125,19 @@ public:
 		int wxh = winx / 2;
 		int wyh = winy / 2;
 		int x_firstth = wxh;
-		int x_lastth = imgSmall.cols - wxh - 1;
-		int y_lastth = imgSmall.rows - wyh - 1;
+		int x_lastth = img.cols - wxh - 1;
+		int y_lastth = img.rows - wyh - 1;
 		int y_firstth = wyh;
 
 		// Create local statistics and store them in a double matrices
-		Mat map_m = Mat::zeros(imgSmall.rows, imgSmall.cols, CV_32F);
-		Mat map_s = Mat::zeros(imgSmall.rows, imgSmall.cols, CV_32F);
-		max_s = calcLocalStats(imgSmall, map_m, map_s, winx, winy);
+		Mat map_m = Mat::zeros(img.rows, img.cols, CV_32F);
+		Mat map_s = Mat::zeros(img.rows, img.cols, CV_32F);
+		max_s = calcLocalStats(img, map_m, map_s, winx, winy);
+//		max_s = calcLocalStats(imgSmall, map_m, map_s, wxh, wyh);
 
-		minMaxLoc(imgSmall, &min_I, &max_I);
+		minMaxLoc(img, &min_I, &max_I);
 
-		Mat thsurf(imgSmall.rows, imgSmall.cols, CV_32F);
+		Mat thsurf(img.rows, img.cols, CV_32F);
 
 		// Create the threshold surface, including border processing
 		// ----------------------------------------------------
@@ -144,7 +145,7 @@ public:
 		for (int j = y_firstth; j <= y_lastth; j++) {
 
 			// NORMAL, NON-BORDER AREA IN THE MIDDLE OF THE WINDOW:
-			for (int i = 0; i <= imgSmall.cols - winx; i++) {
+			for (int i = 0; i <= img.cols - winx; i++) {
 
 				m = map_m.fget(i+wxh, j);
 				s = map_s.fget(i+wxh, j);
@@ -184,7 +185,7 @@ public:
 
 					// LEFT-LOWER CORNER
 					if (j==y_lastth)
-					for (int u=y_lastth+1; u<imgSmall.rows; ++u)
+					for (int u=y_lastth+1; u<img.rows; ++u)
 					for (int i=0; i<=x_firstth; ++i)
 					thsurf.fset(i,u,th);
 				}
@@ -196,32 +197,32 @@ public:
 
 				// LOWER BORDER
 				if (j==y_lastth)
-				for (int u=y_lastth+1; u<imgSmall.rows; ++u)
+				for (int u=y_lastth+1; u<img.rows; ++u)
 				thsurf.fset(i+wxh,u,th);
 			}
 
 			// RIGHT BORDER
-			for (int i=x_lastth; i<imgSmall.cols; ++i)
+			for (int i=x_lastth; i<img.cols; ++i)
 			thsurf.fset(i,j,th);
 
 			// RIGHT-UPPER CORNER
 			if (j==y_firstth)
 			for (int u=0; u<y_firstth; ++u)
-			for (int i=x_lastth; i<imgSmall.cols; ++i)
+			for (int i=x_lastth; i<img.cols; ++i)
 			thsurf.fset(i,u,th);
 
 			// RIGHT-LOWER CORNER
 			if (j==y_lastth)
-			for (int u=y_lastth+1; u<imgSmall.rows; ++u)
-			for (int i=x_lastth; i<imgSmall.cols; ++i)
+			for (int u=y_lastth+1; u<img.rows; ++u)
+			for (int i=x_lastth; i<img.cols; ++i)
 			thsurf.fset(i,u,th);
 		}
 		//cerr << "surface created" << endl;
 
 		for (int y = 0; y < img.rows; ++y) {
 			for (int x = 0; x < img.cols; ++x) {
-				int y2= y/2;
-				int x2= x/2;
+				int y2= y;//2;
+				int x2= x;//2;
 				if (img.uget(x,y)>= thsurf.fget(x2,y2))
 				{
 					output.uset(x,y,255);
@@ -254,7 +255,7 @@ public:
 //		double level = getAvgNoiseLevel(src);
 //		double dividor = getDividor(level);
 //		cout<<"level : " << level<<endl;
-		double dividor = 3.5;
+		double dividor = 5;
 //		cout<<"dividor : " << dividor<<endl;
 		int winx = tmp.cols / dividor;
 		int winy = tmp.rows / dividor;

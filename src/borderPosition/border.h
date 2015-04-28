@@ -616,8 +616,8 @@ int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned) {
 	}
 
 	if (crosses.size() == 0) {
-		cross = Mat::zeros(src.rows, src.cols, CV_32SC3);
-		turned = Mat::zeros(src.rows, src.cols, CV_32SC3);
+		cross = src;//Mat::zeros(src.rows, src.cols, CV_32SC3);
+		turned = src;//Mat::zeros(src.rows, src.cols, CV_32SC3);
 		return -1;
 	}
 	for (int i = 0; i < 90; i++) {

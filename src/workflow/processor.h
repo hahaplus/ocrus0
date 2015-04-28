@@ -284,7 +284,7 @@ public:
 		outputBD.convertTo(outputBD, CV_8UC1);
 //		imwrite(turnOutPath, outputBD);
 
-//		t1 = time(NULL);
+//		time_t t1 = time(NULL);
 
 		/*currently, we disable text detection to rely on Tesseract segmentation
 		 *but this function is possibly useful in future cases
@@ -300,9 +300,10 @@ public:
 		/*for pre-processing, we only use binarization
 		 *later we will consider whether we use denoise and deskew
 		 */
+
 		cout << "Preprocessing..." << endl;
 //        vector<Mat> pre = vector<Mat>(textPieces.size());
-		vector<Mat> pre = vector<Mat>(1);
+		vector<Mat> pre;
 		pre.push_back(outputBD);
 		for (unsigned int i = 0; i < pre.size(); i++) {
 //			cvtColor(textPieces[i], pre[i], COLOR_BGR2GRAY);
@@ -322,10 +323,10 @@ public:
 			pre = cur;
 		}
 
-//		t2 = time(NULL);
+//		time_t t2 = time(NULL);
 //		time3 += (t2-t1);
 //		img.release();
-//		outputSRC.release();
+//		outputSRC.release(*/);
 //		seg.release();
 //		crossBD.release();
 //		outputBD.release();

@@ -25,8 +25,12 @@ public:
 
 		TessBaseAPI tess;
 
+//		cout<<src.cols<<" "<<src.rows<<endl;
+//		imshow("xxx",src);
+//		waitKey();
+
 		/*init*/
-		tess.Init(NULL, lang.c_str(), OEM_DEFAULT);
+		tess.Init(NULL, lang.c_str(), OEM_TESSERACT_ONLY);
 		/*
 		 * we can also use configuration files for the tesseract, such as whether to use a dictionary
 		 */
@@ -36,7 +40,7 @@ public:
 //		tess.Init("/home/litton/tessdata", lang.c_str(), OEM_DEFAULT, configs, 2, NULL, NULL, false);
 
 		/*default page segmentation mode*/
-		tess.SetPageSegMode(PSM_AUTO);
+		tess.SetPageSegMode(PSM_AUTO_ONLY);
 
 		/* if we first use the binarization algorithm for ourself, we can change it as a bit-wise
 		 * graph for more fast processing
@@ -101,7 +105,7 @@ public:
 //		tess.SetImage((uchar*)&myInput, src.cols, src.rows, 0, lenBits);
 
 		/*set resolution, if we don't use pix image*/
-//		tess.SetSourceResolution(72);
+//		tess.SetSourceResolution(100);
 
 		/*get result*/
 		char* out = tess.GetUTF8Text();

@@ -33,11 +33,57 @@ void binarizeDir(const char* inputDir, const char* outputDir,
 
 class Binarize {
 public:
+
+	//**************************************************************
+	//to solve border part which the window will be out of the photo
+	//
+	//Created by Litton
+	//**************************************************************
+	static void border(Mat &im_sum, Mat &im_sum_sq, Mat &map_m, Mat &map_s,
+			int wxh, int wyh, int left, int right, int top, int bottom ){
+
+		double sum, sum_sq, m, s;
+		double height = im_sum.rows-1;
+		double width = im_sum.cols-1;
+
+		for(int j=top;j<bottom;j++){
+
+			for(int i=left;i<right;i++){
+				sum = sum_sq = 0;
+
+				int parttop = j-wyh>0?j-wyh:0;
+				int partbottom = j+wyh<height?j+wyh:height-1;
+				int partleft = i-wxh>0?i-wxh:0;
+				int partright = i+wxh<width?i+wxh:width-1;
+
+				sum = im_sum.at<double>(partbottom,partright)
+						- im_sum.at<double>(partbottom,partleft)
+						- im_sum.at<double>(parttop,partright)
+						+ im_sum.at<double>(parttop,partleft);
+
+				sum_sq = im_sum_sq.at<double>(partbottom,partright)
+						- im_sum_sq.at<double>(partbottom,partleft)
+						- im_sum_sq.at<double>(parttop,partright)
+						+ im_sum_sq.at<double>(parttop,partleft);
+
+				double partarea = (partright-partleft)*(partbottom-parttop);
+//				cout<<"PART AREA: "<<partarea<<endl;
+				m = sum/partarea;
+				s = sqrt((sum_sq - m * sum) / partarea);
+
+				map_m.fset(i, j, m);
+				map_s.fset(i, j, s);
+			}
+		}
+	}
+
+
 	// *************************************************************
 	// glide a window across the image and
 	// create two maps: mean and standard deviation.
 	//
 	// Version patched by Thibault Yohan (using opencv integral images)
+	// Refined by Litton to improve the binarization of "thick borders"
 	// *************************************************************
 	static double calcLocalStats(Mat &im, Mat &map_m, Mat &map_s, int winx,
 			int winy) {
@@ -53,6 +99,26 @@ public:
 		double winarea = winx * winy;
 
 		max_s = 0;
+
+		//UP-border (with corners)
+		border(im_sum, im_sum_sq, map_m, map_s,
+					wxh, wyh, 0, im.cols, 0, wyh);
+
+
+		//BOTTOM-border (with corners)
+		border(im_sum, im_sum_sq, map_m, map_s,
+					wxh, wyh, 0, im.cols, y_lastth+1, im.rows);
+
+
+		//LEFT-border (without corners)
+		border(im_sum, im_sum_sq, map_m, map_s,
+					wxh, wyh, 0, wxh, wyh, y_lastth+1);
+
+		//RIGHT-border (without corners)
+		border(im_sum, im_sum_sq, map_m, map_s,
+					wxh, wyh, im.cols-wxh, im.cols, wyh, y_lastth+1);
+
+//		cout<<"here"<<endl;
 		for (int j = y_firstth; j <= y_lastth; j++) {
 			sum = sum_sq = 0;
 
@@ -104,12 +170,13 @@ public:
 				map_s.fset(i+wxh, j, s);
 			}
 		}
-
+//		cout<<"here"<<endl;
 		return max_s;
 	}
 
 	/**********************************************************
 	 * The binarization routine
+	 * Modified by Litton to improve the 'thick borders'
 	 **********************************************************/
 	static void NiblackSauvolaWolfJolion(Mat& img, Mat& output,
 			NiblackVersion version, int winx, int winy, double k, double dR) {
@@ -135,20 +202,25 @@ public:
 		max_s = calcLocalStats(img, map_m, map_s, winx, winy);
 //		max_s = calcLocalStats(imgSmall, map_m, map_s, wxh, wyh);
 
-		minMaxLoc(img, &min_I, &max_I);
 
+		imshow("meanMat",map_m);
+		imshow("varsMat",map_s);
+		waitKey();
+
+		minMaxLoc(img, &min_I, &max_I);
+//		cout<<"MAX VARS: "<<max_s<<" "<<min_I<<endl;
 		Mat thsurf(img.rows, img.cols, CV_32F);
 
 		// Create the threshold surface, including border processing
 		// ----------------------------------------------------
 
-		for (int j = y_firstth; j <= y_lastth; j++) {
+		for (int j = 0/*y_firstth*/; j <img.rows/*= y_lastth*/; j++) {
 
 			// NORMAL, NON-BORDER AREA IN THE MIDDLE OF THE WINDOW:
-			for (int i = 0; i <= img.cols - winx; i++) {
+			for (int i = 0; i <= img.cols/* - winx*/; i++) {
 
-				m = map_m.fget(i+wxh, j);
-				s = map_s.fget(i+wxh, j);
+				m = map_m.fget(i/*+wxh*/, j);
+				s = map_s.fget(i/*+wxh*/, j);
 
 				// Calculate the threshold
 				switch (version) {
@@ -170,8 +242,8 @@ public:
 					exit (1);
 				}
 
-				thsurf.fset(i+wxh,j,th);
-
+				thsurf.fset(i/*+wxh*/,j,th);
+				/*
 				if (i==0) {
 					// LEFT BORDER
 					for (int i=0; i<=x_firstth; ++i)
@@ -199,8 +271,10 @@ public:
 				if (j==y_lastth)
 				for (int u=y_lastth+1; u<img.rows; ++u)
 				thsurf.fset(i+wxh,u,th);
+				*/
 			}
 
+			/*
 			// RIGHT BORDER
 			for (int i=x_lastth; i<img.cols; ++i)
 			thsurf.fset(i,j,th);
@@ -216,6 +290,7 @@ public:
 			for (int u=y_lastth+1; u<img.rows; ++u)
 			for (int i=x_lastth; i<img.cols; ++i)
 			thsurf.fset(i,u,th);
+			*/
 		}
 		//cerr << "surface created" << endl;
 
@@ -255,7 +330,7 @@ public:
 //		double level = getAvgNoiseLevel(src);
 //		double dividor = getDividor(level);
 //		cout<<"level : " << level<<endl;
-		double dividor = 5;
+		double dividor = 3.5;
 //		cout<<"dividor : " << dividor<<endl;
 		int winx = tmp.cols / dividor;
 		int winy = tmp.rows / dividor;

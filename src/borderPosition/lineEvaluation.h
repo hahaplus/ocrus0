@@ -199,7 +199,7 @@ void sortLines(CvSeq* lines) {
 
 CvSeq*
 convertXYLineToPolar(std::vector<cv::Vec4i> lines0, CvMemStorage* storage,
-		cv::Mat pic1) {
+		cv::Mat pic1, map<int, set<int> >& lineMap) {
 	int count = 0;
 	int lineType = CV_32FC(8);
 	int elemSize = sizeof(float) * 8;
@@ -259,6 +259,23 @@ convertXYLineToPolar(std::vector<cv::Vec4i> lines0, CvMemStorage* storage,
 	}
 	MAXLINK = recMaxLink;
 	sortLines(lines);
+
+	for(int i=0;i<lines->total;i++){
+		CvLinePolar2* line1 = (CvLinePolar2*) cvGetSeqElem(lines, i);
+		if(lineMap.find(i)==lineMap.end())
+			lineMap[i] = set<int>();
+
+		for(int j=i+1;j<lines->total;j++){
+			CvLinePolar2* line2 = (CvLinePolar2*) cvGetSeqElem(lines, j);
+			if(lineMap.find(j)==lineMap.end())
+				lineMap[j] = set<int>();
+
+			if (fabs(line2->angle - line1->angle) < CV_PI / 36){
+				lineMap[i].insert(j);
+				lineMap[j].insert(i);
+			}
+		}
+	}
 
 	return lines;
 }

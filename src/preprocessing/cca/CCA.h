@@ -188,7 +188,8 @@ public:
 				cur.bottom = max(cur.bottom, i);
 				cur.left = min(cur.left, j);
 				cur.right = max(cur.right, j);
-				cur.points.push_back(Point(i, j));
+				//row (i) marks y, column (j) marks x
+				cur.points.push_back(Point(j, i));
 			}
 		}
 
@@ -208,10 +209,10 @@ public:
 			int blobNum = 10000) {
 		double minArea = double(width / 100) * (height / 80);
 
-		minArea = 25;
+		minArea = 50;
 
-		double maxArea = double(width / (blobNum / 40))
-				* (height / (blobNum / 40));
+		double maxArea = double(width / (blobNum / 40.0))
+				* (height / (blobNum / 40.0));
 		maxArea = max(maxArea, (double) width / 10 * height / 10);
 
 		return ((blob.area() < minArea) || (blob.area() > maxArea)

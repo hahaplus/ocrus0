@@ -43,7 +43,8 @@ using namespace std;
 #define hough_cmp_gt(l1,l2) (aux[l1] > aux[l2])
 
 int process(cv::Mat tsrc, Mat tslt,
-		vector<vector<cv::Point2f> >& cross, bool binary) {
+		vector<vector<cv::Point2f> >& cross, bool binary,
+		bool magnet, map<int, set<int> >& lineMap) {
 
 	scoreCur[0] = 0;
 	scoreCur[1] = 0;
@@ -82,7 +83,7 @@ int process(cv::Mat tsrc, Mat tslt,
 	std::vector<cv::Vec4i> lines0;
 	cv::HoughLinesP(pic1, lines0, 5, CV_PI / 90, 100, 70, 20);
 
-	lines = convertXYLineToPolar(lines0, storage, pic1);
+	lines = convertXYLineToPolar(lines0, storage, pic1, lineMap);
 	//step3: quadrangle formation
 	//s3.1: filter candidate lines
 	int i = 0;
@@ -396,7 +397,7 @@ int process(cv::Mat tsrc, Mat tslt,
 	return -1;
 }
 
-int getBorderPtOnSalient(Mat src, vector<Point2f>& result){
+int getBorderPtOnSalient(Mat src, vector<Point2f>& result, bool magnet, map<int, set<int> >& lines){
 
 	if(10*countNonZero(src)<src.cols*src.rows)
 			return -1;
@@ -404,7 +405,7 @@ int getBorderPtOnSalient(Mat src, vector<Point2f>& result){
 	Mat tsrc;
 	myNormalSize(src, tsrc, CV_32FC3);
 
-	process(tsrc, tsrc, crosses, true);
+	process(tsrc, tsrc, crosses, true, magnet, lines);
 	if (crosses.size() > 0) {
 		vector<Point2f> corners = crosses[0];
 		for(int i=0;i<corners.size();i++){
@@ -417,7 +418,12 @@ int getBorderPtOnSalient(Mat src, vector<Point2f>& result){
 	}
 }
 
-int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned) {
+int getBorderPtOnSalient(Mat src, vector<Point2f>& result){
+	map<int, set<int> > lines;
+	return getBorderPtOnSalient(src, result, false, lines);
+}
+
+int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned, bool magnet, map<int, set<int> >& lines) {
 
 	//too small salient, bad!
 	if(10*countNonZero(src)<src.cols*src.rows)
@@ -431,7 +437,7 @@ int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned) {
 	lighting = 180.0;
 	curphase = 0;
 
-	process(tsrc, tsrc, crosses, true);
+	process(tsrc, tsrc, crosses, true, magnet, lines);
 	if (crosses.size() > 0) {
 		vector<Point2f> corners = crosses[0];
 
@@ -446,7 +452,12 @@ int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned) {
 	}
 }
 
-int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners){
+int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned){
+	map<int, set<int> > lines;
+	return getBorderImgOnSalient(orig, src, cross, turned, false, lines);
+}
+
+int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, bool magnet, map<int, set<int> >& lines){
 	vector<vector<cv::Point2f> > cross_l;
 	vector<vector<cv::Point2f> > cross_m;
 	vector<vector<cv::Point2f> > cross_s;
@@ -468,17 +479,17 @@ int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners){
 	lighting = 180.0;
 	curphase = 0;
 
-	int result = process(tsrc, tslt, cross_l, false);
+	int result = process(tsrc, tslt, cross_l, false, magnet, lines);
 
 	if (doubt) {
 		lighting = 110.0;
 		curphase = 1;
-		result = process(tsrc, tslt, cross_m, false);
+		result = process(tsrc, tslt, cross_m, false, magnet, lines);
 	}
 	if (doubt) {
 		lighting = 40.0;
 		curphase = 2;
-		result = process(tsrc, tslt, cross_s, false);
+		result = process(tsrc, tslt, cross_s, false, magnet, lines);
 	}
 	for (int j = 0; j < 30 && j < cross_l.size(); j++) {
 		crosses.push_back(cross_l[j]);
@@ -554,7 +565,12 @@ int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners){
 	return 0;
 }
 
-int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned) {
+int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners){
+	map<int, set<int> > lines;
+	return getBorderPtOnRaw(src,slt,finalCorners,false, lines);
+}
+
+int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned, bool magnet, map<int, set<int> >& lines) {
 	vector<vector<cv::Point2f> > cross_l;
 	vector<vector<cv::Point2f> > cross_m;
 	vector<vector<cv::Point2f> > cross_s;
@@ -576,17 +592,17 @@ int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned) {
 	lighting = 180.0;
 	curphase = 0;
 
-	int result = process(tsrc, tslt, cross_l, false);
+	int result = process(tsrc, tslt, cross_l, false, magnet, lines);
 
 	if (doubt) {
 		lighting = 110.0;
 		curphase = 1;
-		result = process(tsrc, tslt, cross_m, false);
+		result = process(tsrc, tslt, cross_m, false, magnet, lines);
 	}
 	if (doubt) {
 		lighting = 40.0;
 		curphase = 2;
-		result = process(tsrc, tslt, cross_s, false);
+		result = process(tsrc, tslt, cross_s, false, magnet, lines);
 	}
 	for (int j = 0; j < 30 && j < cross_l.size(); j++) {
 		crosses.push_back(cross_l[j]);
@@ -670,4 +686,8 @@ int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned) {
 	return 0;
 }
 
+int getBorderImgOnRaw(Mat src, Mat slt, Mat& cross, Mat& turned){
+	map<int, set<int> > lines;
+	return getBorderImgOnRaw(src, slt, cross, turned, false, lines);
+}
 #endif

@@ -202,9 +202,9 @@ public:
 //		max_s = calcLocalStats(imgSmall, map_m, map_s, wxh, wyh);
 
 
-		imshow("meanMat",map_m);
-		imshow("varsMat",map_s);
-		waitKey();
+//		imshow("meanMat",map_m);
+//		imshow("varsMat",map_s);
+//		waitKey();
 
 		minMaxLoc(img, &min_I, &max_I);
 //		cout<<"MAX VARS: "<<max_s<<" "<<min_I<<endl;

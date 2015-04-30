@@ -10,7 +10,6 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include "../utils/FileUtil.h"
-#include "../noiseLevel/noiseLevel.h"
 
 using namespace std;
 using namespace cv;

@@ -41,6 +41,8 @@ Mat Pyramid::scale(bool resharp){
 	_scale = 0;
 	Mat mid = _origin;
 	Mat smooth;
+	if(!(mid.rows > THRESHOLD_HEIGHT || mid.cols > THRESHOLD_WIDTH))
+        return _origin;
 	while(mid.rows > THRESHOLD_HEIGHT || mid.cols > THRESHOLD_WIDTH){
 		++_scale;
 		pyrDown(mid, _final, Size(mid.cols / 2, mid.rows / 2));
@@ -59,6 +61,8 @@ Mat Pyramid::getOrigin(){
 
 Mat Pyramid::reScale(Mat mat){
 	Mat res, mid = mat;
+	if(_scale==0)
+        return mat;
 	for(int i = 0; i < _scale; ++i){
 		pyrUp(mid, res, Size(mid.cols * 2, mid.rows * 2));
 		mid = res;

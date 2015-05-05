@@ -19,6 +19,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <string.h>
+#include <queue>
 #include <stdlib.h>
 #include <dirent.h>
 #include <sys/stat.h>

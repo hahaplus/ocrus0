@@ -7,16 +7,17 @@
 using namespace std;
 using namespace cv;
 
-static vector<Point2f> getBorder(Mat img){
+static vector<Point2f> getBorder(Mat img, map<int, vector<Vec4i> >& lines){
 
 	SalientRec src;
 	Mat salientImg, seg;
 
 	src.salient(img, salientImg, seg);
 	vector<Point2f> result;
-	int res = getBorderPtOnSalient(salientImg, result);
+
+	int res = getBorderPtOnSalient(salientImg, result, lines);
 	if (res == -1) {
-		res = getBorderPtOnRaw(img, salientImg, result);
+		res = getBorderPtOnRaw(img, salientImg, result, lines);
 	}
 	if(res!=-1)
 		return result;

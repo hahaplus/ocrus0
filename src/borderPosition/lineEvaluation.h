@@ -280,4 +280,18 @@ convertXYLineToPolar(std::vector<cv::Vec4i> lines0, CvMemStorage* storage,
 	return lines;
 }
 
+Vec4i polarToPoints(CvLinePolar2* polar){
+	Vec4i res;
+	float rho = polar->rho, theta = polar->angle;
+
+	double a = cos(theta), b = sin(theta);
+	double x0 = a * rho, y0 = b * rho;
+	res[0] = cvRound(x0 + 1000 * (-b));
+	res[1] = cvRound(y0 + 1000 * (a));
+	res[2] = cvRound(x0 - 1000 * (-b));
+	res[3] = cvRound(y0 - 1000 * (a));
+
+	return res;
+}
+
 #endif

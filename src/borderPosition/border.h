@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <queue>
+#include <set>
+#include <map>
 #include <stdlib.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -45,7 +47,7 @@ using namespace std;
 
 int process(cv::Mat tsrc, Mat tslt,
 		vector<vector<cv::Point2f> >& cross, bool binary,
-		bool magnet, map<int, set<int> >& lineMap) {
+		bool magnet, map<int, vector<Vec4i> >& lineMap) {
 
 	scoreCur[0] = 0;
 	scoreCur[1] = 0;
@@ -84,7 +86,9 @@ int process(cv::Mat tsrc, Mat tslt,
 	std::vector<cv::Vec4i> lines0;
 	cv::HoughLinesP(pic1, lines0, 5, CV_PI / 90, 100, 70, 20);
 
-	lines = convertXYLineToPolar(lines0, storage, pic1, lineMap);
+	map<int, set<int> > lineMap0;
+
+	lines = convertXYLineToPolar(lines0, storage, pic1, lineMap0);
 	//step3: quadrangle formation
 	//s3.1: filter candidate lines
 	int i = 0;
@@ -380,6 +384,51 @@ int process(cv::Mat tsrc, Mat tslt,
 	if (finalK >= 0 && finalL >= 0) {
 
 		collectCrossCands(tsrc, tslt, cross, qn, horiPairs, vertPairs, binary);
+
+		OppositeLines pair1 = horiPairs.at(finalK);
+		CvLinePolar2* lineH1 = (CvLinePolar2*) cvGetSeqElem(lines, pair1.one);
+		CvLinePolar2* lineH2 = (CvLinePolar2*) cvGetSeqElem(lines, pair1.two);
+		Vec4i lineHp1 = polarToPoints(lineH1);
+		Vec4i lineHp2 = polarToPoints(lineH2);
+		int top = (lineHp1[1]<lineHp2[1])?pair1.one:pair1.two;
+		int bottom = (lineHp1[1]<lineHp2[1])?pair1.two:pair1.one;
+
+		OppositeLines pair2 = vertPairs.at(finalL);
+		CvLinePolar2* lineV1 = (CvLinePolar2*) cvGetSeqElem(lines, pair2.one);
+		CvLinePolar2* lineV2 = (CvLinePolar2*) cvGetSeqElem(lines, pair2.two);
+		Vec4i lineVp1 = polarToPoints(lineV1);
+		Vec4i lineVp2 = polarToPoints(lineV2);
+		int left = (lineVp1[0]<lineVp2[0])?pair2.one:pair2.two;
+		int right = (lineVp1[0]<lineVp2[0])?pair2.two:pair2.one;
+
+		lineMap[0] = vector<Vec4i>();
+		lineMap[1] = vector<Vec4i>();
+		lineMap[2] = vector<Vec4i>();
+		lineMap[3] = vector<Vec4i>();
+
+		for(set<int>::iterator itr = lineMap0[top].begin();itr!=lineMap0[top].end();itr++){
+			int index = *itr;
+			CvLinePolar2* polar = (CvLinePolar2*) cvGetSeqElem(lines, index);
+			lineMap[0].push_back(polarToPoints(polar));
+		}
+
+		for(set<int>::iterator itr = lineMap0[bottom].begin();itr!=lineMap0[bottom].end();itr++){
+			int index = *itr;
+			CvLinePolar2* polar = (CvLinePolar2*) cvGetSeqElem(lines, index);
+			lineMap[1].push_back(polarToPoints(polar));
+		}
+
+		for(set<int>::iterator itr = lineMap0[left].begin();itr!=lineMap0[left].end();itr++){
+			int index = *itr;
+			CvLinePolar2* polar = (CvLinePolar2*) cvGetSeqElem(lines, index);
+			lineMap[2].push_back(polarToPoints(polar));
+		}
+
+		for(set<int>::iterator itr = lineMap0[right].begin();itr!=lineMap0[right].end();itr++){
+			int index = *itr;
+			CvLinePolar2* polar = (CvLinePolar2*) cvGetSeqElem(lines, index);
+			lineMap[3].push_back(polarToPoints(polar));
+		}
 		//release the memory
 		cvReleaseMemStorage(  & lines -> storage );
 		lines = 0;
@@ -388,6 +437,7 @@ int process(cv::Mat tsrc, Mat tslt,
 //		abs_grad_x.release();
 //		abs_grad_y.release();
 //		grad.release();
+
 		return 0;
 	}
 //	grad_x.release();
@@ -398,7 +448,7 @@ int process(cv::Mat tsrc, Mat tslt,
 	return -1;
 }
 
-int getBorderPtOnSalient(Mat src, vector<Point2f>& result, bool magnet, map<int, set<int> >& lines){
+int getBorderPtOnSalient(Mat src, vector<Point2f>& result, bool magnet, map<int, vector<Vec4i> >& lines){
 
 	if(10*countNonZero(src)<src.cols*src.rows)
 			return -1;
@@ -419,12 +469,11 @@ int getBorderPtOnSalient(Mat src, vector<Point2f>& result, bool magnet, map<int,
 	}
 }
 
-int getBorderPtOnSalient(Mat src, vector<Point2f>& result){
-	map<int, set<int> > lines;
+int getBorderPtOnSalient(Mat src, vector<Point2f>& result, map<int, vector<Vec4i> >& lines){
 	return getBorderPtOnSalient(src, result, false, lines);
 }
 
-int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned, bool magnet, map<int, set<int> >& lines) {
+int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned, bool magnet, map<int, vector<Vec4i> >& lines) {
 
 	//too small salient, bad!
 	if(10*countNonZero(src)<src.cols*src.rows)
@@ -454,11 +503,11 @@ int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned, bool magne
 }
 
 int getBorderImgOnSalient(Mat orig, Mat src, Mat& cross, Mat& turned){
-	map<int, set<int> > lines;
+	map<int, vector<Vec4i> > lines;
 	return getBorderImgOnSalient(orig, src, cross, turned, false, lines);
 }
 
-int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, bool magnet, map<int, set<int> >& lines){
+int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, bool magnet, map<int, vector<Vec4i> >& lines){
 	vector<vector<cv::Point2f> > cross_l;
 	vector<vector<cv::Point2f> > cross_m;
 	vector<vector<cv::Point2f> > cross_s;
@@ -566,12 +615,11 @@ int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, bool magne
 	return 0;
 }
 
-int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners){
-	map<int, set<int> > lines;
+int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, map<int, vector<Vec4i> >& lines){
 	return getBorderPtOnRaw(src,slt,finalCorners,false, lines);
 }
 
-int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned, bool magnet, map<int, set<int> >& lines) {
+int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned, bool magnet, map<int, vector<Vec4i> >& lines) {
 	vector<vector<cv::Point2f> > cross_l;
 	vector<vector<cv::Point2f> > cross_m;
 	vector<vector<cv::Point2f> > cross_s;
@@ -688,7 +736,7 @@ int getBorderImgOnRaw(cv::Mat src, Mat slt, Mat& cross, Mat& turned, bool magnet
 }
 
 int getBorderImgOnRaw(Mat src, Mat slt, Mat& cross, Mat& turned){
-	map<int, set<int> > lines;
+	map<int, vector<Vec4i> > lines;
 	return getBorderImgOnRaw(src, slt, cross, turned, false, lines);
 }
 #endif

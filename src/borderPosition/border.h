@@ -467,10 +467,12 @@ int getBorderPtOnSalient(Mat src, vector<Point2f>& result, bool magnet, map<int,
 		}
 
 		for(int i=0;i<lines.size();i++){
-			lines[i][0]/=scale;
-			lines[i][1]/=scale;
-			lines[i][2]/=scale;
-			lines[i][3]/=scale;
+			for(int j=0;j<lines[i].size();j++){
+				lines[i][j][0]/=scale;
+				lines[i][j][1]/=scale;
+				lines[i][j][2]/=scale;
+				lines[i][j][3]/=scale;
+			}
 		}
 		return 0;
 	}
@@ -619,10 +621,12 @@ int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, bool magne
 		}
 
 		for(int i=0;i<lines.size();i++){
-			lines[i][0]/=scale;
-			lines[i][1]/=scale;
-			lines[i][2]/=scale;
-			lines[i][3]/=scale;
+			for(int j=0;j<lines[i].size();j++){
+				lines[i][j][0]/=scale;
+				lines[i][j][1]/=scale;
+				lines[i][j][2]/=scale;
+				lines[i][j][3]/=scale;
+			}
 		}
 	}
 

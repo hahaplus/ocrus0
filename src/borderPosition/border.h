@@ -476,6 +476,7 @@ int getBorderPtOnSalient(Mat src, vector<Point2f>& result, bool magnet, map<int,
 		}
 		return 0;
 	}
+	return -1;
 }
 
 int getBorderPtOnSalient(Mat src, vector<Point2f>& result, map<int, vector<Vec4i> >& lines){

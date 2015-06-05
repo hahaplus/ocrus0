@@ -87,7 +87,8 @@ Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/pac
     ![Header Files](screenshot/headerFiles.png "Header Files")
  + In **GCC C++ Linker**, go to **Libraries**. In **Library search path (-L)** you should write the path to where the OpenCV, Leptonica, Tesseract, GSL libraries reside:
     ![Libraries](screenshot/libraries.png "Libraries")
- 
+ + Then in **Libraries(-l)** add the OpenCV, Leptonica, Tesseract, GSL libraries that you may need. We use the following whole bunch:
+    opencv_core opencv_imgproc opencv_highgui opencv_ml opencv_video opencv_features2d opencv_calib3d opencv_objdetect opencv_contrib opencv_legacy opencv_flann
  
  
 

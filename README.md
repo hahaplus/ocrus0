@@ -145,3 +145,29 @@ Debug/ImageProcess -d -c config/sn.conf -i imgs -o ocr-output -l eng
 ```
 
 After OCR, you can check directories in `config/sn.conf` to check the intermediate result and open `ocr-output/*.txt` to check the ocr result.
+
+## More Explanation about Source Code
+In the /src folder you can find different source code for different function
+
+* /borderPostition: used to detect the border of the the object in image
+* /preprocessing:
+ + /binarize: used for making colorful image into high quality white-and-black image
+ + /deskew: (find the skew of the texts, and turn it horizontally, not completed)
+        an alternative is /textDetect/textorient.h
+ + /noiseLevel: detect the noise level of the image
+ + /GaussianSPDenoise: denoise
+ + /shadow: remove shadow in image
+ + /salientRecognition: find main object range in image
+ + /simpleNLP: this is actually post-processing after ocr, which will be running on phone
+        ```
+        contact.h: recognize phone number and email
+        namecardPost.h: a untrained model to analyze structure of namecard
+        textClassifier.h: a classifier to judge whether a text is a namecard or not
+        ```
+## Related Project
+[Here](http://192.168.140.36/snapnote/snapnotenlp) is the server-side post-processing code.
+
+You will find services for named-entity recognition, keywords extraction and event extraction in package `jp.co.worksap.snapnote.nlp` and `jp.co.worksap.snapnote.services`.
+* Note: Java Restful Services, currently not linked to our release
+
+You will find service for English spellcorrection in package `jp.co.worksap.spellcorrection.service`.

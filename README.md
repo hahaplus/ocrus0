@@ -30,7 +30,7 @@ tar -xzvf leptonica-1.72.tar.gz
 cd leptonica-1.72
 ./configure --prefix=/path/to/install/leptonica
 make
-make install (use `sudo make install` if /path/to/install/leptonica directory has permission limits)
+make install (use `sudo make install` if `/path/to/install/leptonica directory` has permission limits)
 ```
 Download [Tesseract 3.02.02](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.02.tar.gz&can=2&q=)　source code.
 
@@ -50,7 +50,7 @@ Create a file `/etc/ld.so.conf.d/tesseract.conf` and add these two lines into th
 /path/to/install/leptonica/lib
 ```
 
-Run following command to line shared libraries:
+Run following command to link shared libraries:
 
 ```
 sudo ldconfig -v
@@ -59,17 +59,17 @@ sudo ldconfig -v
 ### 3. Step: Add Language Training Data
 Download [English](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.eng.tar.gz&can=2&q=), [Japanese](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.jpn.tar.gz&can=2&q=), [Chinese](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.chi_sim.tar.gz&can=2&q=) language trained data. Uncompress these 3 files.
 
-Put the 'eng.traineddata', 'jpn.traineddata', 'chi_sim.traineddata' to directory '/path/to/install/tesseract/share/tessdata/'.
+Put the `eng.traineddata`, `jpn.traineddata`, `chi_sim.traineddata` to directory `/path/to/install/tesseract/share/tessdata/`.
 
-Run following command to add 'TESSDATA_PREFIX' variable to your environment variables.
+Run following command to add `TESSDATA_PREFIX` variable to your environment variables.
 
 ```
 export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 ```
 
-* NOTE: Language data are in '/path/to/install/tesseract/share/tessdata/', but 'TESSDATA_PREFIX' is '/path/to/install/tesseract/share/', no 'tessdata'.
+* NOTE: Language data are in `/path/to/install/tesseract/share/tessdata/`, but `TESSDATA_PREFIX` is `/path/to/install/tesseract/share/`, no `tessdata`.
 
-* If you want to use other language, please [download] the corresponding trained data and put the `*.traineddata` to the above directory.
+* If you want to use other language, please [download](https://code.google.com/p/tesseract-ocr/downloads/list) the corresponding trained data and put the `*.traineddata` to the above directory.
 
 ### 4. Step: Generate GUI and Command Line Tool
 Git clone this project and run the following commands:

@@ -277,7 +277,7 @@ public:
 		vector<Mat> textPieces;
 		textDetect(outputBD, textPieces, res == -1 ? false : true);
 
-		string textPath = turnOut + "/" + FileUtil::getFileName(input);
+		string textPath = textOut + "/" + FileUtil::getFileName(input);
 
 		imwrite(textPath, merge(textPieces));
 

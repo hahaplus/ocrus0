@@ -21,7 +21,7 @@ using namespace tesseract;
 class OCRUtil
 {
 public:
-	static string ocrFile(/*Mat& src*/Pix* src, const string lang = "eng+jpn+chi_sim") {
+	static string ocrFile(Mat& src, const string lang = "eng+jpn+chi_sim") {
 
 		TessBaseAPI tess;
 
@@ -93,13 +93,13 @@ public:
 //		}
 
 		/*for greyscale image*/
-//		tess.SetImage((uchar*) src.data, src.cols, src.rows, 1, src.cols);
+		tess.SetImage((uchar*) src.data, src.cols, src.rows, 1, src.cols);
 
 		/*for color image*/
 //		tess.SetImage((uchar*) src.data, src.cols, src.rows, 3, 3*src.cols);
 
 		/*for leptopia pix image*/
-		tess.SetImage(src);
+//		tess.SetImage(src);
 
 		/*for bit-wise binary image*/
 //		tess.SetImage((uchar*)&myInput, src.cols, src.rows, 0, lenBits);

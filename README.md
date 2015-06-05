@@ -74,8 +74,7 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 * If you want to use other language, please [download](https://code.google.com/p/tesseract-ocr/downloads/list) the corresponding trained data and put the `*.traineddata` to the above directory.
 
 ### 4. Step: Configure Eclipse IDE for C/C++ Developers
-Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/heliossr2).
-
+1. Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/heliossr2).
 1. Start Eclipse. Just run the executable that comes in the folder.
 2. Go to **File -> New -> C/C++ Project**
 3. Choose a name for your project (i.e. `ImageProcess`). An Empty Project should be okay.
@@ -86,6 +85,7 @@ Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/pac
  + Go to **Project–>Properties**
  + In **C/C++ Build**, click on **Settings**.
  + In **GCC C++ Compiler**, go to **Includes**. In **Include paths(-l)** you should include the path of the folder where OpenCV, Leptonica, Tesseract, GSL were installed:
+ 
         ![Header Files](screenshot/headerFiles.png "Header Files")
  + In **GCC C++ Linker**, go to **Libraries**. In **Library search path (-L)** you should write the path to where the OpenCV, Leptonica, Tesseract, GSL libraries reside:
  + Then in **Libraries(-l)** add the OpenCV, Leptonica, Tesseract, GSL libraries that you may need. We use the following whole bunch:
@@ -98,7 +98,7 @@ Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/pac
         ```
         ![Libraries](screenshot/libraries.png "Libraries")
     Now you are done. Click OK.
- + Your project should be ready to be built. For this, go to **Project->Build all**.
+7. Your project should be ready to be built. For this, go to **Project->Build all**.
  
 ### 5. Step: Run the Executable
 After build, the binary `Debug/ImageProcess` will be generated.
@@ -128,7 +128,9 @@ Config File explanation:
 * denoise   Denoise result directory.
 * deskew    Deskew result directory.
 
-You can check [config/sn.conf](http://192.168.140.36/snapnote/snapnoteocrcore/blob/master/config/sn.conf) as an example.
+Config File is used to control the workflow and store intermediate result. You can check [config/sn.conf](http://192.168.140.36/snapnote/snapnoteocrcore/blob/master/config/sn.conf) as an example.
+
+* NOTE: Please make sure these directories in Config File exist.
 
 For example, if you want to do OCR for an image `img.jpg`, the OCR output directory is `ocr-output`, the OCR language is `jpn`, the you can run the following command:
 

@@ -71,7 +71,14 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 
 * If you want to use other language, please [download](https://code.google.com/p/tesseract-ocr/downloads/list) the corresponding trained data and put the `*.traineddata` to the above directory.
 
-### 4. Step: Generate GUI and Command Line Tool
+### 4. Step: Install Eclipse IDE for C/C++ Developers, Download the Source Code and Make it Run
+Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/heliossr2).
+
+1. Start Eclipse. Just run the executable that comes in the folder.
+2. Go to **File -> New -> C/C++ Project**
+
+
+
 Git clone this project and run the following commands:
 
 ```

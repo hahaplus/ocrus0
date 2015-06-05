@@ -21,7 +21,7 @@ using namespace tesseract;
 class OCRUtil
 {
 public:
-	static string ocrFile(Mat& src/*Pix* src*/, const string lang = "eng+jpn+chi_sim") {
+	static string ocrFile(/*Mat& src*/Pix* src, const string lang = "eng+jpn+chi_sim") {
 
 		TessBaseAPI tess;
 
@@ -41,7 +41,7 @@ public:
 
 		/*default page segmentation mode*/
 		tess.SetPageSegMode(PSM_AUTO_ONLY);
-
+		tess.SetPageSegMode(PSM_SINGLE_BLOCK);// Currently, for English name card, we use this way!
 		/* if we first use the binarization algorithm for ourself, we can change it as a bit-wise
 		 * graph for more fast processing
 		 */
@@ -93,13 +93,13 @@ public:
 //		}
 
 		/*for greyscale image*/
-		tess.SetImage((uchar*) src.data, src.cols, src.rows, 1, src.cols);
+//		tess.SetImage((uchar*) src.data, src.cols, src.rows, 1, src.cols);
 
 		/*for color image*/
 //		tess.SetImage((uchar*) src.data, src.cols, src.rows, 3, 3*src.cols);
 
 		/*for leptopia pix image*/
-//		tess.SetImage(src);
+		tess.SetImage(src);
 
 		/*for bit-wise binary image*/
 //		tess.SetImage((uchar*)&myInput, src.cols, src.rows, 0, lenBits);
@@ -114,7 +114,7 @@ public:
 //		ResultIterator* itor = tess.GetIterator();
 //		cout<<"iterations"<<endl;
 //		while(itor->Next(RIL_BLOCK)){
-//			cout<<"TYPE: "<<itor->BlockType()<<" CONTENT: "<<itor->GetUTF8Text(RIL_BLOCK)<<endl;
+//			cout<<"TYPE: "<<itor->BlockType()<<endl<<"CONTENT: "<<endl<<itor->GetUTF8Text(RIL_BLOCK)<<endl;
 //		}
 
 		/*clear up*/

@@ -8,6 +8,7 @@
 #ifndef IMAGE_PROCESS_SRC_WORKFLOW_PROCESSOR_H_
 #define IMAGE_PROCESS_SRC_WORKFLOW_PROCESSOR_H_
 
+#include "../preprocessing/utils/OCRUtil.h"
 #include "../util/configUtil.h"
 #include "../salientRecognition/execute.h"
 #include "../preprocessing/utils/FileUtil.h"
@@ -16,7 +17,6 @@
 #include "../preprocessing/binarize/binarize.h"
 #include "../preprocessing/deskew/deskew.h"
 #include "../preprocessing/GaussianSPDenoise/denoise.h"
-#include "../preprocessing/utils/OCRUtil.h"
 #include "../preprocessing/utils/TimeUtil.h"
 #include "../preprocessing/cca/CCA.h"
 
@@ -248,8 +248,8 @@ public:
 
 		SalientRec src;
 		Mat outputSRC, seg, crossBD, outputBD;
-		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
-		string segOutPath = segOut + "/" + FileUtil::getFileName(input);
+//		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
+//		string segOutPath = segOut + "/" + FileUtil::getFileName(input);
 
 		cout << "salient object..." << endl;
 

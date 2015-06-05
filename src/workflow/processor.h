@@ -34,7 +34,6 @@ using namespace cv;
 
 class Processor {
 public:
-	const static string SEG;
 	const static string SALIENT;
 	const static string BORDER;
 	const static string TURN;
@@ -73,6 +72,7 @@ public:
 		string input;
 		string ocrOutput;
 		string configPath;
+		string lang = "eng";
 
 		cout << "Read parameters..." << endl;
 
@@ -93,6 +93,10 @@ public:
 			case 'o':
 				printf("OCR output path is %s\n", optarg);
 				ocrOutput = optarg;
+				break;
+			case 'l':
+				printf("OCR Language is %s\n", optarg);
+				lang = optarg;
 				break;
 			case 'c':
 				printf("Config file path is %s\n", optarg);
@@ -125,7 +129,7 @@ public:
 //				time_t t1 = time(NULL);
 				cout << "OCR to: " << textPath << endl;
 
-				string text = ocrMats(dsts);
+				string text = ocrMats(dsts, lang);
 //				time_t t2 = time(NULL);
 //				time4+=(t2-t1);
 				FileUtil::writeToFile(text, textPath);
@@ -140,7 +144,7 @@ public:
 					if (!ocrOutput.empty()) {
 
 //						time_t t1 = time(NULL);
-						string text = ocrMats(mats);
+						string text = ocrMats(mats, lang);
 //						time_t t2 = time(NULL);
 //						time4+=(t2-t1);
 						string textPath = ocrOutput + "/"
@@ -221,7 +225,7 @@ public:
 		return os.str();
 	}
 
-	static string ocrMats(vector<Mat>& mats) {
+	static string ocrMats(vector<Mat>& mats, string lang) {
 		ostringstream os;
 		for (unsigned i = 0; i < mats.size(); i++) {
 			os << OCRUtil::ocrFile(mats[i], lang) << endl;
@@ -233,7 +237,6 @@ public:
 		Config config = conf;
 		Mat img = imread(input);
 		cout << "Process " << input << endl;
-		string segOut = config.getAndErase(SEG);
 		string salientOut = config.getAndErase(SALIENT);
 		string borderOut = config.getAndErase(BORDER);
 		string turnOut = config.getAndErase(TURN);
@@ -248,13 +251,14 @@ public:
 
 		SalientRec src;
 		Mat outputSRC, seg, crossBD, outputBD;
-//		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
-//		string segOutPath = segOut + "/" + FileUtil::getFileName(input);
 
 		cout << "salient object..." << endl;
 
 		src.salient(img, outputSRC, seg);
 		Mat outputFileSRC = convertToVisibleMat<float>(outputSRC);
+
+		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
+		imwrite(salientOutPath, outputFileSRC);
 
 		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
 		if (res == -1) {
@@ -264,8 +268,18 @@ public:
 		normalize(outputBD, outputBD, 0, 255, NORM_MINMAX);
 		outputBD.convertTo(outputBD, CV_8UC1);
 
+		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
+		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
+
+		imwrite(borderOutPath, crossBD);
+		imwrite(turnOutPath, outputBD);
+
 		vector<Mat> textPieces;
 		textDetect(outputBD, textPieces, res == -1 ? false : true);
+
+		string textPath = turnOut + "/" + FileUtil::getFileName(input);
+
+		imwrite(textPath, merge(textPieces));
 
 		cout << "Preprocessing..." << endl;
 
@@ -280,8 +294,9 @@ public:
 
 			string outputPath = step.second + "/"
 					+ FileUtil::getFileName(input);
+			cout<<"outputpath:" + outputPath<<endl;
 			process(textPieces, cur);
-			Mat all = merge(cur);
+			imwrite(outputPath, merge(cur));
 			textPieces = cur;
 		}
 
@@ -336,7 +351,6 @@ public:
 
 		};
 
-		const string Processor::SEG = "seg";
 		const string Processor::SALIENT = "salient";
 		const string Processor::BORDER = "border";
 		const string Processor::TURN = "turn";

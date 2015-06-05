@@ -1,23 +1,16 @@
-# OCRus Java Wrapper
+# OCRus OCR Core
 
 ## Overview
-This is the Java wrapper for OCRus back-end part that can be used in Windows and Linux system. You can use command line or GUI to do OCR. 
+This is the OCRus back-end part that preprocess the image and do OCR. 
 
-## How to use
+## How to config and develop
 
-### Prerequisites
-You need the following installed and available in your environment variables:
+### 1. Step: Install OpenCV
+Download and install [OpenCV](http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html).
 
-* [Java 1.7](http://java.oracle.com)
+* Currently we use OpenCV 2.4.10 because the greater version has some compile issues in Windows.
 
-* [Apache maven 3.0.3 or greater](http://maven.apache.org/)
-
-### 1. Step: Install Tesseract
-
-#### Windows Users:
-Download [Tesseract 3.02.02](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-setup-3.02.02.exe&can=2&q=) and install it.
-
-#### Linux users:
+### 2. Step: Install Tesseract
 If they are not already installed, you need the following libraries (Ubuntu):
 
 ```
@@ -35,9 +28,9 @@ Run following commands to install Leptonica:
 ```
 tar -xzvf leptonica-1.72.tar.gz
 cd leptonica-1.72
-./configure
+./configure --prefix=/path/to/install/leptonica
 make
-sudo make install
+make install (use `sudo make install` if /path/to/install/leptonica directory has permission limits)
 ```
 Download [Tesseract 3.02.02](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.02.tar.gz&can=2&q=)　source code.
 
@@ -45,24 +38,40 @@ Run following commands to install Tesseract:
 
 ```
 ./autogen.sh
-./configure
+LIBLEPT_HEADERSDIR=/path/to/install/leptonica/include ./configure --prefix=/path/to/install/tesseract --with-extra-libraries=/path/to/install/leptonica/lib
 make
-sudo make install
-sudo ldconfig
+make install (use `sudo make install` if /path/to/install/leptonica directory has permission limits)
 ```
 
-### 2. Step: Add Language Training Data
+Create a file `/etc/ld.so.conf.d/tesseract.conf` and add these two lines into the file:
+
+```
+/path/to/install/tesseract/lib
+/path/to/install/leptonica/lib
+```
+
+Run following command to line shared libraries:
+
+```
+sudo ldconfig -v
+```
+
+### 3. Step: Add Language Training Data
 Download [English](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.eng.tar.gz&can=2&q=), [Japanese](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.jpn.tar.gz&can=2&q=), [Chinese](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.chi_sim.tar.gz&can=2&q=) language trained data. Uncompress these 3 files.
 
-#### Windows Users:
-Put the `eng.traineddata`, `jpn.traineddata`, `chi_sim.traineddata` to `Tesseract_install_dir\tessdata`, for example `C:\Program Files (x86)\Tesseract-OCR\tessdata`.
+Put the 'eng.traineddata', 'jpn.traineddata', 'chi_sim.traineddata' to directory '/path/to/install/tesseract/share/tessdata/'.
 
-#### Linux Users:
-Put the `eng.traineddata`, `jpn.traineddata`, `chi_sim.traineddata` to directory `/usr/local/share/tessdata/`.
+Run following command to add 'TESSDATA_PREFIX' variable to your environment variables.
 
-* If you want to use other language, please [download] the corresponding trained data and put the `*.traineddata` to the above two directories according to the OS.
+```
+export TESSDATA_PREFIX=/path/to/install/tesseract/share/
+```
 
-### 3. Step: Generate GUI and Command Line Tool
+* NOTE: Language data are in '/path/to/install/tesseract/share/tessdata/', but 'TESSDATA_PREFIX' is '/path/to/install/tesseract/share/', no 'tessdata'.
+
+* If you want to use other language, please [download] the corresponding trained data and put the `*.traineddata` to the above directory.
+
+### 4. Step: Generate GUI and Command Line Tool
 Git clone this project and run the following commands:
 
 ```

@@ -164,8 +164,9 @@ In the /src folder you can find different source code for different function
         namecardPost.h: a untrained model to analyze structure of namecard
         textClassifier.h: a classifier to judge whether a text is a namecard or not
         ```
+
 ## Related Project
-[Here](http://192.168.140.36/snapnote/snapnotenlp) is the server-side post-processing code.
+[Here](http://192.168.140.36/snapnote/snapnotenlp/tree/master) is the server-side post-processing code.
 
 You will find services for named-entity recognition, keywords extraction and event extraction in package `jp.co.worksap.snapnote.nlp` and `jp.co.worksap.snapnote.services`.
 * Note: Java Restful Services, currently not linked to our release

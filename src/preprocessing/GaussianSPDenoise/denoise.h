@@ -18,9 +18,9 @@ using namespace cv;
 class Denoise {
 
 private:
-	//@Xing, please finish this or change this for your convinience!
 	static int getKernelSizeFromNoise(double noiseLevel){
-
+		// check noiseLevel/noiseLevel.h to see noise level detection
+		return 0;
 	}
 public:
 	static Mat noiseReduction(Mat& img, Mat& dst, int block = 3) //block=3 is our threshold for blob size. Less than that is noise
@@ -79,7 +79,8 @@ public:
 	}
 
 	static void saltPepperDenoise(Mat& src, Mat& dst, int kernelSize = 3) {
-		//cvtColor(src, src, COLOR_BGR2GRAY);
+		// check noiseLevel/noiseLevel.h to see noise level detection
+
 		CV_Assert(src.channels() == 1);
 		Mat bin, spclean;
 		threshold(src, bin, 128, 255, THRESH_BINARY);

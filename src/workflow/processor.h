@@ -76,7 +76,7 @@ public:
 
 		cout << "Read parameters..." << endl;
 
-		while ((oc = getopt(argc, argv, "sdi:o:c:")) != -1) {
+		while ((oc = getopt(argc, argv, "sdi:o:c:l:")) != -1) {
 			switch (oc) {
 			case 's':
 				printf("Single mode.\n");
@@ -153,13 +153,13 @@ public:
 			}
 		}
 		/*
-		cout<<"Aver. Salient&Border: "<<(0.0+time1)/nopic<<endl;
-		cout<<" -Aver. Salient: "<<(0.0+time01)/nopic<<endl;
-		cout<<" -Aver. Border: "<<(0.0+time02)/nopic<<endl;
-		cout<<"Aver. Text Detection: "<<(0.0+time2)/nopic<<endl;
-		cout<<"Aver. Pre-processing: "<<(0.0+time3)/nopic<<endl;
+		 cout<<"Aver. Salient&Border: "<<(0.0+time1)/nopic<<endl;
+		 cout<<" -Aver. Salient: "<<(0.0+time01)/nopic<<endl;
+		 cout<<" -Aver. Border: "<<(0.0+time02)/nopic<<endl;
+		 cout<<"Aver. Text Detection: "<<(0.0+time2)/nopic<<endl;
+		 cout<<"Aver. Pre-processing: "<<(0.0+time3)/nopic<<endl;
 
-		cout<<"Aver. Text OCR Procs: "<<(0.0+time4)/nopic<<endl;
+		 cout<<"Aver. Text OCR Procs: "<<(0.0+time4)/nopic<<endl;
 		 */
 	}
 
@@ -232,7 +232,6 @@ public:
 	static vector<Mat> processFile(string input, const Config conf) {
 		Config config = conf;
 		Mat img = imread(input);
-//		nopic++;
 		cout << "Process " << input << endl;
 		string segOut = config.getAndErase(SEG);
 		string salientOut = config.getAndErase(SALIENT);
@@ -243,8 +242,6 @@ public:
 			cerr
 					<< "salient output or border output is empty. (in config file)!"
 					<< endl;
-//			img.release();
-//			return img;
 			vector<Mat> ret;
 			return ret;
 		}
@@ -254,83 +251,41 @@ public:
 		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
 		string segOutPath = segOut + "/" + FileUtil::getFileName(input);
 
-//		time_t t1 = time(NULL);
 		cout << "salient object..." << endl;
 
 		src.salient(img, outputSRC, seg);
 		Mat outputFileSRC = convertToVisibleMat<float>(outputSRC);
 
-//		time_t tm1 = time(NULL);
-//		time01 += (tm1-t1);
-//		imwrite(segOutPath, seg);
-//		imwrite(salientOutPath, outputFileSRC);
-		//cout<<outputSRC(Rect(0, 0, 500, 500))<<endl;
-//		time_t tm2 = time(NULL);
 		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
 		if (res == -1) {
 			res = getBorderImgOnRaw(img, outputSRC, crossBD, outputBD);
 		}
-//		time_t t2 = time(NULL);
-//		time02 += (t2-tm2);
-//		time1 += (t2-t1);
 
-//		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
-//		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
-
-//		imshow("cross",crossBD);
-//		waitKey();
-//		imwrite(borderOutPath, crossBD);
 		normalize(outputBD, outputBD, 0, 255, NORM_MINMAX);
 		outputBD.convertTo(outputBD, CV_8UC1);
-//		imwrite(turnOutPath, outputBD);
 
-//		time_t t1 = time(NULL);
-
-		/*currently, we disable text detection to rely on Tesseract segmentation
-		 *but this function is possibly useful in future cases
-		 */
-//		cout << "text detection" << endl;
-//		vector<Mat> textPieces;
-//		textDetect(outputBD, textPieces, res == -1 ? false : true);
-//		t2 = time(NULL);
-//		time2 += (t2-t1);
-		//TODO process all the text pieces!
-
-//		t1 = time(NULL);
-		/*for pre-processing, we only use binarization
-		 *later we will consider whether we use denoise and deskew
-		 */
+		vector<Mat> textPieces;
+		textDetect(outputBD, textPieces, res == -1 ? false : true);
 
 		cout << "Preprocessing..." << endl;
-//        vector<Mat> pre = vector<Mat>(textPieces.size());
-		vector<Mat> pre;
-		pre.push_back(outputBD);
-		for (unsigned int i = 0; i < pre.size(); i++) {
-//			cvtColor(textPieces[i], pre[i], COLOR_BGR2GRAY);
-			cvtColor(pre[i], pre[i], COLOR_BGR2GRAY);
+
+		for (unsigned int i = 0; i < textPieces.size(); i++) {
+			cvtColor(textPieces[i], textPieces[i], COLOR_BGR2GRAY);
 		}
 
 		for (int i = 0; i < config.size(); i++) {
-			vector<Mat> cur(pre.size());
+			vector<Mat> cur(textPieces.size());
 			pair<string, string> step = config.get(i);
 			void (*process)(vector<Mat>&, vector<Mat>&) = getMethod(step.first);
 
 			string outputPath = step.second + "/"
 					+ FileUtil::getFileName(input);
-			process(pre, cur);
+			process(textPieces, cur);
 			Mat all = merge(cur);
-//			imwrite(outputPath, all);//output the preprocessing sub-results to folders
-			pre = cur;
+			textPieces = cur;
 		}
 
-//		time_t t2 = time(NULL);
-//		time3 += (t2-t1);
-//		img.release();
-//		outputSRC.release(*/);
-//		seg.release();
-//		crossBD.release();
-//		outputBD.release();
-		return pre;
+		return textPieces;
 	}
 	static Mat merge(vector<Mat>& mats) {
 		int width = maxWidth(mats);

@@ -116,33 +116,28 @@ OPTIONS explanation:
 * -i	Input file or input directory (depends on mode). NECESSARY!
 * -o	OCR result output directory. NECESSARY!
 
+Config File explanation:
+
+* salient   Salient object result directory.
+* border    Border dection result directory.
+* turn      Transform result directory.
+* text      Text detection object result directory.
+* binarize  Binarilization result directory.
+* denoise   Denoise result directory.
+* deskew    Deskew result directory.
+
+You can check [config/sn.conf](http://192.168.140.36/snapnote/snapnoteocrcore/blob/master/config/sn.conf) as an example.
+
 For example, if you want to do OCR for an image `img.jpg`, the OCR output directory is `ocr-output`, the OCR language is `jpn`, the you can run the following command:
 
 ```
-Debug/ImageProcess -s -i img.jpg -o ocr-output -l jpn
+Debug/ImageProcess -s -c config/sn.conf -i img.jpg -o ocr-output -l jpn
 ```
-
-After OCR, you can open `ocr-output/img.txt` to check the ocr result.
 
 Another example, if you want to do OCR for all images in directory `imgs`, the OCR output directory is `ocr-output`, the OCR language is `eng`, the you can run the following command:
 
 ```
-java -jar target/ocrus-java-wrapper-0.0.1-SNAPSHOT-jar-with-dependencies.jar -d -i imgs -o ocr-output -l eng
+Debug/ImageProcess -d -c config/sn.conf -i imgs -o ocr-output -l eng
 ```
 
-After OCR, you can open `ocr-output/*.txt` to check the corresponding ocr result for different image.
-
-## Q&A
-* Why does the command line throw "Error opening data file ..." exception?
->
->The language trained data is not put in the correct directory.
->
->Please put the `.traineddata` file into the tessdata directory that required by the command line tips.
->
-
-* Why is the GUI not working by throw "Headless" exception?
->
->The Java version doesn't include graphics library.
->
->Please make sure the Java version is Oracle 1.7 or higher.
->
+After OCR, you can check directories in `config/sn.conf` to check the immediate result and open `ocr-output/*.txt` to check the ocr result.

@@ -140,4 +140,4 @@ Another example, if you want to do OCR for all images in directory `imgs`, the O
 Debug/ImageProcess -d -c config/sn.conf -i imgs -o ocr-output -l eng
 ```
 
-After OCR, you can check directories in `config/sn.conf` to check the immediate result and open `ocr-output/*.txt` to check the ocr result.
+After OCR, you can check directories in `config/sn.conf` to check the intermediate result and open `ocr-output/*.txt` to check the ocr result.

@@ -101,7 +101,7 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 7. Your project should be ready to be built. For this, go to **Project->Build all**.
  
 ### 5. Step: Run the Executable
-After build, the binary `Debug/ImageProcess` will be generated.
+After build, the binary `Debug/ImageProcess` will be generated in project root directory.
 
 Run the following command to do OCR by using command line:
 

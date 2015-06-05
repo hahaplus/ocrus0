@@ -71,68 +71,55 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 
 * If you want to use other language, please [download](https://code.google.com/p/tesseract-ocr/downloads/list) the corresponding trained data and put the `*.traineddata` to the above directory.
 
-### 4. Step: Install Eclipse IDE for C/C++ Developers, Download the Source Code and Make it Run
+### 4. Step: Configure Eclipse IDE for C/C++ Developers
 Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/heliossr2).
 
 1. Start Eclipse. Just run the executable that comes in the folder.
 2. Go to **File -> New -> C/C++ Project**
 3. Choose a name for your project (i.e. `ImageProcess`). An Empty Project should be okay.
-    ![Create Project](screenshot/createProject.png "Create Project")
+        ![Create Project](screenshot/createProject.png "Create Project")
 4. Leave everything else by default. Press Finish.
 5. Git clone this project or download the zip file, extract all the file into this project root directory.
 6. Add OpenCV, Tesseract, GSL header files and libraries to the project. Do the following:
  + Go to **Project–>Properties**
  + In **C/C++ Build**, click on **Settings**.
  + In **GCC C++ Compiler**, go to **Includes**. In **Include paths(-l)** you should include the path of the folder where OpenCV, Leptonica, Tesseract, GSL were installed:
-    ![Header Files](screenshot/headerFiles.png "Header Files")
+        ![Header Files](screenshot/headerFiles.png "Header Files")
  + In **GCC C++ Linker**, go to **Libraries**. In **Library search path (-L)** you should write the path to where the OpenCV, Leptonica, Tesseract, GSL libraries reside:
-    ![Libraries](screenshot/libraries.png "Libraries")
  + Then in **Libraries(-l)** add the OpenCV, Leptonica, Tesseract, GSL libraries that you may need. We use the following whole bunch:
-    opencv_core opencv_imgproc opencv_highgui opencv_ml opencv_video opencv_features2d opencv_calib3d opencv_objdetect opencv_contrib opencv_legacy opencv_flann
+        ```
+        opencv_core opencv_imgproc opencv_highgui opencv_ml opencv_video opencv_features2d opencv_calib3d opencv_objdetect opencv_flann opencv_photo opencv_stitching opencv_superres opencv_ts opencv_videostab
+        lept
+        tesseract
+        gsl
+        gslcblas
+        ```
+        ![Libraries](screenshot/libraries.png "Libraries")
+    Now you are done. Click OK.
+ + Your project should be ready to be built. For this, go to **Project->Build all**.
  
- 
+### 5. Step: Run the Executable
+After build, the binary `Debug/ImageProcess` will be generated.
 
-
-Git clone this project and run the following commands:
-
-```
-cd ocrus-pc-wrapper
-mvn clean package
-```
-
-Then you can find `ocrus-java-wrapper-0.0.1-SNAPSHOT-jar-with-dependencies.jar` in `target/` directory.
-
-You can run following command to do OCR by using a GUI:
+Run the following command to do OCR by using command line:
 
 ```
-java -jar target/ocrus-java-wrapper-0.0.1-SNAPSHOT-jar-with-dependencies.jar -u
-```
-
-The GUI looks like this:
-
-![OCRus GUI](screenshot/GUI.png "OCRus GUI")
-
-You can specify the OCR mode(single image or a directory), input path, output directory, OCR language, and then click `Run OCR` to check the result.
-
-Or, you can run following command to do OCR by using command line:
-
-```
-java -jar target/ocrus-java-wrapper-0.0.1-SNAPSHOT-jar-with-dependencies.jar -i input_path -o output_dir [OPTIONS]
+Debug/ImageProcess -i input_path -o output_dir [OPTIONS]
 ```
 
 OPTIONS explanation:
 
-* -h	Print help for Tesseract Java Wrapper
 * -s	Single image mode(Default)
 * -d	Directory mode
 * -l	OCR language(Default is English)
+* -c    Config file path.
 * -i	Input file or input directory (depends on mode). NECESSARY!
 * -o	OCR result output directory. NECESSARY!
 
 For example, if you want to do OCR for an image `img.jpg`, the OCR output directory is `ocr-output`, the OCR language is `jpn`, the you can run the following command:
 
 ```
-java -jar target/ocrus-java-wrapper-0.0.1-SNAPSHOT-jar-with-dependencies.jar -s -i img.jpg -o ocr-output -l jpn
+Debug/ImageProcess -s -i img.jpg -o ocr-output -l jpn
 ```
 
 After OCR, you can open `ocr-output/img.txt` to check the ocr result.

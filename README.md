@@ -7,9 +7,10 @@ This is the OCRus back-end part that preprocess the image and do OCR.
 
 ### 1. Step: Install OpenCV and GSL
 Download and install [OpenCV](http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html).
-Download and install [GSL](http://www.gnu.org/software/gsl/)
 
 * Currently we use OpenCV 2.4.10 because the greater version has some compile issues in Windows.
+
+Download and install [GSL](http://www.gnu.org/software/gsl/)
 
 ### 2. Step: Install Tesseract
 If they are not already installed, you need the following libraries (Ubuntu):

@@ -76,7 +76,20 @@ Download [Eclipse IDE for C/C++ Developers](http://www.eclipse.org/downloads/pac
 
 1. Start Eclipse. Just run the executable that comes in the folder.
 2. Go to **File -> New -> C/C++ Project**
-
+3. Choose a name for your project (i.e. `ImageProcess`). An Empty Project should be okay.
+    ![Create Project](screenshot/createProject.png "Create Project")
+4. Leave everything else by default. Press Finish.
+5. Git clone this project or download the zip file, extract all the file into this project root directory.
+6. Add OpenCV, Tesseract, GSL header files and libraries to the project. Do the following:
+ + Go to **Project–>Properties**
+ + In **C/C++ Build**, click on **Settings**.
+ + In **GCC C++ Compiler**, go to **Includes**. In **Include paths(-l)** you should include the path of the folder where OpenCV, Leptonica, Tesseract, GSL were installed:
+    ![Header Files](screenshot/headerFiles.png "Header Files")
+ + In **GCC C++ Linker**, go to **Libraries**. In **Library search path (-L)** you should write the path to where the OpenCV, Leptonica, Tesseract, GSL libraries reside:
+    ![Libraries](screenshot/libraries.png "Libraries")
+ 
+ 
+ 
 
 
 Git clone this project and run the following commands:

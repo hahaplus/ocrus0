@@ -3,7 +3,7 @@
 ## Overview
 This is the OCRus back-end part that preprocess the image and do OCR. 
 
-## How to config and develop
+## How to configure and develop
 
 ### 1. Step: Install OpenCV
 Download and install [OpenCV](http://docs.opencv.org/3.0-last-rst/doc/tutorials/introduction/linux_install/linux_install.html).

@@ -119,8 +119,8 @@ int process(cv::Mat tsrc, Mat tslt,
 	int cut = i;
 	std::cout << "lines number " << cut << std::endl;
 	std::cout << "fake lines " << fakes << std::endl;
-	if (cut > 1000)
-		cut = 1000;
+	if (cut > 200)
+		cut = 200;
 
 	//s3.2 filter pairs of lines with angle and distance between them
 	vector<OppositeLines> horiPairs;
@@ -192,7 +192,7 @@ int process(cv::Mat tsrc, Mat tslt,
 
 	priority_queue<quadrNode> qn;
 
-	for (int k = 0; k<100&&k<horiPairs.size(); k++) {
+	for (int k = 0; k<50&&k<horiPairs.size(); k++) {
 		OppositeLines pair1 = horiPairs.at(k);
 		CvLinePolar2 *clines[4];
 		clines[0] = (CvLinePolar2*) cvGetSeqElem(lines, pair1.one);
@@ -209,7 +209,7 @@ int process(cv::Mat tsrc, Mat tslt,
 			xylines[m][3] = cvRound(y0 - 1000 * (a));
 		}
 
-		for (int l=0;l<100&&l<vertPairs.size();l++) {
+		for (int l=0;l<50&&l<vertPairs.size();l++) {
 
 			OppositeLines pair2 = vertPairs.at(l);
 			if (pair1.one == pair2.one || pair1.one == pair2.two
@@ -541,16 +541,16 @@ int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, bool magne
 
 	int result = process(tsrc, tslt, cross_l, false, magnet, lines);
 
-	if (doubt) {
-		lighting = 110.0;
-		curphase = 1;
-		result = process(tsrc, tslt, cross_m, false, magnet, lines);
-	}
-	if (doubt) {
-		lighting = 40.0;
-		curphase = 2;
-		result = process(tsrc, tslt, cross_s, false, magnet, lines);
-	}
+//	if (doubt) {
+//		lighting = 110.0;
+//		curphase = 1;
+//		result = process(tsrc, tslt, cross_m, false, magnet, lines);
+//	}
+//	if (doubt) {
+//		lighting = 40.0;
+//		curphase = 2;
+//		result = process(tsrc, tslt, cross_s, false, magnet, lines);
+//	}
 	for (int j = 0; j < 30 && j < cross_l.size(); j++) {
 		crosses.push_back(cross_l[j]);
 
@@ -560,33 +560,33 @@ int getBorderPtOnRaw(Mat src, Mat slt, vector<Point2f>& finalCorners, bool magne
 		tSpaceScore.push_back(spaceScore[0][j]);
 	}
 
-	for (int j = 0; j < 30 && j < cross_m.size(); j++) {
-		crosses.push_back(cross_m[j]);
+//	for (int j = 0; j < 30 && j < cross_m.size(); j++) {
+//		crosses.push_back(cross_m[j]);
+//
+//		tLineScore.push_back(lineScore[1][j]);
+//		tAreaScore.push_back(areaScore[1][j]);
+//		tAnglScore.push_back(anglScore[1][j]);
+//		tSpaceScore.push_back(spaceScore[1][j]);
+//	}
 
-		tLineScore.push_back(lineScore[1][j]);
-		tAreaScore.push_back(areaScore[1][j]);
-		tAnglScore.push_back(anglScore[1][j]);
-		tSpaceScore.push_back(spaceScore[1][j]);
-	}
-
-	for (int j = 0; j < 30 && j < cross_s.size(); j++) {
-		crosses.push_back(cross_s[j]);
-
-		tLineScore.push_back(lineScore[2][j]);
-		tAreaScore.push_back(areaScore[2][j]);
-		tAnglScore.push_back(anglScore[2][j]);
-		tSpaceScore.push_back(spaceScore[2][j]);
-	}
+//	for (int j = 0; j < 30 && j < cross_s.size(); j++) {
+//		crosses.push_back(cross_s[j]);
+//
+//		tLineScore.push_back(lineScore[2][j]);
+//		tAreaScore.push_back(areaScore[2][j]);
+//		tAnglScore.push_back(anglScore[2][j]);
+//		tSpaceScore.push_back(spaceScore[2][j]);
+//	}
 
 	if (crosses.size() == 0) {
 		return -1;
 	}
 
-	for (int i = 0; i < 90; i++) {
+	for (int i = 0; i < 30; i++) {
 		topRank[i] = i;
 	}
 
-	qsort(topRank, min(90, (int) crosses.size()), sizeof(int),
+	qsort(topRank, min(30, (int) crosses.size()), sizeof(int),
 			compareTopScore);
 
 	vector<cv::Point2f> corners;

@@ -16,12 +16,14 @@ using namespace cv;
 enum TextDirection {NOCHANGE, NINETY, OPPOSITE, R_NINETY};
 
 double textorient = -10;
-int INTERVAL = 20;
+int INTERVAL = 1;
 
 int dIntegral(vector<int> nums){
 	int sum = 0;
-	for(int i=0;i<nums.size();i++)
-		sum+=nums[i];
+	for(int i=0;i<nums.size();i++){
+		if(i>0)
+			sum+=fabs(nums[i]-nums[i-1]);
+	}
 	return sum;
 }
 
@@ -192,11 +194,12 @@ double getTextOrient(Mat src){
 
 	//vertical direction is the main word direction
 	if (maxTp == -1) {
-		cout << "max tp " << maxTp << " " << secTp << " " << vertN << " "
+		cout << "vertical max tp " << maxTp << " " << secTp << " " << vertN << " "
 				<< verts.size() << endl;
-		Mat src3 = Mat::zeros(src.rows, src.cols, CV_8UC1);
 
-		vector<int> block = tpV[maxTp];
+		Mat src3 = Mat::zeros(src.rows, src.cols, CV_8UC1);
+		vector<int> block = verts;//tpV[maxTp];
+
 		for (int i = 0; i < block.size(); i++) {
 
 			Vec4i myline = lines[block[i]];
@@ -205,6 +208,7 @@ double getTextOrient(Mat src){
 					cv::Point(myline[2], myline[3]), CV_RGB(255, 255, 255));
 
 		}
+
 
 		Mat eroElm = getStructuringElement(MORPH_RECT, Size(3, 3), Point(1, 1));
 		Mat src4;
@@ -224,17 +228,28 @@ double getTextOrient(Mat src){
 			Point p = nonZeroCoordinates.at<Point>(i);
 			int x = p.x;
 			int y = p.y;
-			if (dict.find(x / INTERVAL) != dict.end()) {
-				if (y < dict[x / INTERVAL])
+			if(x>0.1*src4.cols&&x<0.9*src4.cols){
+				if (dict.find(x / INTERVAL) != dict.end()) {
+					if (y < dict[x / INTERVAL])
+						dict[x / INTERVAL] = y;
+				} else {
 					dict[x / INTERVAL] = y;
-			} else {
-				dict[x / INTERVAL] = y;
+				}
 			}
 		}
 
+
 		vector<int> vec1;
 		for(map<int,int>::iterator i=dict.begin();i!=dict.end();i++){
-			vec1.push_back(i->second);
+			vec1.push_back(i->second);//#include "workflow/processor.h"
+			//
+			//using namespace cv;
+			//using namespace std;
+			//
+			//int main2(int argc, char** argv) {
+			//	Processor::process_main(argc, argv);
+			//}
+
 		}
 		int sumDiff1 = dIntegral(vec1);
 
@@ -256,13 +271,14 @@ double getTextOrient(Mat src){
 			Point p = nonZeroCoordinates.at<Point>(i);
 			int x = p.x;
 			int y = p.y;
-			if (dict.find(x / INTERVAL) != dict.end()) {
-				if (y > dict[x / INTERVAL])
+			if(x>0.1*src4.cols&&x<0.9*src4.cols){
+				if (dict.find(x / INTERVAL) != dict.end()) {
+					if (y > dict[x / INTERVAL])
+						dict[x / INTERVAL] = y;
+				} else {
 					dict[x / INTERVAL] = y;
-			} else {
-				dict[x / INTERVAL] = y;
+				}
 			}
-
 		}
 
 		vector<int> vec2;
@@ -285,16 +301,22 @@ double getTextOrient(Mat src){
 //		waitKey();
 
 		if(sumDiff1>sumDiff2)
+		{
 			result = kb;
+			cout<<"KB SECLECTED; TURN LEFT"<<endl;
+		}
 		else
+		{
 			result = kt;
+			cout<<"KB SECLECTED; TURN RIGHT"<<endl;
+		}
 
 	}
 
 	//horizontal direction, we only find blocks for such kinds of words
 	if (maxTp != -1) {
 
-		cout << "max tp " << maxTp << " " << secTp << " " << vertN << " "
+		cout << "horizontal max tp " << maxTp << " " << secTp << " " << vertN << " "
 				<< verts.size() << endl;
 		Mat src3 = Mat::zeros(src.rows, src.cols, CV_8UC1);
 
@@ -311,9 +333,13 @@ double getTextOrient(Mat src){
 		Mat eroElm = getStructuringElement(MORPH_RECT, Size(3, 3), Point(1, 1));
 		Mat src4;
 		erode(src3, src4, eroElm);
-//		imshow("image2", src3);
+
+//		Mat dst4;
+//		Size size4(src4.cols/3 ,src4.rows/3);
+//		resize(src4, dst4, size4);
+//		imshow("image2", dst4);
 //		waitKey();
-		//Canny( src4, src4, 100, 200, 3 );
+		//Canny( src4, src4, 100, 200, 3 )//;
 		Mat nonZeroCoordinates;
 		findNonZero(src4, nonZeroCoordinates);
 		map<int, int> dict;
@@ -326,11 +352,13 @@ double getTextOrient(Mat src){
 			Point p = nonZeroCoordinates.at<Point>(i);
 			int x = p.x;
 			int y = p.y;
-			if (dict.find(y / INTERVAL) != dict.end()) {
-				if (x < dict[y / INTERVAL])
+			if(y>0.1*src4.rows&&y<0.9*src4.rows){
+				if (dict.find(y / INTERVAL) != dict.end()) {
+					if (x < dict[y / INTERVAL])
+						dict[y / INTERVAL] = x;
+				} else {
 					dict[y / INTERVAL] = x;
-			} else {
-				dict[y / INTERVAL] = x;
+				}
 			}
 		}
 
@@ -338,13 +366,18 @@ double getTextOrient(Mat src){
 		for(map<int,int>::iterator i=dict.begin();i!=dict.end();i++){
 			vec3.push_back(i->second);
 		}
-		int sumDiff3 = dIntegral(vec3);
+		int sumDiff3 = dIntegral(vec3)/vec3.size();//summarize different?
 
-//		Mat src5 = Mat::zeros(src4.rows,src4.cols,CV_8UC1);
-//		for(map<int,int>::iterator it=dict.begin();it!=dict.end();it++){
-//			circle(src5, Point(it->second,20*it->first), 3, CV_RGB(255,255,255), 1);
-//		}
-//		imshow("image2", src5);
+		Mat src5 = Mat::zeros(src4.rows,src4.cols,CV_8UC1);
+		for(map<int,int>::iterator it=dict.begin();it!=dict.end();it++){
+			circle(src5, Point(it->second,20*it->first), 3, CV_RGB(255,255,255), 1);
+		}
+
+//		Mat dst5;
+//		Size size5(src5.cols/3 ,src5.rows/3);
+//		resize(src5, dst5, size5);
+//
+//		imshow("image2", dst5);
 //		waitKey();
 
 		float kl = 99999.9;
@@ -358,20 +391,21 @@ double getTextOrient(Mat src){
 			Point p = nonZeroCoordinates.at<Point>(i);
 			int x = p.x;
 			int y = p.y;
-			if (dict.find(y / INTERVAL) != dict.end()) {
-				if (x > dict[y / INTERVAL])
+			if(y>0.1*src4.rows&&y<0.9*src4.rows){
+				if (dict.find(y / INTERVAL) != dict.end()) {
+					if (x > dict[y / INTERVAL])
+						dict[y / INTERVAL] = x;
+				} else {
 					dict[y / INTERVAL] = x;
-			} else {
-				dict[y / INTERVAL] = x;
+				}
 			}
-
 		}
 
 		vector<int> vec4;
 		for(map<int,int>::iterator i=dict.begin();i!=dict.end();i++){
 			vec4.push_back(i->second);
 		}
-		int sumDiff4 = dIntegral(vec4);
+		int sumDiff4 = dIntegral(vec4)/vec4.size();
 
 //		Mat src6 = Mat::zeros(src4.rows,src4.cols,CV_8UC1);
 //		for(map<int,int>::iterator it=dict.begin();it!=dict.end();it++){
@@ -386,10 +420,17 @@ double getTextOrient(Mat src){
 //		cout<<"slope: "<<kl<<" "<<kr<<endl;
 //		waitKey();
 
+		cout<<"sumDiff3: "<<sumDiff3<<"; sumDiff4: "<<sumDiff4<<"; ";
 		if(sumDiff3>sumDiff4)
+		{
+			cout<<"KR SELECTED; NONEED TO TURN"<<endl;
 			result = kr;
-		else
+		}
+		else{
+			cout<<"KL SELECTED; TURN 180 DEGREE"<<endl;
 			result = kl;
+		}
+
 
 		//Mat src7 = src.clone();
 
@@ -403,22 +444,39 @@ double getTextOrient(Mat src){
 //		imshow("imageF",src7);
 //		waitKey();
 	}
-	return result;
+	return atan(result);
 }
 
 int getDirection(Mat src){
 	if(textorient==-10)
-		getTextOrient(src);
+		textorient = getTextOrient(src);
+	 cout<<"text angle: "<<textorient<<endl;
 	if(fabs(textorient)>=0 && fabs(textorient) <=CV_PI/4)
+	{
+		cout<<"no change"<<endl;
 		return NOCHANGE;
+	}
 	if(textorient>CV_PI/4 && textorient <=3*CV_PI/4)
+	{
+		cout<<"turn left"<<endl;
 		return NINETY;
+	}
 	if(textorient>3*CV_PI/4 && textorient <=5*CV_PI/4)
+	{
+		cout<<"upset down"<<endl;
 		return OPPOSITE;
+	}
 	if(textorient>5*CV_PI/4 && textorient <=7*CV_PI/4)
+	{
+		cout<<"turn right"<<endl;
 		return R_NINETY;
+	}
 	if(textorient<-CV_PI/4 && textorient >=-3*CV_PI/4)
+	{
+		cout<<"turn right"<<endl;
 		return R_NINETY;
+	}
+	cout<<"NOT SURE"<<endl;
 }
 
 #endif /* TEXTORIENT_H_ */

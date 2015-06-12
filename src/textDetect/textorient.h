@@ -16,12 +16,12 @@ using namespace cv;
 enum TextDirection {NOCHANGE, NINETY, OPPOSITE, R_NINETY};
 
 double textorient = -10;
-int INTERVAL = 1;
+int INTERVAL = 45;
 
 int dIntegral(vector<int> nums){
 	int sum = 0;
 	for(int i=0;i<nums.size();i++){
-		if(i>0)
+		if(i>0&&fabs(nums[i]-nums[i-1])>10)
 			sum+=fabs(nums[i]-nums[i-1]);
 	}
 	return sum;
@@ -75,7 +75,11 @@ bool eliminatePointDict(map<int,int>& dict){
 	return edgeFail;
 }
 
-double getTextOrient(Mat src){
+//0: no need to turn
+//1: turn left
+//2: turn right
+//3: turn 180
+int getTextOrient(Mat src){
 	double result = 0;
 
 	Mat image, grad_x, abs_grad_x, grad_y, abs_grad_y, grad;
@@ -187,10 +191,10 @@ double getTextOrient(Mat src){
 		secCt = 0;
 	}
 
-	if (/*maxCt > 600 || maxCt < 90 ||*/ maxCt < 1.5 * secCt
-			|| !(maxTp == -1 || fabs(tpK[maxTp]) < 0.5)) {
-		return 0.0;//Return: NOT paper-photo
-	}
+//	if (/*maxCt > 600 || maxCt < 90 ||*/ maxCt < 1.5 * secCt
+//			|| !(maxTp == -1 || fabs(tpK[maxTp]) < 0.5)) {
+//		return 0.0;//Return: NOT paper-photo
+//	}
 
 	//vertical direction is the main word direction
 	if (maxTp == -1) {
@@ -213,6 +217,9 @@ double getTextOrient(Mat src){
 		Mat eroElm = getStructuringElement(MORPH_RECT, Size(3, 3), Point(1, 1));
 		Mat src4;
 		erode(src3, src4, eroElm);
+
+		Mat eroElm2 = getStructuringElement(MORPH_RECT, Size(INTERVAL, INTERVAL), Point(1, 1));
+		dilate(src4, src4, eroElm2);
 //		imshow("image2", src3);
 //		waitKey();
 		//Canny( src4, src4, 100, 200, 3 );
@@ -240,7 +247,9 @@ double getTextOrient(Mat src){
 
 
 		vector<int> vec1;
+//		cout<<"vec1:"<<endl;
 		for(map<int,int>::iterator i=dict.begin();i!=dict.end();i++){
+//			cout<<i->second<<endl;
 			vec1.push_back(i->second);//#include "workflow/processor.h"
 			//
 			//using namespace cv;
@@ -251,7 +260,7 @@ double getTextOrient(Mat src){
 			//}
 
 		}
-		int sumDiff1 = dIntegral(vec1);
+		int sumDiff1 = dIntegral(vec1)/vec1.size();
 
 //		Mat src5 = Mat::zeros(src4.rows,src4.cols,CV_8UC1);
 //		for(map<int,int>::iterator it=dict.begin();it!=dict.end();it++){
@@ -282,10 +291,12 @@ double getTextOrient(Mat src){
 		}
 
 		vector<int> vec2;
+//		cout<<"vec1:"<<endl;
 		for(map<int,int>::iterator i=dict.begin();i!=dict.end();i++){
 			vec2.push_back(i->second);
+//			cout<<i->second<<endl;
 		}
-		int sumDiff2 = dIntegral(vec2);
+		int sumDiff2 = dIntegral(vec2)/vec2.size();
 
 //		Mat src6 = Mat::zeros(src4.rows,src4.cols,CV_8UC1);
 //		for(map<int,int>::iterator it=dict.begin();it!=dict.end();it++){
@@ -300,15 +311,18 @@ double getTextOrient(Mat src){
 //		cout<<"slope: "<<kl<<" "<<kr<<endl;
 //		waitKey();
 
+		cout<<"sumDiff1: "<<sumDiff1<<"; sumDiff2: "<<sumDiff2<<endl;
 		if(sumDiff1>sumDiff2)
 		{
 			result = kb;
-			cout<<"KB SECLECTED; TURN LEFT"<<endl;
+//			cout<<"KB SECLECTED; TURN LEFT"<<endl;
+			return 2;
 		}
 		else
 		{
 			result = kt;
-			cout<<"KB SECLECTED; TURN RIGHT"<<endl;
+//			cout<<"KB SECLECTED; TURN RIGHT"<<endl;
+			return 1;
 		}
 
 	}
@@ -334,6 +348,8 @@ double getTextOrient(Mat src){
 		Mat src4;
 		erode(src3, src4, eroElm);
 
+		Mat eroElm2 = getStructuringElement(MORPH_RECT, Size(INTERVAL, INTERVAL), Point(1, 1));
+		dilate(src4, src4, eroElm2);
 //		Mat dst4;
 //		Size size4(src4.cols/3 ,src4.rows/3);
 //		resize(src4, dst4, size4);
@@ -363,14 +379,16 @@ double getTextOrient(Mat src){
 		}
 
 		vector<int> vec3;
+//		cout<<"vec3:"<<endl;
 		for(map<int,int>::iterator i=dict.begin();i!=dict.end();i++){
 			vec3.push_back(i->second);
+//			cout<<i->second<<endl;
 		}
 		int sumDiff3 = dIntegral(vec3)/vec3.size();//summarize different?
 
 		Mat src5 = Mat::zeros(src4.rows,src4.cols,CV_8UC1);
 		for(map<int,int>::iterator it=dict.begin();it!=dict.end();it++){
-			circle(src5, Point(it->second,20*it->first), 3, CV_RGB(255,255,255), 1);
+			circle(src5, Point(it->second,INTERVAL*it->first), 3, CV_RGB(255,255,255), 1);
 		}
 
 //		Mat dst5;
@@ -402,8 +420,10 @@ double getTextOrient(Mat src){
 		}
 
 		vector<int> vec4;
+//		cout<<"vec4:"<<endl;
 		for(map<int,int>::iterator i=dict.begin();i!=dict.end();i++){
 			vec4.push_back(i->second);
+//			cout<<i->second<<endl;
 		}
 		int sumDiff4 = dIntegral(vec4)/vec4.size();
 
@@ -420,15 +440,28 @@ double getTextOrient(Mat src){
 //		cout<<"slope: "<<kl<<" "<<kr<<endl;
 //		waitKey();
 
-		cout<<"sumDiff3: "<<sumDiff3<<"; sumDiff4: "<<sumDiff4<<"; ";
+		cout<<"sumDiff3: "<<sumDiff3<<"; sumDiff4: "<<sumDiff4<<endl;
 		if(sumDiff3>sumDiff4)
 		{
-			cout<<"KR SELECTED; NONEED TO TURN"<<endl;
+//			cout<<"KR SELECTED; NONEED TO TURN"<<endl;
 			result = kr;
+
+			if(fabs(kr)>1)
+				return 3;
+			else{
+				if(kr>=0&&kr<=1)
+					return 1;
+				return 2;
+			}
 		}
 		else{
-			cout<<"KL SELECTED; TURN 180 DEGREE"<<endl;
+//			cout<<"KL SELECTED; TURN 180 DEGREE"<<endl;
 			result = kl;
+			if(fabs(kl)>1)
+				return 0;
+			if(kl<=0&&kl>-1)
+				return 1;
+			return 2;
 		}
 
 
@@ -444,7 +477,8 @@ double getTextOrient(Mat src){
 //		imshow("imageF",src7);
 //		waitKey();
 	}
-	return atan(result);
+//	return atan(result);
+	return 0;
 }
 
 int getDirection(Mat src){

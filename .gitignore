@@ -36,6 +36,10 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
+# KDevelop
+.kdev4/
+*.kdev4
+
 #
 test/*
 .idea/

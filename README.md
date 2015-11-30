@@ -104,24 +104,32 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 
 #### 4.1. (Recommended Alternative) Configure with CMake in Eclipse
 1. Clone the repository https://github.com/zhangli140/ocrus0.git
+
   ```
   git clone https://github.com/zhangli140/ocrus0.git
   ```
+  
 2. Checkout the branch that you will work on, usually the 'develop' branch
+
   ```
   cd ocrus0
   git checkout develop
   ```
+  
 3. Create a directory that is silbing to ocrus0 for out-source CMake build, here 'ocrus0_build`
+
   ```
   cd .. && mkdir ocrus0_build
   ```
+  
 4. Run the cmake command to generate makefile and Eclipse CDT files
+
   ```
-  cmake -G"Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug \ 
-  -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE ../ocrus0
+  cmake -G"Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE ../ocrus0
   ```
+  
 5. In Eclipse, import the existing Eclipse projects both in ocrus0 and ocrus0_build. Build the projects as usual.
+
 6. Trace tesseract source code in Debug mode: first you need to import tesseract project as makefile project. Then select the ocrus0_build imported project properties and in C/C++ General -> C/C++ Project Paths -> Projects, check tesseract.
 
 ### 5. Step: Run the Executable

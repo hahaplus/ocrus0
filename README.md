@@ -119,7 +119,9 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 3. Create a directory that is silbing to ocrus0 for out-source CMake build, here 'ocrus0_build`
 
   ```
-  cd .. && mkdir ocrus0_build
+  cd .. 
+  mkdir ocrus0_build
+  cd ocrus0_build
   ```
   
 4. Run the cmake command to generate makefile and Eclipse CDT files

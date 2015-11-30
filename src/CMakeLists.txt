@@ -7,3 +7,6 @@ set (LIBS
 
 add_executable(ImageProcess main.cpp)
 target_link_libraries(ImageProcess ${LIBS})
+
+add_executable(ocr_file ocr_file.cpp)
+target_link_libraries(ocr_file ${LIBS})

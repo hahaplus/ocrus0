@@ -104,20 +104,20 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 
 #### 4.1. (Recommended Alternative) Configure with CMake in Eclipse
 1. Clone the repository https://github.com/zhangli140/ocrus0.git
-  ```bash
+  ```
   git clone https://github.com/zhangli140/ocrus0.git
   ```
 2. Checkout the branch that you will work on, usually the 'develop' branch
-  ```bash
+  ```
   cd ocrus0
   git checkout develop
   ```
 3. Create a directory that is silbing to ocrus0 for out-source CMake build, here 'ocrus0_build`
-  ```bash
+  ```
   cd .. && mkdir ocrus0_build
   ```
 4. Run the cmake command to generate makefile and Eclipse CDT files
-  ```bash
+  ```
   cmake -G"Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug \ 
   -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE ../ocrus0
   ```

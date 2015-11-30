@@ -41,7 +41,7 @@ public:
 
 		/*default page segmentation mode*/
 		tess.SetPageSegMode(PSM_AUTO_ONLY);
-		tess.SetPageSegMode(PSM_SINGLE_BLOCK);// Currently, for English name card, we use this way!
+		//tess.SetPageSegMode(PSM_SINGLE_BLOCK);// Currently, for English name card, we use this way!
 		/* if we first use the binarization algorithm for ourself, we can change it as a bit-wise
 		 * graph for more fast processing
 		 */

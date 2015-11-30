@@ -237,49 +237,50 @@ public:
 		Config config = conf;
 		Mat img = imread(input);
 		cout << "Process " << input << endl;
-		string salientOut = config.getAndErase(SALIENT);
-		string borderOut = config.getAndErase(BORDER);
-		string turnOut = config.getAndErase(TURN);
-		string textOut = config.getAndErase(TEXT);
-		if (salientOut.empty() || borderOut.empty()) {
-			cerr
-					<< "salient output or border output is empty. (in config file)!"
-					<< endl;
-			vector<Mat> ret;
-			return ret;
-		}
-
-		SalientRec src;
-		Mat outputSRC, seg, crossBD, outputBD;
-
-		cout << "salient object..." << endl;
-
-		src.salient(img, outputSRC, seg);
-		Mat outputFileSRC = convertToVisibleMat<float>(outputSRC);
-
-		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
-		imwrite(salientOutPath, outputFileSRC);
-
-		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
-		if (res == -1) {
-			res = getBorderImgOnRaw(img, outputSRC, crossBD, outputBD);
-		}
-
-		normalize(outputBD, outputBD, 0, 255, NORM_MINMAX);
-		outputBD.convertTo(outputBD, CV_8UC1);
-
-		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
-		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
-
-		imwrite(borderOutPath, crossBD);
-		imwrite(turnOutPath, outputBD);
+//		string salientOut = config.getAndErase(SALIENT);
+//		string borderOut = config.getAndErase(BORDER);
+//		string turnOut = config.getAndErase(TURN);
+//		string textOut = config.getAndErase(TEXT);
+//		if (salientOut.empty() || borderOut.empty()) {
+//			cerr
+//					<< "salient output or border output is empty. (in config file)!"
+//					<< endl;
+//			vector<Mat> ret;
+//			return ret;
+//		}
+//
+//		SalientRec src;
+//		Mat outputSRC, seg, crossBD, outputBD;
+//
+//		cout << "salient object..." << endl;
+//
+//		src.salient(img, outputSRC, seg);
+//		Mat outputFileSRC = convertToVisibleMat<float>(outputSRC);
+//
+//		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
+//		imwrite(salientOutPath, outputFileSRC);
+//
+//		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
+//		if (res == -1) {
+//			res = getBorderImgOnRaw(img, outputSRC, crossBD, outputBD);
+//		}
+//
+//		normalize(outputBD, outputBD, 0, 255, NORM_MINMAX);
+//		outputBD.convertTo(outputBD, CV_8UC1);
+//
+//		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
+//		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
+//
+//		imwrite(borderOutPath, crossBD);
+//		imwrite(turnOutPath, outputBD);
 
 		vector<Mat> textPieces;
-		textDetect(outputBD, textPieces, res == -1 ? false : true);
-
-		string textPath = textOut + "/" + FileUtil::getFileName(input);
-
-		imwrite(textPath, merge(textPieces));
+		textPieces.push_back(img);
+//		textDetect(outputBD, textPieces, res == -1 ? false : true);
+//
+//		string textPath = textOut + "/" + FileUtil::getFileName(input);
+//
+//		imwrite(textPath, merge(textPieces));
 
 		cout << "Preprocessing..." << endl;
 

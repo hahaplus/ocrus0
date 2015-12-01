@@ -5,8 +5,13 @@ set (LIBS
      opencv_stitching opencv_superres opencv_ts opencv_videostab 
      lept tesseract gsl gslcblas)
 
+include_directories(include)
+
 add_executable(ImageProcess main.cpp)
 target_link_libraries(ImageProcess ${LIBS})
 
-add_executable(ocr_file ocr_file.cpp)
-target_link_libraries(ocr_file ${LIBS})
+add_executable(ocrus_bounding_box ocrus_bounding_box.cc recognition/recognition.cc)
+target_link_libraries(ocrus_bounding_box ${LIBS})
+
+INSTALL(TARGETS ocrus_bounding_box
+        RUNTIME DESTINATION bin)

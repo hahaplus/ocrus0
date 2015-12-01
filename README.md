@@ -111,8 +111,28 @@ export TESSDATA_PREFIX=/path/to/install/tesseract/share/
 
 7. (Optional) Trace tesseract source code in Debug mode: first you need to import tesseract project as makefile project. Then select the ocrus0_build imported project properties and in C/C++ General -> C/C++ Project Paths -> Projects, check tesseract.
 
-### 4. Step: Run the program
+### 4. Step: Run the Programs
 
+Programs:
+
+* ocrus_draw_all.py
+
+	Process all the Photo-0000 to Photo-0027 images.
+	Output bounding box result and draw the result to image
+  
+* ocrus_draw_bbox.py
+
+	Draw the bounding box result to image
+	
+* ocrus_bounding_box
+
+	Print the bounding boxes of an image
+
+* ImageProcess
+
+	The original program that integrates all the preprocessing and recoginition steps
+
+#### Run ImageProcess
 Enter into the directory where ImageProcess is located. The directory is 'ocrus0_build/src' if you follow the steps
 
 ```
@@ -151,7 +171,7 @@ For example, if you want to do OCR for an image `img.jpg`, the OCR output direct
 Another example, if you want to do OCR for all images in directory `imgs`, the OCR output directory is `ocr-output`, the OCR language is `eng`, the you can run the following command:
 
 ```
-Debug/ImageProcess -d -c config/sn.conf -i imgs -o ocr-output -l eng
+./ImageProcess -d -c config/sn.conf -i imgs -o ocr-output -l eng
 ```
 
 After OCR, you can check directories in `config/sn.conf` to check the intermediate result and open `ocr-output/*.txt` to check the ocr result.

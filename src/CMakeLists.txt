@@ -4,10 +4,13 @@ set (LIBS
      opencv_objdetect opencv_flann opencv_photo 
      opencv_stitching opencv_superres opencv_ts opencv_videostab 
      lept tesseract gsl gslcblas)
-
+     
 include_directories(include)
 
-add_executable(ImageProcess main.cpp)
+FILE(GLOB SRC api/*.cpp
+              preprocessing/*/*.cpp)
+
+add_executable(ImageProcess main.cpp ${SRC})
 target_link_libraries(ImageProcess ${LIBS})
 
 add_executable(ocrus_bounding_box ocrus_bounding_box.cc recognition/recognition.cc)

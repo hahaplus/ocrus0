@@ -19,7 +19,8 @@
 #include "../preprocessing/GaussianSPDenoise/denoise.h"
 #include "../preprocessing/utils/TimeUtil.h"
 #include "../preprocessing/cca/CCA.h"
-
+#include "../api/WapOcrApi.h"
+#include "../preprocessing/shadow/ShadowRemove.h"
 using namespace std;
 using namespace cv;
 
@@ -128,11 +129,20 @@ public:
 						+ FileUtil::getFileNameNoSuffix(input) + ".txt";
 //				time_t t1 = time(NULL);
 				cout << "OCR to: " << textPath << endl;
-
-				string text = ocrMats(dsts, lang);
+                Mat tmpImg = dsts[0].clone();
+				string text = WapOcrApi::recognitionToText(dsts[0], lang);
 //				time_t t2 = time(NULL);
 //				time4+=(t2-t1);
+				string wholeText = WapOcrApi::recognitionToText(tmpImg, lang, 1);
+				string wholeTextPath = ocrOutput + "/"
+						+ FileUtil::getFileNameNoSuffix(input) + "_whole.txt";
 				FileUtil::writeToFile(text, textPath);
+				FileUtil::writeToFile(wholeText, wholeTextPath);
+				// output the image
+				string imgPath = ocrOutput + "/"
+										+ FileUtil::getFileNameNoSuffix(input) + ".jpg";
+				cout << "OCR IMG to: " << imgPath;
+				imwrite( imgPath, dsts[0] );
 			}
 		} else {
 			if (!input.empty()) {
@@ -236,43 +246,10 @@ public:
 	static vector<Mat> processFile(string input, const Config conf) {
 		Config config = conf;
 		Mat img = imread(input);
+		ShadowRemove::removeShadow(img);
+		imwrite(string("tmp/shadow/")+FileUtil::getFileName(input)+".jpg", img);
 		cout << "Process " << input << endl;
-//		string salientOut = config.getAndErase(SALIENT);
-//		string borderOut = config.getAndErase(BORDER);
-//		string turnOut = config.getAndErase(TURN);
-//		string textOut = config.getAndErase(TEXT);
-//		if (salientOut.empty() || borderOut.empty()) {
-//			cerr
-//					<< "salient output or border output is empty. (in config file)!"
-//					<< endl;
-//			vector<Mat> ret;
-//			return ret;
-//		}
 //
-//		SalientRec src;
-//		Mat outputSRC, seg, crossBD, outputBD;
-//
-//		cout << "salient object..." << endl;
-//
-//		src.salient(img, outputSRC, seg);
-//		Mat outputFileSRC = convertToVisibleMat<float>(outputSRC);
-//
-//		string salientOutPath = salientOut + "/" + FileUtil::getFileName(input);
-//		imwrite(salientOutPath, outputFileSRC);
-//
-//		int res = getBorderImgOnSalient(img, outputSRC, crossBD, outputBD);
-//		if (res == -1) {
-//			res = getBorderImgOnRaw(img, outputSRC, crossBD, outputBD);
-//		}
-//
-//		normalize(outputBD, outputBD, 0, 255, NORM_MINMAX);
-//		outputBD.convertTo(outputBD, CV_8UC1);
-//
-//		string borderOutPath = borderOut + "/" + FileUtil::getFileName(input);
-//		string turnOutPath = turnOut + "/" + FileUtil::getFileName(input);
-//
-//		imwrite(borderOutPath, crossBD);
-//		imwrite(turnOutPath, outputBD);
 
 		vector<Mat> textPieces;
 		textPieces.push_back(img);

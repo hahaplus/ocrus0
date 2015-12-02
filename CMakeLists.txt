@@ -5,6 +5,9 @@ project (OCRus)
 # Enable C++11 support
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+# Turn on more gcc warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Wno-long-long -pedantic -ansi")
+
 # For Chen San
 if(EXISTS "/home/michael/ThirdPartLib/opencv-3.0.0")
     include_directories(/home/michael/ThirdPartLib/opencv-3.0.0/include)

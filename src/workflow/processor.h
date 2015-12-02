@@ -21,6 +21,8 @@
 #include "../preprocessing/utils/TimeUtil.h"
 #include "../preprocessing/cca/CCA.h"
 #include "../preprocessing/shadow/shadow_remove.h"
+#include "../dto/ocr_result_dto.h"
+#include "ocrus/recognition.h"
 using namespace std;
 using namespace cv;
 
@@ -129,20 +131,24 @@ public:
 						+ FileUtil::getFileNameNoSuffix(input) + ".txt";
 //				time_t t1 = time(NULL);
 				cout << "OCR to: " << textPath << endl;
-                Mat tmpImg = dsts[0].clone();
-				string text = WapOcrApi::recognitionToText(dsts[0], lang);
+                Mat tmp_img = dsts[0].clone();
+                OcrDetailResult ocrResult;
+				string text = WapOcrApi::recognitionToText(dsts[0], lang, 0, &ocrResult);
 //				time_t t2 = time(NULL);
 //				time4+=(t2-t1);
-				string wholeText = WapOcrApi::recognitionToText(tmpImg, lang, 1);
+
+				/*string wholeText = WapOcrApi::recognitionToText(tmpImg, lang, 1);
 				string wholeTextPath = ocrOutput + "/"
-						+ FileUtil::getFileNameNoSuffix(input) + "_whole.txt";
+						+ FileUtil::getFileNameNoSuffix(input) + "_whole.txt";*/
 				FileUtil::writeToFile(text, textPath);
-				FileUtil::writeToFile(wholeText, wholeTextPath);
+				//FileUtil::writeToFile(wholeText, wholeTextPath);
 				// output the image
 				string imgPath = ocrOutput + "/"
 										+ FileUtil::getFileNameNoSuffix(input) + ".jpg";
 				cout << "OCR IMG to: " << imgPath;
-				imwrite( imgPath, dsts[0] );
+				Mat out_img;
+				ocrus::drawOcrResult(tmp_img, ocrResult, &out_img);
+				imwrite( imgPath, out_img );
 			}
 		} else {
 			if (!input.empty()) {

@@ -34,7 +34,7 @@ void ocrPrintBoundingBox(const cv::Mat& src, tesseract::PageIteratorLevel level,
       float conf = ri->Confidence(level);
       int x1, y1, x2, y2;
       ri->BoundingBox(level, &x1, &y1, &x2, &y2);       // here is the postion
-      printf("word: '%s';  \tconf: %.2f; BoundingBox: %d,%d,%d,%d;\n", word,
+      printf("word: '%s';  \tconf: %.2f; bounding_box: %d,%d,%d,%d;\n", word,
              conf, x1, y1, x2, y2);
       delete[] word;
     } while (ri->Next(level));
@@ -52,12 +52,12 @@ void drawOcrResult(const cv::Mat &in_img, const OcrDetailResult &result,
   FILE *f_text = fopen(path_text, "w");
   auto res = result.getResult();
   for (auto r : res) {
-    int x1 = r.boundingBox[0].x, y1 = r.boundingBox[0].y;
-    int x2 = r.boundingBox[1].x, y2 = r.boundingBox[1].y;
+    int x1 = r.bounding_box[0].x, y1 = r.bounding_box[0].y;
+    int x2 = r.bounding_box[1].x, y2 = r.bounding_box[1].y;
     const char *word = r.content.c_str();
     float conf = r.confidence;
 
-    fprintf(f_text, "word: '%s';  \tconf: %.2f; BoundingBox: %d,%d,%d,%d;\n",
+    fprintf(f_text, "word: '%s';  \tconf: %.2f; bounding_box: %d,%d,%d,%d;\n",
             word, conf, x1, y1, x2, y2);
   }
   fclose(f_text);

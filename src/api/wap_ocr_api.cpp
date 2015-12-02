@@ -123,6 +123,8 @@ void WapOcrApi::optimize(OcrDetailResult* result)
 	mapToLine(symbols);
 	vector<ResultUnit> line;
 	result->clear();
+	// degbug
+	int iter_cnt = 3, tmp_cnt = 0;
 	for (int i = 0;i < symbols.size();i++)
 	{
 		line.push_back(symbols[i]);
@@ -131,6 +133,7 @@ void WapOcrApi::optimize(OcrDetailResult* result)
 			mergeAndSplit(line);
 			result->push_back_symbol(line);
 			line.clear();
+			if (++tmp_cnt == iter_cnt)
 			break;
 		}
 	}
@@ -171,6 +174,8 @@ void WapOcrApi::mergeAndSplit(vector<ResultUnit> &line)
 }
 void WapOcrApi::handle(vector<ResultUnit> &segment)
 {
+	if (segment.size() < 2)
+	return;
 	// try to merge
 	vector<cv::Point2i> merge_bounding_box(2);
 	merge_bounding_box[0].x = merge_bounding_box[0].y = 1e6;
@@ -189,17 +194,18 @@ void WapOcrApi::handle(vector<ResultUnit> &segment)
 	}
 	mean_confi /= segment.size();
 	best_confi = max(best_confi, mean_confi);
+	//return;
 	api->SetRectangle(merge_bounding_box[0].x, merge_bounding_box[0].y, merge_bounding_box[1].x, merge_bounding_box[1].y);
 	api->Recognize(NULL);
-	if (api->MeanTextConf() >= best_confi)
+	//if (api->MeanTextConf() >= best_confi)
 	{
 		best_confi = api->MeanTextConf();
 		merge_unit.confidence = api->MeanTextConf();
 		merge_unit.line_index = segment[0].line_index;
 		merge_unit.bounding_box = merge_bounding_box;
-		merge_unit.content = api->GetUTF8Text();
+		merge_unit.content = /*api->GetUTF8Text()*/"a";
 	}
-    if (best_confi >= mean_confi)
+   // if (best_confi >= mean_confi)
     {
     	segment.clear();
     	segment.push_back(merge_unit);

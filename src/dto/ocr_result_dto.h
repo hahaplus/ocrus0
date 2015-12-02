@@ -56,7 +56,7 @@ public:
     {
     	symbols.push_back(a);
     }
-    vector<ResultUnit> getResult()
+    vector<ResultUnit> getResult() const
 	{
     	return symbols;
 	}

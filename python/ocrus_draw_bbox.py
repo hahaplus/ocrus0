@@ -18,7 +18,7 @@ Usage: %s path_img path_txt path_output_img
 
 path_output_img should end with '.png'
 Example line of path_txt:
-    word: 'g';      conf: 61.91; BoundingBox: 411,1778,431,1906;''' % \
+    word: 'g';      conf: 61.91; bounding_box: 411,1778,431,1906;''' % \
         (os.path.basename(sys.argv[0]))
     sys.exit(0)
 
@@ -35,12 +35,12 @@ draw = ImageDraw.Draw(img)
 
 for line in codecs.open(path_txt, encoding='utf-8'):
 
-    d = {'word': None, 'BoundingBox': None, 'conf': None}
+    d = {'word': None, 'bounding_box': None, 'conf': None}
     for seg in map(unicode.strip, line.split(';')):
         if seg.startswith('word:'):
             d['word'] = seg[len('word:'):].strip()[1:-1]
-        elif seg.startswith('BoundingBox:'):
-            d['BoundingBox'] = map(int, seg[len('BoundingBox:'):].split(','))
+        elif seg.startswith('bounding_box:'):
+            d['bounding_box'] = map(int, seg[len('bounding_box:'):].split(','))
         elif seg.startswith('conf:'):
             d['conf'] = float(seg[len('conf:'):].strip())
 
@@ -54,7 +54,7 @@ for line in codecs.open(path_txt, encoding='utf-8'):
                 --------------
             x1, y2    x2(right), y2(bottom)
         '''
-        word, box, confidence = d['word'], d['BoundingBox'], d['conf']
+        word, box, confidence = d['word'], d['bounding_box'], d['conf']
         x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
 
         draw.line((x1, y1, x2, y1), BOX_COLOR, 1)

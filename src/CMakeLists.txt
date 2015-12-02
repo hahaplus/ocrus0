@@ -8,15 +8,16 @@ set (LIBS
 include_directories(include)
 
 FILE(GLOB SRC api/*.cpp
-              preprocessing/*/*.cpp)
+              preprocessing/*/*.cpp
+              recognition/recognition.cc)
 
 add_executable(ImageProcess main.cpp ${SRC})
 target_link_libraries(ImageProcess ${LIBS})
 
-add_executable(ocrus_bounding_box ocrus_bounding_box.cc recognition/recognition.cc)
+add_executable(ocrus_bounding_box ocrus_bounding_box.cc ${SRC})
 target_link_libraries(ocrus_bounding_box ${LIBS})
 
-add_executable(ocrus_ocr_draw ocrus_ocr_draw.cc recognition/recognition.cc ${SRC})
+add_executable(ocrus_ocr_draw ocrus_ocr_draw.cc ${SRC})
 target_link_libraries(ocrus_ocr_draw ${LIBS})
 
 INSTALL(TARGETS ocrus_bounding_box

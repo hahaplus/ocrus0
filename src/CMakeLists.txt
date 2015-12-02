@@ -4,8 +4,6 @@ set (LIBS
      opencv_objdetect opencv_flann opencv_photo 
      opencv_stitching opencv_superres opencv_ts opencv_videostab 
      lept tesseract gsl gslcblas)
-     
-include_directories(include)
 
 FILE(GLOB SRC api/*.cpp
               preprocessing/*/*.cpp
@@ -20,5 +18,5 @@ target_link_libraries(ocrus_bounding_box ${LIBS})
 add_executable(ocrus_ocr_draw ocrus_ocr_draw.cc ${SRC})
 target_link_libraries(ocrus_ocr_draw ${LIBS})
 
-INSTALL(TARGETS ocrus_bounding_box
+INSTALL(TARGETS ocrus_bounding_box ocrus_ocr_draw
         RUNTIME DESTINATION bin)

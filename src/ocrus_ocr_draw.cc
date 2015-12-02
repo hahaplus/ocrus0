@@ -6,17 +6,14 @@
  * Written by Chang Sun
  */
 
-#include "ocrus/recognition.h"
+#include "recognition/recognition.h"
 #include "workflow/processor.h"
 
 int main(int argc, char *argv[]) {
-
-
   if (argc != 4) {
-    std::cout
-        << "OCR and draw OCR results to the binary image"
-        << std::endl << "Usage: ocrus_ocr_draw word|symbol path_img path_out_img"
-        << std::endl;
+    std::cout << "OCR and draw OCR results to the binary image" << std::endl
+              << "Usage: ocrus_ocr_draw word|symbol path_img path_out_img"
+              << std::endl;
     return 0;
   }
 

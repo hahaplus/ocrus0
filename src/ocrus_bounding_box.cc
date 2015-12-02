@@ -6,11 +6,10 @@
  * Written by Chang Sun
  */
 
-#include "ocrus/recognition.h"
+#include "recognition/recognition.h"
 #include "workflow/processor.h"
 
 int main(int argc, char *argv[]) {
-
   if (argc != 3) {
     std::cout
         << "Print the bounding boxes of an image " << std::endl

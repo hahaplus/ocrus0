@@ -22,7 +22,8 @@
 #include "../preprocessing/cca/CCA.h"
 #include "../preprocessing/shadow/shadow_remove.h"
 #include "../dto/ocr_result_dto.h"
-#include "ocrus/recognition.h"
+#include "recognition/recognition.h"
+
 using namespace std;
 using namespace cv;
 

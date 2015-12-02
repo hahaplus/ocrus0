@@ -14,5 +14,7 @@ if(EXISTS "/home/michael/ThirdPartLib/opencv-3.0.0")
     link_directories(/home/michael/ThirdPartLib/opencv-3.0.0/lib)
 endif()
 
+include_directories(src)
+
 add_subdirectory(src)
 add_subdirectory(python)

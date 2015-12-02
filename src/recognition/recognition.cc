@@ -6,7 +6,7 @@
  * Written by Chang Sun
  */
 
-#include "ocrus/recognition.h"
+#include "recognition.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #include <tesseract/baseapi.h>
 #include <tesseract/ltrresultiterator.h>
 
-#include "../dto/ocr_result_dto.h"
+#include "dto/ocr_result_dto.h"
 
 namespace ocrus {
 

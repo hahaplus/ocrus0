@@ -14,7 +14,7 @@
 #include <opencv2/opencv.hpp>
 #include <tesseract/baseapi.h>
 
-#include "../../dto/ocr_result_dto.h"
+#include "dto/ocr_result_dto.h"
 
 namespace ocrus {
 

@@ -5,50 +5,43 @@
  *      Author: michael
  */
 
-
 #include "wap_ocr_api.h"
+
+#include <opencv2/opencv.hpp>
+#include <tesseract/baseapi.h>
+
 #include "../util/string_util.h"
 
 using namespace std;
 using namespace tesseract;
 using namespace cv;
-
 WapOcrApi::WapOcrApi() {
 	// TODO Auto-generated constructor stub
 }
-void WapOcrApi::release()
+
+string WapOcrApi::recognitionToText(cv::Mat &src,const string lang, int cutLevel,OcrDetailResult* result)
 {
-	if (api != NULL)
-	{
-		api->End();
-		delete api;
-		api = NULL;
-	}
-}
-tesseract::TessBaseAPI *WapOcrApi::api;
-string WapOcrApi::recognitionToText(cv::Mat src,const string lang, int cut_level, OcrDetailResult* result)
-{
-	 if (result == NULL)
+	 if ( result == NULL )
 	 {
 		 result = new OcrDetailResult;
 	 }
-	 if (api == NULL)
-	 {
-		 api = new tesseract::TessBaseAPI();
-	 }
-	 if (api->Init(NULL, lang.c_str()))
-	 {
-		 fprintf(stderr, "Could not initialize tesseract.\n");
-		 exit(-1);
-	 }
-	// Mat tmpImg = src.clone();
+	 tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
+	 api->Init(NULL, lang.c_str());
 	 api->SetVariable("save_blob_choices", "T");
+	 //api->SetImage(image);
 	 api->SetImage((uchar*) src.data, src.cols, src.rows, src.channels(), src.cols);
 	 api->Recognize(0);
 	 tesseract::ResultIterator* ri = api->GetIterator();
-	 tesseract::PageIteratorLevel level = (cut_level == 0) ? tesseract::RIL_SYMBOL : tesseract::RIL_TEXTLINE;
+	 tesseract::PageIteratorLevel level = (cutLevel == 0) ? tesseract::RIL_SYMBOL : tesseract::RIL_TEXTLINE;
 	 string res;
-	 int line_cnt = 0;
+	 int cnt = 0, lineCnt = -1;
+	 stringstream ss;
+	 string strCnt;
+	 CvFont font;
+	 double hScale=1;
+	 double vScale=1;
+	 int lineWidth=2;// 相当于写字的线条
+	 cvInitFont(&font,CV_FONT_HERSHEY_SIMPLEX|CV_FONT_ITALIC, hScale,vScale,0,lineWidth);
 	 if (ri != 0) {
 	 do {
 	      const char* word = ri->GetUTF8Text(level);
@@ -56,34 +49,48 @@ string WapOcrApi::recognitionToText(cv::Mat src,const string lang, int cut_level
 	      int x1, y1, x2, y2;
 	      ri->BoundingBox(level, &x1, &y1, &x2, &y2);
 	      if (ri->IsAtBeginningOf(tesseract::RIL_TEXTLINE))
-	      {
-	    	  line_cnt++;
-	      }
-		  vector<cv::Point2i> corners;
-		  corners.push_back(cv::Point2i(x1, y1));
+	    	  lineCnt++;
+		      strCnt = StringUtil::toString(cnt++);
+		      if (cutLevel == 0)
+		      {
+		    	  res += "("+StringUtil::toString(lineCnt)+" ";
+		    	  res += strCnt + ") ";
+		      }
+		      res += word;
+		      if (cutLevel == 0)
+		      {
+		    	  res += "：";
+		      }
+		      vector<cv::Point2i> corners;
+		      // draw the boudingbox
+		      corners.push_back(cv::Point2i(x1, y1));
           corners.push_back(cv::Point2i(x2, y2));
-		  // the other choices of the character
-		  tesseract::ChoiceIterator choiceIterator( *ri );
-          // save the result
-		  ResultUnit rt(corners, string(word));
-		  rt.confidence = conf;
-		  rt.line_index = line_cnt;
-		  if (cut_level == 0)
-		  do
-          {
-          	  const char* txt = choiceIterator.GetUTF8Text();
-              if (txt != NULL && strlen(txt) != 0)
-           	  {
-                  rt.candidates.push_back(make_pair(txt, choiceIterator.Confidence()));
-              }
-               //delete[] txt;
+
+		      // the other choices of the character
+		      tesseract::ChoiceIterator choiceIterator( *ri );
+              // save the result
+		      ResultUnit rt(corners, string(word));
+		      rt.lineIndex = lineCnt;
+		      rt.confidence = conf;
+		      if (cutLevel == 0)
+		      do
+              {
+            	  const char* txt = choiceIterator.GetUTF8Text();
+                  if (txt != NULL && strlen(txt) != 0)
+            	  {
+                	  res += txt;
+                	  res += " ";
+            	      res += StringUtil::toString(choiceIterator.Confidence()) + " ";
+            	      rt.candidates.push_back(make_pair(txt, choiceIterator.Confidence()));
+            	  }
+                  //delete[] txt;
               }while(choiceIterator.Next());
+		      res += "\n";
               delete[] word;
               result->push_back_symbol(rt);
 		 } while (ri->Next(level));
-	   // api->SetImage((uchar*) tmpImg.data, tmpImg.cols, tmpImg.rows, tmpImg.channels(), tmpImg.cols);
-	    optimize(result);
-        res = result->toString(cut_level);
+        //optimize(result);
+        //res = result->toString();
 	 }
 	 return res;
 }
@@ -102,7 +109,7 @@ void WapOcrApi::mapToLine(vector<ResultUnit> &symbols)
 	for (int i = 0; i < symbols.size();i++)
 	{
 		ResultUnit &rt = symbols[ i ];
-		pair<int,int> interval = make_pair(rt.bounding_box[0].y, rt.bounding_box[1].y);
+		pair<int,int> interval = make_pair(rt.boundingBox[0].y, rt.boundingBox[1].y);
 		if (!intervals.empty() && overlap(interval, intervals.back()))
 		{
 			// update
@@ -112,7 +119,7 @@ void WapOcrApi::mapToLine(vector<ResultUnit> &symbols)
 		{
 			intervals.push_back(interval);
 		}
-		rt.line_index = intervals.size() - 1;
+		rt.lineIndex = intervals.size() - 1;
 	}
 }
 void WapOcrApi::optimize(OcrDetailResult* result)
@@ -126,12 +133,11 @@ void WapOcrApi::optimize(OcrDetailResult* result)
 	for (int i = 0;i < symbols.size();i++)
 	{
 		line.push_back(symbols[i]);
-		if (i == symbols.size() - 1 || symbols[i].line_index != symbols[i+1].line_index)
+		if (i == symbols.size() - 1 || symbols[i].lineIndex != symbols[i+1].lineIndex)
 		{
 			mergeAndSplit(line);
 			result->push_back_symbol(line);
 			line.clear();
-			break;
 		}
 	}
 }
@@ -139,72 +145,39 @@ void WapOcrApi::mergeAndSplit(vector<ResultUnit> &line)
 {
 	// try to merge
 	sort(line.begin(), line.end(), CompX());
-	pair<int, int> interval_back(-1,-1);
+	pair<int, int> intervalBack(-1,-1);
 	vector<ResultUnit> segment;
-	vector<ResultUnit> new_line;
+	vector<ResultUnit> newLine;
 	for (int i = 0; i < line.size(); i++)
 	{
 		ResultUnit &rt = line[i];
-		pair<int,int> interval = make_pair(rt.bounding_box[0].x, rt.bounding_box[1].x);
-		if (interval_back.first == -1)
-			interval_back = interval;
+		pair<int,int> interval = make_pair(rt.boundingBox[0].x, rt.boundingBox[1].x);
+		if (intervalBack.first == -1)
+			intervalBack = interval;
 		else
-			interval_back.second = max(interval_back.second, interval.second);
-		pair<int,int> next_interval(1e6, 1e6);
+			intervalBack.second = max(intervalBack.second, interval.second);
+		pair<int,int> nextInterval(1e6, 1e6);
 		segment.push_back(line[i]);
 		if (i != line.size() - 1)
 		{
-			next_interval = make_pair(line[i+1].bounding_box[0].x, line[i+1].bounding_box[1].x);
+			nextInterval = make_pair(line[i+1].boundingBox[0].x, line[i+1].boundingBox[1].x);
 		}
-		if (!overlap(next_interval, interval_back))
+		if (!overlap(nextInterval, intervalBack))
 		{
-			interval_back = make_pair(-1, -1);
+			intervalBack = make_pair(-1, -1);
 			handle(segment);
 			for (int j = 0; j < segment.size(); j++)
 			{
-				new_line.push_back(segment[j]);
+				newLine.push_back(segment[j]);
 			}
 			segment.clear();
 		}
 	}
-	line = new_line;
+	line = newLine;
 }
 void WapOcrApi::handle(vector<ResultUnit> &segment)
 {
-	// try to merge
-	vector<cv::Point2i> merge_bounding_box(2);
-	merge_bounding_box[0].x = merge_bounding_box[0].y = 1e6;
-	merge_bounding_box[1].x = merge_bounding_box[1].y = -1e6;
-	double best_confi = 0;
-	double mean_confi = 0;
-	ResultUnit merge_unit;
-	for (int i = 0; i < segment.size(); i++)
-	{
-		ResultUnit ru = segment[i];
-		merge_bounding_box[0].x = min(ru.bounding_box[0].x, merge_bounding_box[0].x);
-		merge_bounding_box[0].y = min(ru.bounding_box[0].y, merge_bounding_box[0].y);
-		merge_bounding_box[1].x = max(ru.bounding_box[1].x, merge_bounding_box[1].x);
-		merge_bounding_box[1].y = max(ru.bounding_box[1].y, merge_bounding_box[1].y);
-		mean_confi += ru.confidence;
-	}
-	mean_confi /= segment.size();
-	best_confi = max(best_confi, mean_confi);
-	api->SetRectangle(merge_bounding_box[0].x, merge_bounding_box[0].y, merge_bounding_box[1].x, merge_bounding_box[1].y);
-	api->Recognize(NULL);
-	if (api->MeanTextConf() >= best_confi)
-	{
-		best_confi = api->MeanTextConf();
-		merge_unit.confidence = api->MeanTextConf();
-		merge_unit.line_index = segment[0].line_index;
-		merge_unit.bounding_box = merge_bounding_box;
-		merge_unit.content = api->GetUTF8Text();
-	}
-    if (best_confi >= mean_confi)
-    {
-    	segment.clear();
-    	segment.push_back(merge_unit);
-    }
-	// try to split
+
 }
 WapOcrApi::~WapOcrApi() {
 	// TODO Auto-generated destructor stub

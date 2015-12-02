@@ -17,16 +17,10 @@
 #include <vector>
 
 #include "../dto/ocr_result_dto.h"
-using namespace std;
-using namespace cv;
-
-
-
-
 class WapOcrApi {
 public:
 	WapOcrApi();
-	static string recognitionToText(cv::Mat img, const string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
+	static std::string recognitionToText(cv::Mat img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
 	static void release();
 	virtual ~WapOcrApi();
 private:

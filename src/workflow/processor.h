@@ -8,6 +8,7 @@
 #ifndef IMAGE_PROCESS_SRC_WORKFLOW_PROCESSOR_H_
 #define IMAGE_PROCESS_SRC_WORKFLOW_PROCESSOR_H_
 
+#include "../api/wap_ocr_api.h"
 #include "../preprocessing/utils/OCRUtil.h"
 #include "../util/configUtil.h"
 #include "../salientRecognition/execute.h"
@@ -19,8 +20,7 @@
 #include "../preprocessing/GaussianSPDenoise/denoise.h"
 #include "../preprocessing/utils/TimeUtil.h"
 #include "../preprocessing/cca/CCA.h"
-#include "../api/WapOcrApi.h"
-#include "../preprocessing/shadow/ShadowRemove.h"
+#include "../preprocessing/shadow/shadow_remove.h"
 using namespace std;
 using namespace cv;
 

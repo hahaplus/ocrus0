@@ -16,5 +16,8 @@ target_link_libraries(ImageProcess ${LIBS})
 add_executable(ocrus_bounding_box ocrus_bounding_box.cc recognition/recognition.cc)
 target_link_libraries(ocrus_bounding_box ${LIBS})
 
+add_executable(ocrus_ocr_draw ocrus_ocr_draw.cc recognition/recognition.cc ${SRC})
+target_link_libraries(ocrus_ocr_draw ${LIBS})
+
 INSTALL(TARGETS ocrus_bounding_box
         RUNTIME DESTINATION bin)

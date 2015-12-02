@@ -6,7 +6,7 @@ project (OCRus)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # Turn on more gcc warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Wno-long-long -pedantic -ansi")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Wno-long-long -pedantic -ansi")
 
 # For Chen San
 if(EXISTS "/home/michael/ThirdPartLib/opencv-3.0.0")

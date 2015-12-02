@@ -5,13 +5,12 @@
  *      Author: michael
  */
 
+#include "wap_ocr_api.h"
+
+#include <opencv2/opencv.hpp>
 #include <tesseract/baseapi.h>
 
-#include "WapOcrApi.h"
-
-#include "../util/StringUtil.h"
-
-#include <tesseract/strngs.h>
+#include "../util/string_util.h"
 
 using namespace std;
 using namespace tesseract;
@@ -65,26 +64,20 @@ string WapOcrApi::recognitionToText(cv::Mat &src,const string lang, int cutLevel
 		      vector<cv::Point2i> corners;
 		      // draw the boudingbox
 		      corners.push_back(cv::Point2i(x1, y1));
-		      corners.push_back(cv::Point2i(x2, y1));
-              corners.push_back(cv::Point2i(x2, y2));
-              corners.push_back(cv::Point2i(x1, y2));
-		      cv::line(src, corners[ 0 ], corners[ 1 ], CV_RGB(255, 255, 0), 4);
-		      cv::line(src, corners[ 1 ], corners[ 2 ], CV_RGB(255, 255, 0), 4);
-		      cv::line(src, corners[ 2 ], corners[ 3 ], CV_RGB(255, 255, 0), 4);
-		      cv::line(src, corners[ 3 ], corners[ 0 ], CV_RGB(255, 255, 0), 4);
-		      IplImage limage = IplImage ( src );
-		      cvPutText(&limage, strCnt.c_str(), cvPoint(x1, y1),&font,CV_RGB(255,0,0));
+          corners.push_back(cv::Point2i(x2, y2));
+
 		      // the other choices of the character
 		      tesseract::ChoiceIterator choiceIterator( *ri );
               // save the result
 		      ResultUnit rt(corners, string(word));
 		      rt.lineIndex = lineCnt;
+		      rt.confidence = conf;
 		      if (cutLevel == 0)
 		      do
               {
             	  const char* txt = choiceIterator.GetUTF8Text();
                   if (txt != NULL && strlen(txt) != 0)
-            	  {
+            	  {http://stackoverflow.com/questions/23740431/tesseract-remove-reference-ambiguous-symbol-in-project-on-visual-studio-2012
                 	  res += txt;
                 	  res += " ";
             	      res += StringUtil::toString(choiceIterator.Confidence()) + " ";

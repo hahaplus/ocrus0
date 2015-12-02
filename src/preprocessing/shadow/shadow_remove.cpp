@@ -5,7 +5,7 @@
  *      Author: michael
  */
 
-#include "ShadowRemove.h"
+#include "shadow_remove.h"
 
 ShadowRemove::ShadowRemove() {
 	// TODO Auto-generated constructor stub

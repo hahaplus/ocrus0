@@ -5,8 +5,8 @@
  *      Author: michael
  */
 
-#ifndef SRC_UTIL_STRINGUTIL_H_
-#define SRC_UTIL_STRINGUTIL_H_
+#ifndef SRC_UTIL_STRING_UTIL_H_
+#define SRC_UTIL_STRING_UTIL_H_
 #include <string>
 #include <sstream>
 using namespace std;
@@ -25,4 +25,4 @@ public:
 	}
 };
 
-#endif /* SRC_UTIL_STRINGUTIL_H_ */
+#endif /* SRC_UTIL_STRING_UTIL_H_ */

@@ -5,8 +5,8 @@
  *      Author: michael
  */
 
-#ifndef SRC_PREPROCESSING_SHADOW_SHADOWREMOVE_H_
-#define SRC_PREPROCESSING_SHADOW_SHADOWREMOVE_H_
+#ifndef SRC_PREPROCESSING_SHADOW_SHADOW_REMOVE_H_
+#define SRC_PREPROCESSING_SHADOW_SHADOW_REMOVE_H_
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/imgproc/types_c.h"
@@ -36,4 +36,4 @@ private:
     ShadowRemove();
 };
 
-#endif /* SRC_PREPROCESSING_SHADOW_SHADOWREMOVE_H_ */
+#endif /* SRC_PREPROCESSING_SHADOW_SHADOW_REMOVE_H_ */

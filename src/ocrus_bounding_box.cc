@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     std::cout
         << "Print the bounding boxes of an image " << std::endl
         << "Gray and binarized images are saved where the image is located"
-        << std::endl << "Usage: ocrusBoundingBox word|symbol path_img"
+        << std::endl << "Usage: ocrus_bounding_box word|symbol path_img"
         << std::endl;
     return 0;
   }

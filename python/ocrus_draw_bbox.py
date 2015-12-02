@@ -35,7 +35,7 @@ draw = ImageDraw.Draw(img)
 
 for line in codecs.open(path_txt, encoding='utf-8'):
 
-    d = {'word': None, 'BoundingBox': None}
+    d = {'word': None, 'BoundingBox': None, 'conf': None}
     for seg in map(unicode.strip, line.split(';')):
         if seg.startswith('word:'):
             d['word'] = seg[len('word:'):].strip()[1:-1]
@@ -44,7 +44,7 @@ for line in codecs.open(path_txt, encoding='utf-8'):
         elif seg.startswith('conf:'):
             d['conf'] = float(seg[len('conf:'):].strip())
 
-    if all(d.values()):
+    if all(v is not None for v in d.values()):
         '''
         x1(left), top, right, bottom
 

@@ -5,23 +5,25 @@
  *      Author: michael
  */
 
-#ifndef SRC_DTO_OCRRESULTDTO_H_
-#define SRC_DTO_OCRRESULTDTO_H_
+#ifndef SRC_DTO_OCR_RESULT_DTO_H_
+#define SRC_DTO_OCR_RESULT_DTO_H_
+
 #include <string>
 #include <vector>
-using namespace std;
-using namespace cv;
+
+
 class ResultUnit {
 public:
-	vector<cv::Point2i> boundingBox;  // every symbol's boundingBox
-	string content;                   // symbol's content
-	vector<pair<string,float> > candidates; // other choices for this symbol (content, possibility)
+	std::vector<cv::Point2i> boundingBox;  // every symbol's boundingBox
+	std::string content;                   // symbol's content
+	std::vector<std::pair<std::string,float> > candidates; // other choices for this symbol (content, possibility)
+	float confidence;
     int lineIndex;
 	ResultUnit()
 	{
 		lineIndex = 0;
 	}
-	ResultUnit(vector<Point2i> &bbox, string content)
+	ResultUnit(std::vector<cv::Point2i> &bbox, std::string content)
 	{
     	this->boundingBox = bbox;
     	this->content = content;
@@ -30,9 +32,9 @@ public:
 };
 class OcrDetailResult {
 private:
-    vector<ResultUnit> symbols;
+    std::vector<ResultUnit> symbols;
 public:
-    void setResult(vector<ResultUnit> &symbols)
+    void setResult(std::vector<ResultUnit> &symbols)
     {
     	this->symbols = symbols;
     }
@@ -40,7 +42,7 @@ public:
     {
     	symbols.clear();
     }
-    void push_back_symbol(vector<ResultUnit> &a)
+    void push_back_symbol(std::vector<ResultUnit> &a)
     {
     	for(int i = 0; i < a.size();i++)
         	symbols.push_back(a[i]);
@@ -49,11 +51,11 @@ public:
     {
     	symbols.push_back(a);
     }
-    vector<ResultUnit> getResult()
+    std::vector<ResultUnit> getResult() const
 	{
     	return symbols;
 	}
-    string toString()
+    std::string toString()
     {
     	return "";
     }
@@ -78,4 +80,4 @@ public:
 };
 
 
-#endif /* SRC_DTO_OCRRESULTDTO_H_ */
+#endif /* SRC_DTO_OCR_RESULT_DTO_H_ */

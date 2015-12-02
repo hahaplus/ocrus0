@@ -77,7 +77,7 @@ string WapOcrApi::recognitionToText(cv::Mat &src,const string lang, int cutLevel
               {
             	  const char* txt = choiceIterator.GetUTF8Text();
                   if (txt != NULL && strlen(txt) != 0)
-            	  {http://stackoverflow.com/questions/23740431/tesseract-remove-reference-ambiguous-symbol-in-project-on-visual-studio-2012
+            	  {
                 	  res += txt;
                 	  res += " ";
             	      res += StringUtil::toString(choiceIterator.Confidence()) + " ";

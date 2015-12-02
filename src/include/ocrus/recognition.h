@@ -9,14 +9,16 @@
 #ifndef OCRUS_RECOGNITION_H_
 #define OCRUS_RECOGNITION_H_
 
+#include <string>
+
 #include <opencv2/opencv.hpp>
 #include <tesseract/baseapi.h>
 
 namespace ocrus {
 
-void ocrPrintBoundingBox(cv::Mat& src, tesseract::PageIteratorLevel level,
-                      const std::string& lang);
+void ocrPrintBoundingBox(const cv::Mat& src, tesseract::PageIteratorLevel level,
+                         const std::string& lang);
 
 }  // namespace ocrus
 
-#endif // OCRUS_RECOGNITION_H_
+#endif  // OCRUS_RECOGNITION_H_

@@ -5,6 +5,15 @@ Overview
 --------
 This is the OCRus OCR CORE that preprocesses the image and wraps around the Tesseract OCR Engine.
 
+C++ Code Style
+--------------
+
+Please follow [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) when writing new code in this project.
+
+Some exceptions:
+* Function and method names starts with lower case letter
+* PATH in header guard '\<PROJECT>\_\<PATH>\_\<FILE>\_H_' need not to be full path. This is due to 'include' directory inspired by OpenCV code structure 
+
 Installation
 ------------
 

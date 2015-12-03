@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <algorithm>
+
 #include <opencv2/opencv.hpp>
 #include <tesseract/baseapi.h>
 #include <tesseract/ltrresultiterator.h>
@@ -54,7 +56,10 @@ void drawOcrResult(const cv::Mat &in_img, const OcrDetailResult &result,
   for (auto r : res) {
     int x1 = r.bounding_box[0].x, y1 = r.bounding_box[0].y;
     int x2 = r.bounding_box[1].x, y2 = r.bounding_box[1].y;
-    const char *word = r.content.c_str();
+    std::string content = r.content;
+    std::replace(content.begin(), content.end(), '\n', ' ');
+    std::replace(content.begin(), content.end(), '\r', ' ');
+    const char *word = content.c_str();
     float conf = r.confidence;
 
     fprintf(f_text, "word: '%s';  \tconf: %.2f; bounding_box: %d,%d,%d,%d;\n",

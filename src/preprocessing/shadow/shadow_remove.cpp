@@ -24,7 +24,7 @@ void ShadowRemove::removeShadow(Mat& mat)
 	//imshow("xx", ymat);
 	//waitKey();
 	// get average intensity
-	int cnt_iter = 3;
+	int cnt_iter = 2;
 	while (cnt_iter--){
 	double sum = 0;
 	for (int i = 0; i < mat.rows; i++)
@@ -41,7 +41,7 @@ void ShadowRemove::removeShadow(Mat& mat)
     		for (int j = 0; j < mat.cols; j++)
     		{
     			Vec3b val = mat.at<Vec3b>(Point(j, i));
-    			if (!(val[0] < 0.9*avg && val[0] > 0.4 * avg))
+    			if (!(val[0] < 0.9*avg && val[0] > 0.5 * avg))
     			{
     				nonshadow += val[ 0 ];
     				nonshadowCnt++;
@@ -51,7 +51,7 @@ void ShadowRemove::removeShadow(Mat& mat)
         		for (int j = 0; j < mat.cols; j++)
         		{
         			Vec3b &val = mat.at<Vec3b>(Point(j, i));
-        			if ((val[0] < 0.9*avg && val[0] > 0.4 * avg))
+        			if ((val[0] < 0.9*avg && val[0] > 0.5 * avg))
         			{
         				double k = nonshadow / nonshadowCnt / val[ 0 ];
         				val[0] *= k;

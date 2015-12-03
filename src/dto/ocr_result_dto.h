@@ -24,6 +24,7 @@ public:
 	{
 		line_index = 0;
 		confidence = 0;
+		bounding_box.resize(2);
 	}
 	ResultUnit(vector<Point2i> &bbox, string content)
 	{

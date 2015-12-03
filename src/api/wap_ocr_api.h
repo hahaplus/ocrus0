@@ -24,13 +24,16 @@ public:
 	static void release();
 	virtual ~WapOcrApi();
 private:
+	static int epsX, epsY;
 	static tesseract::TessBaseAPI *api;
 	// merge and split
 	static void optimize(OcrDetailResult*);
 	static void mergeAndSplit(vector<ResultUnit>&);
 	static void mapToLine(vector<ResultUnit> &symbols);
-	static bool overlap(pair<int, int> a, pair<int, int> b);
+	// judge if interval a overlap with interval b, eps means if the distance between a and b is less or equal than eps, i will be judged overlap
+	static bool overlap(pair<int, int> a, pair<int, int> b, int eps = 0);
 	static void handle(vector<ResultUnit> &segment);
+	static void recognizeUnit(ResultUnit &u);
 };
 
 #endif /* SRC_API_WAP_OCR_API_H_ */

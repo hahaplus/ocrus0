@@ -6,21 +6,26 @@
  * Written by Chang Sun
  */
 
+#include <stdio.h>
+
+#include "tesseract/baseapi.h"
+
 #include "recognition/recognition.h"
 #include "workflow/processor.h"
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
-    std::cout
-        << "Print the bounding boxes of an image " << std::endl
-        << "Gray and binarized images are saved where the image is located"
-        << std::endl << "Usage: ocrus_bounding_box word|symbol path_img"
-        << std::endl;
+  if (argc != 4) {
+    printf("Print the bounding boxes of an image\n"
+           "Gray and binarized images are saved where the image is located\n"
+           "Usage: ocrus_bounding_box page_seg_mode word|symbol path_img\n"
+           "page_seg_mode: An enum integer from Tesseract");
     return 0;
   }
 
-  std::string level(argv[1]);
-  std::string path_img(argv[2]);
+  tesseract::PageSegMode page_seg_mode =
+      static_cast<tesseract::PageSegMode>(atoi(argv[1]));
+  std::string level(argv[2]);
+  std::string path_img(argv[3]);
 
   tesseract::PageIteratorLevel level_ = tesseract::RIL_SYMBOL;
   if (level == "word") {
@@ -36,7 +41,7 @@ int main(int argc, char *argv[]) {
 
   gray_img = cv::imread(path_img, CV_LOAD_IMAGE_GRAYSCALE);
   Binarize::binarize(gray_img, binarize_img);
-  ocrus::ocrPrintBoundingBox(binarize_img, level_, "eng+jpn");
+  ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "eng+jpn");
 
   cv::imwrite(path_img + "_gray.png", gray_img);
 

@@ -25,11 +25,15 @@ namespace ocrus {
  * word: 'g';      conf: 61.91; BoundingBox: 411,1778,431,1906;
  *
  * @param src A grayscale image
+ * @param page_seg_mode Page segmentation mode in Tesseract
  * @param level This value can be tesseract::RIL_WORD or tesseract::RIL_SYMBOL
  * @param lang Language setting that tesseract accepts, eg. eng+jpn
  */
-void ocrPrintBoundingBox(const cv::Mat& src, tesseract::PageIteratorLevel level,
+void ocrPrintBoundingBox(const cv::Mat& src,
+                         tesseract::PageSegMode page_seg_mode,
+                         tesseract::PageIteratorLevel level,
                          const std::string& lang);
+
 /**
  * Draw the OCR result to image
  *

@@ -21,10 +21,13 @@
 
 namespace ocrus {
 
-void ocrPrintBoundingBox(const cv::Mat& src, tesseract::PageIteratorLevel level,
+void ocrPrintBoundingBox(const cv::Mat& src,
+                         tesseract::PageSegMode page_seg_mode,
+                         tesseract::PageIteratorLevel level,
                          const std::string& lang) {
   tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
   api->Init(NULL, lang.c_str());
+  api->SetPageSegMode(page_seg_mode);
   api->SetImage(reinterpret_cast<uchar*>(src.data), src.cols, src.rows, 1,
                 src.cols);
   api->Recognize(NULL);

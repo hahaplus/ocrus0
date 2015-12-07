@@ -22,6 +22,14 @@ Tested on ubuntu 14.04 64bit and other similar Linux systems might work as well
 
 ### 1. Step: Install Libraries
 
+Install build tools
+```
+sudo apt-get install g++ build-essential
+sudo apt-get install cmake
+```
+
+Install dependencies for Tesseract
+
 ```
 sudo apt-get install autoconf automake libtool
 sudo apt-get install libpng12-dev
@@ -30,7 +38,20 @@ sudo apt-get install libtiff4-dev
 sudo apt-get install zlib1g-dev
 ```
 
-Install OpenCV 3.0.0 [Compile and Install OpenCV 3.0.0 on Ubuntu 14.04](http://www.humbug.in/2015/compile-and-install-opencv-3-0-0-on-ubuntu-14-04/).
+Install dependencies for ocrus0
+
+```
+sudo apt-get install libgsl0-dev
+sudo apt-get install libgdal-dev
+sudo apt-get install python-pil
+```
+
+Install OpenCV 3.0.0
+
+```
+sudo apt-get install qt5-default
+```
+[Compile and Install OpenCV 3.0.0 on Ubuntu 14.04](http://www.humbug.in/2015/compile-and-install-opencv-3-0-0-on-ubuntu-14-04/).
 
 Download [Leptonica 1.72](http://www.leptonica.org/download.html).
 
@@ -44,7 +65,13 @@ make
 sudo make install
 ```
 
-Download [Tesseract 3.02.02](https://code.google.com/p/tesseract-ocr/downloads/detail?name=tesseract-ocr-3.02.02.tar.gz&can=2&q=)　source code.
+Install Tesseract
+
+```
+git clone https://github.com/tesseract-ocr/tesseract.git
+cd tesseract
+git checkout 3.04.00
+```
 
 Run following commands to install Tesseract:
 
@@ -59,13 +86,6 @@ Link shared libraries:
 
 ```
 sudo ldconfig
-```
-
-Install some other libraries
-
-```
-sudo apt-get install python-pil
-sudo apt-get install cmake
 ```
 
 ### 2. Step: Add Language Training Data

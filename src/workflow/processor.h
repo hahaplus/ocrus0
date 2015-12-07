@@ -132,8 +132,10 @@ public:
 						+ FileUtil::getFileNameNoSuffix(input) + ".txt";
 //				time_t t1 = time(NULL);
 				cout << "OCR to: " << textPath << endl;
-                Mat tmp_img = dsts[0].clone();
-                OcrDetailResult ocrResult;
+        Mat tmp_img = dsts[0].clone();
+
+
+        OcrDetailResult ocrResult;
 				string text = WapOcrApi::recognitionToText(dsts[0], lang, 0, &ocrResult);
 //				time_t t2 = time(NULL);
 //				time4+=(t2-t1);
@@ -148,6 +150,7 @@ public:
 										+ FileUtil::getFileNameNoSuffix(input) + ".jpg";
 				cout << "OCR IMG to: " << imgPath;
 				Mat out_img;
+
 				ocrus::drawOcrResult(tmp_img, ocrResult, &out_img);
 				imwrite( imgPath, out_img );
 			}

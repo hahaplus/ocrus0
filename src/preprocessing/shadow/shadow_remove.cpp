@@ -6,7 +6,7 @@
  */
 
 #include "shadow_remove.h"
-
+#include "util/algorithm_util.h"
 ShadowRemove::ShadowRemove() {
 	// TODO Auto-generated constructor stub
 
@@ -17,64 +17,89 @@ ShadowRemove::~ShadowRemove() {
 }
 void ShadowRemove::removeShadow(Mat& mat)
 {
-	Mat rgbImg = mat.clone();
+  Mat rgb_img = mat.clone();
 	rgb2Ycrcb(mat);
-	//Mat ymat = getYFromYcrcb(mat);
-	//namedWindow("xx",CV_WINDOW_NORMAL);
-	//imshow("xx", ymat);
-	//waitKey();
+
+
+	Mat ymat = getYFromYcrcb(mat);
+	//Vec3b p = ymat.at<Vec3b>(Point(0,5));
+	//printf("here");
+	//printf("%d %d %d", p[0], p[1], p[2]);
+	/*namedWindow("xx",CV_WINDOW_NORMAL);
+	imshow("xx", ymat);
+	waitKey();*/
 	// get average intensity
 	int cnt_iter = 2;
 	while (cnt_iter--){
 	double sum = 0;
-	for (int i = 0; i < mat.rows; i++)
-		for (int j = 0; j < mat.cols; j++)
+	for (int i = 0; i < ymat.rows; i++)
+		for (int j = 0; j < ymat.cols; j++)
 		{
-			Vec3b val = mat.at<Vec3b>(Point(i, j));
-            sum += val[0];
+			uchar val = ymat.at<uchar>(i, j);
+            sum += val;
 		}
-    double avg = sum/(mat.rows * mat.cols);
-    double nonshadow = 0;
-    int nonshadowCnt = 0;
 
-    for (int i = 0; i < mat.rows; i++)
-    		for (int j = 0; j < mat.cols; j++)
+    double avg = sum/(ymat.rows * ymat.cols);
+    double nonshadow = 0;
+    int nonshadow_cnt = 0;
+
+    for (int i = 0; i < ymat.rows; i++)
+    		for (int j = 0; j < ymat.cols; j++)
     		{
-    			Vec3b val = mat.at<Vec3b>(Point(j, i));
-    			if (!(val[0] < 0.9*avg && val[0] > 0.5 * avg))
+    			uchar val = ymat.at<uchar>(i, j);
+    			if (!(val < 0.8*avg && val > 0.5 * avg))
     			{
-    				nonshadow += val[ 0 ];
-    				nonshadowCnt++;
+    				 nonshadow += val;
+    			   nonshadow_cnt++;
     			}
     		}
-    for (int i = 0; i < mat.rows; i++)
-        		for (int j = 0; j < mat.cols; j++)
+    nonshadow /= nonshadow_cnt;
+    double shadow_pixel = 0;
+    int shadow_pixel_cnt = 0;
+    for (int i = 0; i < ymat.rows; i++)
+        		for (int j = 0; j < ymat.cols; j++)
         		{
-        			Vec3b &val = mat.at<Vec3b>(Point(j, i));
-        			if ((val[0] < 0.9*avg && val[0] > 0.5 * avg))
+        			uchar val = ymat.at<uchar>(i, j);
+        			if ((val < 0.8*avg && val > 0.5*avg))
         			{
-        				double k = nonshadow / nonshadowCnt / val[ 0 ];
-        				val[0] *= k;
-        				Vec3b &rgbPixel = rgbImg.at<Vec3b>(Point(j,i));
-        				rgbPixel *= (k + 1)/(0.3*k+1);
+        			      shadow_pixel += val;
+        			      shadow_pixel_cnt++;
         			}
         		}
+    shadow_pixel /= shadow_pixel_cnt;
+
+    vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<Vec<uchar,1> >(ymat, (uchar)shadow_pixel, 20);
+    for (int i = 0; i < block_list.size(); i++)
+    {
+        if (block_list[i].size() > 100)
+        {
+            vector<pair<int,int> > &block = block_list[i];
+            for (int j = 0; j < block.size(); j++)
+            {
+                pair<int, int> pos = block[j];
+                ymat.at<uchar>(pos.first, pos.second) =  nonshadow;
+                mat.at<Vec3b>(pos.first, pos.second)[0] =  nonshadow;
+            }
+        }
+    }
 
 	}
+    Vec3b v;
+    v.channels;
     //mat = rgbImg;
-	ycrcb2Rgb(mat);
-    //namedWindow("xx",CV_WINDOW_NORMAL);
+	  ycrcb2Rgb(mat);
+   // namedWindow("xx",CV_WINDOW_NORMAL);
 
-    //imshow("xx", mat);
-    //waitKey();
+   // imshow("xx", mat);
+   // waitKey();
 
 }
 Mat ShadowRemove::getYFromYcrcb(Mat& mat)
 {
 	IplImage ycb = IplImage(mat);
 	IplImage* y=cvCreateImage(cvGetSize(&ycb),8,1);
-    IplImage* cr=cvCreateImage(cvGetSize(&ycb),8,1);
-    IplImage* cb=cvCreateImage(cvGetSize(&ycb),8,1);
+  IplImage* cr=cvCreateImage(cvGetSize(&ycb),8,1);
+  IplImage* cb=cvCreateImage(cvGetSize(&ycb),8,1);
 	cvSplit(&ycb,y,cr,cb,0);
 	return cvarrToMat(y);
 }
@@ -83,7 +108,7 @@ void ShadowRemove::rgb2Ycrcb(Mat& mat)
 	 IplImage src = IplImage(mat);
 	 IplImage* ycb=cvCreateImage(cvGetSize(&src),8,3);
 	 cvCvtColor(&src,ycb,CV_BGR2YCrCb);
-     Mat ymat = cvarrToMat(ycb);
+   Mat ymat = cvarrToMat(ycb);
 	 //ymat.data = y->imageData;
 	 //namedWindow("xx",CV_WINDOW_NORMAL);
 	 //imshow("xx", ymat);
@@ -98,9 +123,9 @@ void ShadowRemove::ycrcb2Rgb(Mat& mat)
 	 cvCvtColor(&src,rgb,CV_YCrCb2BGR);
 	 Mat ymat = cvarrToMat(rgb);
 		 //ymat.data = y->imageData;
-		 //namedWindow("xx",CV_WINDOW_NORMAL);
-		 //imshow("xx", ymat);
-		 //waitKey();
+		/* namedWindow("cb",CV_WINDOW_NORMAL);
+		 imshow("cb", ymat);
+		 waitKey();*/
 		 //mat.release();
 	 mat = ymat;
 }

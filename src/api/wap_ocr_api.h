@@ -24,9 +24,14 @@ public:
 	static void release();
 	virtual ~WapOcrApi();
 private:
-	static int epsX, epsY;
+	/*
+	 * overlap ratio (0.0 ~ 1.0)to be judged as overlap
+	 * */
+	static double epsX, epsY;
 	static tesseract::TessBaseAPI *api;
+	static cv::Mat img;
 	// merge and split
+	static void getBBox(const cv::Mat &img, OcrDetailResult* odr); // get The bounding box of the character
 	static void optimize(OcrDetailResult*);
 	static void mergeAndSplit(vector<ResultUnit>&);
 	static void mapToLine(vector<ResultUnit> &symbols);

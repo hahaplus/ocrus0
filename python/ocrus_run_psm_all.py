@@ -45,7 +45,7 @@ if len(sys.argv) != 4:
     print '''For all possible good page_seg_mode,
     process all the Photo-0000 to Photo-0027 images.
 
-Usage: %s text|draw|both symbol|word|both dir_photos
+Usage: %s text|draw|both symbol|word|both dir_txt
 mode
     text: output bbox result to text file
     draw: draw the bounding box, recognized result and confidence
@@ -54,23 +54,22 @@ level
     symbol: symbol only
     word: word only
     both: both symbol and word
-dir_photos
+dir_txt
     Where the Photo-0000.jpg to Photo-0027 are stored''' % \
         (os.path.basename(sys.argv[0]))
     sys.exit(0)
 
 mode = sys.argv[1]
 level = sys.argv[2]
-dir_photos = sys.argv[3].rstrip('/')
+dir_txt = sys.argv[3].rstrip('/')
 
 for psm_str in PAGE_SEG_MODES:
     page_seg_mode = enums[psm_str]
     cmd = '''ocrus_draw_all.py {mode} {page_seg_mode} \
-    {level} {dir_photos}'''.format(mode=mode,
-                                   page_seg_mode=page_seg_mode,
-                                   level=level,
-                                   dir_photos=dir_photos)
-
+    {level} {dir_txt}'''.format(mode=mode,
+                                page_seg_mode=page_seg_mode,
+                                level=level,
+                                dir_txt=dir_txt)
     dir_name = '%d-%s' % (page_seg_mode, psm_str)
     try:
         os.mkdir(dir_name)

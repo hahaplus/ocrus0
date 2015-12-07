@@ -5,6 +5,7 @@ import sys
 import codecs
 import os
 from PIL import Image, ImageDraw, ImageFont
+from ocrus.ocr_result import parse_line_v1
 
 FONT_PATH = '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf'
 WORD_COLOR = (255, 0, 0)
@@ -34,15 +35,7 @@ img.load()
 draw = ImageDraw.Draw(img)
 
 for line in codecs.open(path_txt, encoding='utf-8'):
-
-    d = {'word': None, 'bounding_box': None, 'conf': None}
-    for seg in map(unicode.strip, line.split(';')):
-        if seg.startswith('word:'):
-            d['word'] = seg[len('word:'):].strip()[1:-1]
-        elif seg.startswith('bounding_box:'):
-            d['bounding_box'] = map(int, seg[len('bounding_box:'):].split(','))
-        elif seg.startswith('conf:'):
-            d['conf'] = float(seg[len('conf:'):].strip())
+    d = parse_line_v1(line)
 
     if all(v is not None for v in d.values()):
         '''
@@ -54,7 +47,7 @@ for line in codecs.open(path_txt, encoding='utf-8'):
                 --------------
             x1, y2    x2(right), y2(bottom)
         '''
-        word, box, confidence = d['word'], d['bounding_box'], d['conf']
+        word, box, confidence = d['text'], d['bounding_box'], d['confidence']
         x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
 
         draw.line((x1, y1, x2, y1), BOX_COLOR, 1)

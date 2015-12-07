@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
   gray_img = cv::imread(path_img, CV_LOAD_IMAGE_GRAYSCALE);
   Binarize::binarize(gray_img, binarize_img);
-  ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "eng+jpn");
+  ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "eng+jpn+jpnRSN");
 
   cv::imwrite(path_img + "_gray.png", gray_img);
 

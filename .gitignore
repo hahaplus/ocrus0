@@ -46,3 +46,5 @@ test/*
 images
 ocrResult
 *test.cpp
+
+python/build

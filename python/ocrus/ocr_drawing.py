@@ -39,7 +39,7 @@ def draw_ocr_lines(path_ocr_lines, path_img, path_output_img):
 
     ocr_lines = json.load(open(path_ocr_lines))
     for ocr_line in ocr_lines:
-        for ch in ocr_line['chars']:
+        for i, ch in enumerate(ocr_line['chars']):
             text = ch['text']
             box = ch['bounding_box']
             confidence = ch['confidence']
@@ -65,6 +65,11 @@ def draw_ocr_lines(path_ocr_lines, path_img, path_output_img):
             if confidence:
                 draw.text(((x1 + x2) / 2 - 5, y1 - 15), '%.1f' %
                           confidence, CONFIDENCE_COLOR, font=font_confidence)
+
+            if i == len(ocr_line['chars']) - 1:
+                draw.text(
+                    (x2 + 10, y2), ocr_line['type'],
+                    TEXT_COLOR, font=font_text)
 
     img.save(path_output_img, ext_output_img)
 

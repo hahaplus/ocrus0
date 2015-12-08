@@ -19,12 +19,24 @@ REPLACE_TABLE = {
     u'一': u'1',
     u'。': u'0',
     u'〇': u'0',
+    u'o': u'0',
+    u'O': u'0',
     u'ら':  u'5',
     u'g': u'9',
     u'乃': u'月',
     u'巳': u'日',
     u'\\': u'￥',
     u'~': u' ',
+    u'E': u'日',
+    u',': u' ',
+    u']': u'1',
+    u'[': u'1',
+    u'¥': u'￥',
+    u'臼': u'日',
+    u'フ':  u'7',
+    u'半': u'￥',
+    u"'": u' ',
+    u'エ':  u'1',
 }
 
 
@@ -96,13 +108,29 @@ def extract_date(s):
     @param s: A unicode string
     @return: A list of (start_pos, end_pos)
     '''
-    matches = re.finditer(ur'''[0-9ー一。〇らg]?[0-9ー一。〇らg~\s]* # Year
+    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\],フ'エ]?[0-9ー一。〇oOらg\[\]~\s,フ'エ]* # Year
                         [年]?
-                        [0-9ー一。〇らg\s]+ # Month
+                        [0-9ー一。〇oOらg\[\]\s,フ'エ]+ # Month
                         [月乃]
-                        [0-9ー一。〇らg\s]+ # Day
-                        [日巳曰]''', s, re.X)
+                        [0-9ー一。〇oOらg\[\]\s,フ'エ]+ # Day
+                        [日巳曰E臼8]''', s, re.X)
     result = []
+    if matches:
+        for m in matches:
+            if m:
+                print u'Pos %d-%d: %s' % (m.start(), m.end(),
+                                          s[m.start(): m.end()])
+                result.append((m.start(), m.end()))
+
+    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\]フエ]+
+                               [0-9ー一。〇oOらg\[\]\s,フ'エ]* #Year
+                                /
+                               [0-9ー一。〇oOらg\[\]フエ]+
+                               [0-9ー一。〇oOらg\[\]\s,フ'エ]* # Month
+                               /
+                               [0-9ー一。〇oOらg\[\]フエ]+
+                               [0-9ー一。〇oOらg\[\]\s,フ'エ]* # Day
+                            ''', s, re.X)
     if matches:
         for m in matches:
             if m:
@@ -120,7 +148,7 @@ def extract_money(s):
     @return: A list of (start_pos, end_pos)
     '''
     matches = re.finditer(
-        ur'([\\￥]*[0-9ー一。〇らg][0-9ー一。〇らg~\s]*円)|([\\￥]+[0-9ー一。〇らg][0-9ー一。〇らg~\s]*)',
+        ur'([\\￥¥半]*[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フ\'エ]*円)|([\\￥¥半]+[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フエ]*)',
         s)
     result = []
     if matches:
@@ -130,6 +158,53 @@ def extract_money(s):
             result.append((m.start(), m.end()))
     return result
 
+
+def to_ocr_lines(ocr_chars):
+    '''
+    Convert ocr_chars to ocr_lines plus some post-processing
+
+    @param ocr_chars: OCR chars
+    @return: OCR lines
+    '''
+
+    # Make sure each ch['text'] contain 1 character
+    for ch in ocr_chars:
+        if len(ch['text']) == 0:
+            ch['text'] = ' '
+        elif len(ch['text']) > 1:
+            ch['text'] = ch['text'][0]
+
+    text = u''.join(ocr_char['text'] for ocr_char in ocr_chars)
+
+    ocr_lines = []
+
+    pos_dates = extract_date(text)
+    for start_pos, end_pos in pos_dates:
+        ocr_line = {'type': 'date',
+                    'chars': []}
+        for pos in range(start_pos, end_pos):
+            ocr_line['chars'].append(ocr_chars[pos])
+        ocr_lines.append(ocr_line)
+
+    pos_moneys = extract_money(text)
+    for start_pos, end_pos in pos_moneys:
+        ocr_line = {'type': 'money',
+                    'chars': []}
+        for pos in range(start_pos, end_pos):
+            ocr_line['chars'].append(ocr_chars[pos])
+        ocr_lines.append(ocr_line)
+
+    # Make replacements
+    for ocr_line in ocr_lines:
+        for ch in ocr_line['chars']:
+            ch['text'] = replace_if_exist(ch['text'], REPLACE_TABLE)
+
+    # Remove whitespace characters
+    for ocr_line in ocr_lines:
+        ocr_line['chars'] = [
+            ch for ch in ocr_line['chars'] if ch['text'].strip() != '']
+
+    return ocr_lines
 
 if __name__ == '__main__':
     extract_date(u'abab \t 2015年一2月 2一日 haha')

@@ -37,11 +37,12 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  cv::Mat gray_img, binarize_img, box_img;
+  cv::Mat img, gray_img, binarize_img, box_img;
 
-  gray_img = cv::imread(path_img, CV_LOAD_IMAGE_GRAYSCALE);
+  img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
+  cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
   Binarize::binarize(gray_img, binarize_img);
-  ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "eng+jpn+jpnRSN");
+  ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "jpn+jpnRSN");
 
   cv::imwrite(path_img + "_gray.png", gray_img);
 

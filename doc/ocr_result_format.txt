@@ -48,6 +48,21 @@ However, if the characters are put in order, the line
 might be recovered by matching regular expressions of money
 or date.
 
+Format for stats calculation
+stats = [
+  { // Define stat for an image
+    "id_image": "0001",
+    "num_lines": 4,
+    "num_correct_lines": 3,
+    "num_wrong_lines": 1,
+    "accuracy": 0.75
+  },
+
+  { // Define stat for another image
+  }
+
+]
+
 -----
 Some code snippets for using in gimp to get ground truth:
 ￥
@@ -56,13 +71,13 @@ Some code snippets for using in gimp to get ground truth:
 月
 日
 
-d = {"type": "money",
-     "chars" : []}
-
 d = {"type": "date",
      "chars" : []}
 
-d['chars'] = []
+
+d = {"type": "money",
+     "chars" : []}
+
 
 def add_char(text):
     d['chars'].append(
@@ -70,9 +85,15 @@ def add_char(text):
        'bounding_box': gimp.image_list()[0].active_layer.mask_bounds, 
        'confidence': None})
 
+
 def clear_chars():
     d['chars'] = []
     
+
 def dump_chars():
     import json
     print json.dumps(d, indent=2)
+
+
+add=add_char; clear=clear_chars; dump=dump_chars
+

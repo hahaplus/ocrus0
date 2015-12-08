@@ -120,7 +120,7 @@ def extract_money(s):
     @return: A list of (start_pos, end_pos)
     '''
     matches = re.finditer(
-        ur'([\\]*[0-9ー一。〇らg][0-9ー一。〇らg~\s]*円)|([\\]+[0-9ー一。〇らg][0-9ー一。〇らg~\s]*)',
+        ur'([\\￥]*[0-9ー一。〇らg][0-9ー一。〇らg~\s]*円)|([\\￥]+[0-9ー一。〇らg][0-9ー一。〇らg~\s]*)',
         s)
     result = []
     if matches:

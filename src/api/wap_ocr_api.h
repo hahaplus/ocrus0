@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "../dto/ocr_result_dto.h"
+#include "dto/ocr_result_dto.h"
 class WapOcrApi {
 public:
 	WapOcrApi();
@@ -39,6 +39,9 @@ private:
 	static bool overlap(pair<int, int> a, pair<int, int> b, int eps = 0);
 	static void handle(vector<ResultUnit> &segment);
 	static void recognizeUnit(ResultUnit &u);
+	static void cutImage(const Mat &src, Mat &dst, int x, int y, int width, int height);
+	static void scaleImage(Mat &src, double new_width, double new_height);
+	static void pocessImage(Mat &);
 };
 
 #endif /* SRC_API_WAP_OCR_API_H_ */

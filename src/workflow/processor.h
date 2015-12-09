@@ -23,7 +23,7 @@
 #include "../preprocessing/shadow/shadow_remove.h"
 #include "../dto/ocr_result_dto.h"
 #include "recognition/recognition.h"
-
+#include "preprocessing/denoise/denoise_line_point.h"
 using namespace std;
 using namespace cv;
 
@@ -132,9 +132,10 @@ public:
 						+ FileUtil::getFileNameNoSuffix(input) + ".txt";
 //				time_t t1 = time(NULL);
 				cout << "OCR to: " << textPath << endl;
+
+
+        DenoiseLinePoint::removeNoise(dsts[0]);
         Mat tmp_img = dsts[0].clone();
-
-
         OcrDetailResult ocrResult;
 				string text = WapOcrApi::recognitionToText(dsts[0], lang, 0, &ocrResult);
 //				time_t t2 = time(NULL);

@@ -9,10 +9,9 @@ prog_bounding_box = 'ocrus_bounding_box'
 prog_draw_bbox = 'ocrus_draw_bbox.py'
 
 if len(sys.argv) != 5:
-    print '''Process all the Photo-0000 to Photo-0027 images.
-Output bounding box result and draw the result to image
+    print '''Output bounding box result and draw the result to images
 
-Usage: %s text|draw|both page_seg_mode symbol|word|both dir_photos
+Usage: %s text|draw|both page_seg_mode symbol|word|both path_image_list
 mode
     text: output bbox result to text file
     draw: draw the bounding box, recognized result and confidence
@@ -22,15 +21,15 @@ level
     symbol: symbol only
     word: word only
     both: both symbol and word
-dir_photos
-    Where the Photo-0000.jpg to Photo-0027 are stored''' % \
+path_image_list
+    A list of path of images, one path in one line''' % \
         (os.path.basename(sys.argv[0]))
     sys.exit(0)
 
 mode = sys.argv[1]
 page_seg_mode = sys.argv[2]
 level = sys.argv[3]
-dir_photos = sys.argv[4].rstrip('/')
+path_image_list = sys.argv[4].rstrip('/')
 
 levels = ['symbol']
 if level == 'symbol':
@@ -40,26 +39,27 @@ elif level == 'word':
 elif level == 'both':
     levels = ['symbol', 'word']
 
-num_photos = range(0, 28)
-num_photos.remove(2)
+for path_image in open(path_image_list):
+    path_image = path_image.strip()
+    print 'Processing', path_image, '...'
 
-num_photos = map(lambda x: '%04d' % x, num_photos)
+    if not os.path.exists(path_image):
+        continue
 
-for num_photo in num_photos:
     for level in levels:
         if mode in ['text', 'both']:
-            cmd = '''{prog_bounding_box} {page_seg_mode} {level} {dir_photos}/Photo-{num_photo}.jpg \
-> Photo-{num_photo}_{level}.txt
-'''.format(prog_bounding_box=prog_bounding_box,
-                page_seg_mode=page_seg_mode, level=level,
-                dir_photos=dir_photos, num_photo=num_photo)
+            cmd = '''{prog_bounding_box} {page_seg_mode} {level} {path_image} \
+> {path_image}_{level}.txt'''.\
+                format(prog_bounding_box=prog_bounding_box,
+                       page_seg_mode=page_seg_mode, level=level,
+                       path_image=path_image)
             print 'Running cmd:', cmd
             os.system(cmd)
 
         if mode in ['draw', 'both']:
-            cmd = '''{prog_draw_bbox} {dir_photos}/Photo-{num_photo}.jpg_binarize.png \
-Photo-{num_photo}_{level}.txt Photo-{num_photo}_{level}.png
-'''.format(prog_draw_bbox=prog_draw_bbox, level=level,
-                dir_photos=dir_photos, num_photo=num_photo)
+            cmd = '''{prog_draw_bbox} {path_image}_binarize.png \
+{path_image}_{level}.txt {path_image}_{level}.png'''.\
+                format(prog_draw_bbox=prog_draw_bbox, level=level,
+                       path_image=path_image)
             print 'Running cmd:', cmd
             os.system(cmd)

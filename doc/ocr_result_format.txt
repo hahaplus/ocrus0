@@ -1,0 +1,99 @@
+This file describes the file format for exchanging OCR results between programs
+
+The format is the final OCR result
+ocr_lines = [
+
+  { // Define a money or date line
+  
+    "type": "money", // Values: "money" or "date"
+    
+    "chars": // Characters in this line
+      [
+      
+        { // Define a character
+          "text": "9",
+          "confidence": 61.91, // Optional
+          "bounding_box": [411, 1778, 431, 1906],
+          "candidates": ["9", "g", "q"] // Optional
+        },
+        
+        { // Define another character
+        }
+        
+      ]
+  },
+  
+  { // Define another money or date line
+  
+  }
+  
+]
+
+Possible intermediate formats
+ocr_chars = [
+
+  { // Define a character
+    "text": "9",
+    "confidence": 61.91, // Optional
+    "bounding_box": [411, 1778, 431, 1906],
+    "candidates": ["9", "g", "q"] // Optional
+  },
+  
+  { // Define another character
+  }
+  
+]
+In this format, the line information is missing.
+However, if the characters are put in order, the line
+might be recovered by matching regular expressions of money
+or date.
+
+Format for stats calculation
+stats = [
+  { // Define stat for an image
+    "id_image": "0001",
+    "num_lines": 4,
+    "num_correct_lines": 3,
+    "num_wrong_lines": 1,
+    "accuracy": 0.75
+  },
+
+  { // Define stat for another image
+  }
+
+]
+
+-----
+Some code snippets for using in gimp to get ground truth:
+￥
+円
+年
+月
+日
+
+d = {"type": "date",
+     "chars" : []}
+
+
+d = {"type": "money",
+     "chars" : []}
+
+
+def add_char(text):
+    d['chars'].append(
+      {'text': text, 
+       'bounding_box': gimp.image_list()[0].active_layer.mask_bounds, 
+       'confidence': None})
+
+
+def clear_chars():
+    d['chars'] = []
+    
+
+def dump_chars():
+    import json
+    print json.dumps(d, indent=2)
+
+
+add=add_char; clear=clear_chars; dump=dump_chars
+

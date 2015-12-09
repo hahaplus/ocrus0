@@ -8,14 +8,14 @@ import json
 from ocrus.stats_analysis import calc_correct_lines, pretty_print_stats
 
 if len(sys.argv) not in [2, 3]:
-    print '''Calculate accuracy for Photo-0000 to Photo-0027 images.
+    print '''Calculate accuracy for images.
 
-Usage: %s path_image_list [base_stats_json]
+Usage: %s path_image_list [path_stats_json]
 
 path_image_list
     A list of path of images, one path in one line
-base_stats_json
-    If specified, the stats will be dumped in base_stats_json''' % \
+path_stats_json
+    If specified, the stats will be dumped in path_stats_json''' % \
         (os.path.basename(sys.argv[0]))
     sys.exit(0)
 

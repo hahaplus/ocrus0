@@ -7,7 +7,7 @@ Copyright (C) 2015 Works Applications, all rights reserved
 @author: Chang Sun
 '''
 
-OVERLAP_PERCENT = 0.3
+OVERLAP_PERCENT = 0.1
 
 
 def bbox_area(bbox):
@@ -67,11 +67,11 @@ def calc_correct_lines(ocr_lines_gt, ocr_lines):
     @return: An integer
     '''
     num_correct_lines = 0
-    for ocr_line in ocr_lines:
+    for ocr_line_gt in ocr_lines_gt:
 
         line_ok = False
 
-        for ocr_line_gt in ocr_lines_gt:
+        for ocr_line in ocr_lines:
             if ocr_line['type'] != ocr_line_gt['type'] or \
                     len(ocr_line['chars']) != len(ocr_line_gt['chars']):
                 continue

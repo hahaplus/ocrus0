@@ -17,6 +17,9 @@ echo Build and install ...
 make
 sudo make install
 
+echo Recognize and generate bounding box files ...
+ocrus_draw_all.py both 4 symbol $PATH_IMAGE_LIST
+
 echo Generate ocr_lines files ...
 ocrus_to_ocr_lines.py symbol $PATH_IMAGE_LIST
 

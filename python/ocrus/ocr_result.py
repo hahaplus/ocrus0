@@ -37,7 +37,10 @@ REPLACE_TABLE = {
     u'半': u'￥',
     u"'": u' ',
     u'エ':  u'1',
-    u'曰': u'日'
+    u'曰': u'日',
+    u'芋': u'￥',
+    u'斐': u'￥',
+    u'韮': u'￥',
 }
 
 
@@ -109,7 +112,7 @@ def extract_date(s):
     @param s: A unicode string
     @return: A list of (start_pos, end_pos)
     '''
-    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\],フ'エ]?[0-9ー一。〇oOらg\[\]~\s,フ'エ]* # Year
+    matches = re.finditer(ur'''([0-9ー一。〇oOらg\[\],フ'エ]?[0-9ー一。〇oOらg\[\]~\s,フ'エ]*) # Year
                         [年]?
                         [0-9ー一。〇oOらg\[\]\s,フ'エ]+ # Month
                         [月乃]
@@ -119,18 +122,28 @@ def extract_date(s):
     if matches:
         for m in matches:
             if m:
-                print u'Pos %d-%d: %s' % (m.start(), m.end(),
-                                          s[m.start(): m.end()])
-                result.append((m.start(), m.end()))
+                year = m.group(1)
+                pos = len(year) - 1
+                num_digit = 0
+                while True:
+                    ch = replace_if_exist(year[pos], REPLACE_TABLE).strip()
+                    if unicode.isdigit(ch):
+                        num_digit += 1
+                    if num_digit >= 4:
+                        break
+                    if pos == 0:
+                        break
+                    pos -= 1
 
-    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\]フエ]+
-                               [0-9ー一。〇oOらg\[\]\s,フ'エ]* #Year
+                print u'Pos %d-%d: %s' % (m.start() + pos, m.end(),
+                                          s[m.start() + pos: m.end()])
+                result.append((m.start() + pos, m.end()))
+
+    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\]フエ]{4} #Year
                                 /
-                               [0-9ー一。〇oOらg\[\]フエ]+
-                               [0-9ー一。〇oOらg\[\]\s,フ'エ]* # Month
+                               [0-9ー一。〇oOらg\[\]フエ]{2}# Month
                                /
-                               [0-9ー一。〇oOらg\[\]フエ]+
-                               [0-9ー一。〇oOらg\[\]\s,フ'エ]* # Day
+                               [0-9ー一。〇oOらg\[\]フエ]{2} # Day
                             ''', s, re.X)
     if matches:
         for m in matches:
@@ -149,7 +162,7 @@ def extract_money(s):
     @return: A list of (start_pos, end_pos)
     '''
     matches = re.finditer(
-        ur'([\\￥¥半]*[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フ\'エ]*円)|([\\￥¥半]+[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フエ]*)',
+        ur'([\\￥¥半芋斐韮]*[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フ\'エ]*円)|([\\￥¥半芋斐韮]+[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フエ]*)',
         s)
     result = []
     if matches:

@@ -162,61 +162,6 @@
   {
     "chars": [
       {
-        "text": "0", 
-        "bounding_box": [
-          1308, 
-          2655, 
-          1347, 
-          2704
-        ], 
-        "confidence": 89.91
-      }, 
-      {
-        "text": "3", 
-        "bounding_box": [
-          1381, 
-          2656, 
-          1417, 
-          2705
-        ], 
-        "confidence": 91.49
-      }, 
-      {
-        "text": "0", 
-        "bounding_box": [
-          1447, 
-          2658, 
-          1486, 
-          2706
-        ], 
-        "confidence": 87.58
-      }, 
-      {
-        "text": "0", 
-        "bounding_box": [
-          1516, 
-          2658, 
-          1555, 
-          2706
-        ], 
-        "confidence": 89.39
-      }, 
-      {
-        "text": "円", 
-        "bounding_box": [
-          801, 
-          2753, 
-          822, 
-          2765
-        ], 
-        "confidence": 44.69
-      }
-    ], 
-    "type": "money"
-  }, 
-  {
-    "chars": [
-      {
         "text": "￥", 
         "bounding_box": [
           899, 

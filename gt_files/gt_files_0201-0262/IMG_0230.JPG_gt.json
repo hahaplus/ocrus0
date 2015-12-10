@@ -2,26 +2,6 @@
   {
     "chars": [
       {
-        "text": "0", 
-        "bounding_box": [
-          1682, 
-          982, 
-          1740, 
-          1062
-        ], 
-        "confidence": 81.43
-      }, 
-      {
-        "text": "6", 
-        "bounding_box": [
-          1877, 
-          977, 
-          1933, 
-          1054
-        ], 
-        "confidence": 67.55
-      }, 
-      {
         "text": "2", 
         "bounding_box": [
           475, 

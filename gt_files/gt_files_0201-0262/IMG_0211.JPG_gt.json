@@ -247,6 +247,16 @@
   {
     "chars": [
       {
+        "text": "￥", 
+        "bounding_box": [
+          1080, 
+          819, 
+          1128, 
+          932
+        ], 
+        "confidence": 86.69
+      }, 
+      {
         "text": "1", 
         "bounding_box": [
           1163, 

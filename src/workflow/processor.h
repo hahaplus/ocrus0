@@ -152,7 +152,7 @@ public:
 				cout << "OCR IMG to: " << imgPath;
 				Mat out_img;
 
-				ocrus::drawOcrResult(tmp_img, ocrResult, &out_img);
+				ocrus::drawOcrResult(dsts[0], ocrResult, &out_img);
 				imwrite( imgPath, out_img );
 			}
 		} else {

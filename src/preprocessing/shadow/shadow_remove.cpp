@@ -16,9 +16,10 @@ ShadowRemove::~ShadowRemove() {
   // TODO Auto-generated destructor stub
 }
 void ShadowRemove::removeShadow(Mat& mat) {
-  Mat out;
-  GaussianBlur(mat, out, Size(3, 3), 0, 0);
-  mat = out;
+  //return;
+  //Mat out;
+ // GaussianBlur(mat, out, Size(3, 3), 0, 0);
+ // mat = out;
   //namedWindow("xx",CV_WINDOW_NORMAL);
   //  imshow("xx", out);
   //  waitKey();
@@ -70,9 +71,9 @@ void ShadowRemove::removeShadow(Mat& mat) {
     shadow_pixel /= shadow_pixel_cnt;
 
     vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<
-        Vec<uchar, 1> >(ymat, (uchar) shadow_pixel, 10);
+        Vec<uchar, 1> >(ymat, (uchar) shadow_pixel, 15);
     for (int i = 0; i < block_list.size(); i++) {
-      if (block_list[i].size() > 500) {
+      if (block_list[i].size() > 60*60) {
         vector<pair<int, int> > &block = block_list[i];
         for (int j = 0; j < block.size(); j++) {
           pair<int, int> pos = block[j];
@@ -87,10 +88,10 @@ void ShadowRemove::removeShadow(Mat& mat) {
   v.channels;
   //mat = rgbImg;
   ycrcb2Rgb(mat);
-  // namedWindow("xx",CV_WINDOW_NORMAL);
+   //namedWindow("xx",CV_WINDOW_NORMAL);
 
-  // imshow("xx", mat);
-  // waitKey();
+   //imshow("xx", mat);
+   //waitKey();
 
 }
 Mat ShadowRemove::getYFromYcrcb(Mat& mat) {

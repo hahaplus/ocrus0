@@ -19,7 +19,7 @@ DenoiseLinePoint::~DenoiseLinePoint() {
   // TODO Auto-generated destructor stub
 }
 void DenoiseLinePoint::removeNoise(Mat &src) {
- // return;
+  //return;
   vector<vector<pair<int, int> > > blocks = AlgorithmUtil::floodFillInMat<
       Vec<uchar, 1> >(src, 0, 0);
   vector<int> width, height;
@@ -41,9 +41,9 @@ void DenoiseLinePoint::removeNoise(Mat &src) {
     int avg_width = AlgorithmUtil::getAverageValue(width);
     int avg_height = AlgorithmUtil::getAverageValue(height);
     for (int i = 0; i < blocks.size(); i++) {
-      if ((width[i] < src.cols * 0.01 && height[i] < src.rows * 0.01)) {
+      if ((width[i] < src.cols * 0.004 && height[i] < src.rows * 0.004)) {
         for (auto pix : blocks[i]) {
-         // src.at<uchar>(pix.first, pix.second) = 255;
+          src.at<uchar>(pix.first, pix.second) = 255;
         }
       } else {
         new_blocks.push_back(blocks[i]);
@@ -68,7 +68,7 @@ void DenoiseLinePoint::removeNoise(Mat &src) {
     avg_width = AlgorithmUtil::getAverageValue(width);
     avg_height = AlgorithmUtil::getAverageValue(height);
     for (int i = 0; i < blocks.size(); i++) {
-      if ((width[i] > 0.4 * src.cols) || (height[i] > 0.4 * src.rows)) {
+      if ((width[i] >= 0.1 * src.cols) || (height[i] >= 0.1 * src.rows) || width[i] / height[i] > 8) {
         for (auto pix : blocks[i]) {
           src.at<uchar>(pix.first, pix.second) = 255;
         }

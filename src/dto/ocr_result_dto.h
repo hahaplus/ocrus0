@@ -33,6 +33,14 @@ class ResultUnit {
     this->line_index = 0;
     this->confidence = 0;
   }
+  int getWidth()
+  {
+    return bounding_box[1].x - bounding_box[0].x;
+  }
+  int getHeight()
+  {
+    return bounding_box[1].y - bounding_box[0].y;
+  }
 };
 class OcrDetailResult {
  private:

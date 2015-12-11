@@ -8,6 +8,8 @@
 #include "wap_ocr_api.h"
 #include "util/string_util.h"
 #include "util/algorithm_util.h"
+#include <set>
+#include "recognition/recognition.h"
 using namespace std;
 using namespace tesseract;
 using namespace cv;
@@ -29,9 +31,86 @@ tesseract::TessBaseAPI *WapOcrApi::api;
  * overlap ratio (0.0 ~ 1.0)to judge as overlap
  * */
 double WapOcrApi::epsY = 0.5;
-double WapOcrApi::epsX = -0.08;
-string WapOcrApi::recognitionToText(cv::Mat src, const string lang,
+double WapOcrApi::epsX = -0.01;
+string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
                                     int cut_level, OcrDetailResult* result) {
+  if (result == NULL) {
+    result = new OcrDetailResult;
+  }
+  recognitionWithTesseract(src, lang, cut_level, result);
+  return result->toString(cut_level);
+  // first pass
+  OcrDetailResult &first_pass = *result;
+
+  // format the Image and do the second pass recognition
+  OcrDetailResult format_result;
+  getBBox(src, &format_result);
+  optimize(&format_result);
+  Mat formatImg;
+  map<pair<int, int>, ResultUnit> pos_map;
+  formatImage(src, formatImg, &format_result, pos_map);
+
+  OcrDetailResult second_pass;
+  recognitionWithTesseract(formatImg, lang, cut_level, &second_pass);
+  Mat out_img;
+
+  ocrus::drawOcrResult(formatImg, second_pass, &out_img);
+  imwrite("/home/michael/tmp.jpg", out_img);
+  // use second_pass result to fix incorrect result of first_pass
+  // first build a origin map  (pixel coordinate ----> resultUnit index)
+  vector<ResultUnit> result_list = first_pass.getResult();
+  vector<vector<int>> origin_map(src.cols, vector<int>(src.rows));
+  for (int i = 0; i < result_list.size(); i++) {
+    ResultUnit &ru = result_list[i];
+    for (int j = 0; j < ru.getWidth(); j++)
+      for (int k = 0; k < ru.getHeight(); k++) {
+        origin_map[j + ru.bounding_box[0].x][k + ru.bounding_box[0].y] = i;
+      }
+  }
+  // using second pass to fix first pass
+  vector<bool> is_del(result_list.size(), false);
+  vector<ResultUnit> new_result_list;
+  map<int, vector<ResultUnit>> replace_map;
+  for (auto ru : second_pass.getResult())
+  {
+    if (pos_map.count(make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y))) continue;
+    ResultUnit first_ru = pos_map[make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y)];
+
+    // find the result unit index in first pass covered by first_ru
+    set<int> index_set;
+    for (int j = 0; j < first_ru.getWidth(); j++)
+          for (int k = 0; k < first_ru.getHeight(); k++) {
+            index_set.insert(origin_map[j + first_ru.bounding_box[0].x][k + first_ru.bounding_box[0].y]);
+          }
+    if (index_set.size() == 1)
+    {
+      if (ru.confidence > result_list[*index_set.begin()].confidence )
+      {
+        is_del[*index_set.begin()] = true;
+        //new_result_list.push_back(ru);
+        replace_map[*index_set.begin()].push_back(ru);
+      }
+    }
+  }
+  for (int i = 0; i < result_list.size(); i++)
+  {
+    if (!is_del[i])
+    {
+      new_result_list.push_back(result_list[i]);
+    }
+  }
+  result->setResult(new_result_list);
+  //namedWindow("xx",CV_WINDOW_NORMAL);
+  //imshow("xx", src);
+  //waitKey();
+
+  return result->toString(cut_level);
+}
+
+void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
+                                         const std::string lang,
+                                         const int cut_level,
+                                         OcrDetailResult* result) {
   if (result == NULL) {
     result = new OcrDetailResult;
   }
@@ -43,8 +122,8 @@ string WapOcrApi::recognitionToText(cv::Mat src, const string lang,
     exit(-1);
   }
   WapOcrApi::img = src.clone();
-  Mat tmpImg = src.clone();
   api->SetVariable("save_blob_choices", "T");
+  //api->SetPageSegMode(PSM_SINGLE_COLUMN);
   api->SetImage((uchar*) src.data, src.cols, src.rows, src.channels(),
                 src.cols);
   api->Recognize(0);
@@ -83,24 +162,7 @@ string WapOcrApi::recognitionToText(cv::Mat src, const string lang,
       delete[] word;
       result->push_back_symbol(rt);
     } while (ri->Next(level));
-
-    //api->End();
-    //delete api;
-    //api = new tesseract::TessBaseAPI();
-    // init again
-    /*if (api->Init(NULL, lang.c_str())) {
-     printf("optimize process.Could not initialize tesseract.\n");
-     exit(-1);
-     }
-
-     //api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
-     api->SetImage((uchar*) tmpImg.data, tmpImg.cols, tmpImg.rows, tmpImg.channels(), tmpImg.cols);
-*/
-    //getBBox(src, result);
-    //optimize(result);
-    res = result->toString(cut_level);
   }
-  return res;
 }
 void WapOcrApi::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
   odr->clear();
@@ -125,13 +187,13 @@ void WapOcrApi::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
   // filt too small box, they are noise
   vector<ResultUnit> filted_result;
   for (int i = 0; i < odr->getResultSize(); i++) {
-      ResultUnit ru = odr->getResultAt(i);
-      pair<double, double> box_size(ru.bounding_box[1].x - ru.bounding_box[0].x, ru.bounding_box[1].y - ru.bounding_box[0].y);
-      if (box_size.first < avg_w || box_size.second < avg_h)
-      {
-          continue;
-      }
-      filted_result.push_back(ru);
+    ResultUnit ru = odr->getResultAt(i);
+    pair<double, double> box_size(ru.bounding_box[1].x - ru.bounding_box[0].x,
+                                  ru.bounding_box[1].y - ru.bounding_box[0].y);
+    if (box_size.first < avg_w || box_size.second < avg_h) {
+      //continue;
+    }
+    filted_result.push_back(ru);
   }
   odr->setResult(filted_result);
 }
@@ -213,8 +275,9 @@ void WapOcrApi::mergeAndSplit(vector<ResultUnit> &line) {
   line = new_line;
 }
 void WapOcrApi::handle(vector<ResultUnit> &segment) {
- if (segment.size() < 2)
-   return;
+  //return;
+  if (segment.size() < 2)
+    return;
   // try to merge
   vector<cv::Point2i> merge_bounding_box(2);
   merge_bounding_box[0].x = merge_bounding_box[0].y = 1e6;
@@ -236,12 +299,13 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
     mean_confi += ru.confidence;
   }
   merge_unit.bounding_box = merge_bounding_box;
+  merge_unit.line_index = segment[0].line_index;
   // try to split
   // width / height
   double width = merge_bounding_box[1].x - merge_bounding_box[0].x;
   double height = merge_bounding_box[1].y - merge_bounding_box[0].y;
   double wh_ratio = width / (height * 0.8);
-  if (wh_ratio > 1.5 && segment.size() > 1) {
+  if (false && wh_ratio > 1.5 && segment.size() > 1) {
     int part = (int) (wh_ratio + 0.5);  // round
     split_units.clear();
     for (int i = 0; i < part; i++) {
@@ -285,39 +349,41 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
 }
 int tmp_cnt = 0;
 void WapOcrApi::recognizeUnit(ResultUnit &ru) {
-
+  return;
   //api = new tesseract::TessBaseAPI();
   //api->Init(NULL, "jpn");
   //api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
- // api->TesseractRect(img.clone().data,1,img.step1(),ru.bounding_box[0].x, ru.bounding_box[0].y,
- //                    ru.bounding_box[1].x - ru.bounding_box[0].x,
+  // api->TesseractRect(img.clone().data,1,img.step1(),ru.bounding_box[0].x, ru.bounding_box[0].y,
+  //                    ru.bounding_box[1].x - ru.bounding_box[0].x,
 //                     ru.bounding_box[1].y - ru.bounding_box[0].y);
   api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
   //api->SetImage((uchar*) img.clone().data, img.cols, img.rows, img.channels(),
   //               img.cols);
   /*api->SetRectangle(ru.bounding_box[0].x, ru.bounding_box[0].y,
-                        ru.bounding_box[1].x - ru.bounding_box[0].x,
-                        ru.bounding_box[1].y - ru.bounding_box[0].y);*/
+   ru.bounding_box[1].x - ru.bounding_box[0].x,
+   ru.bounding_box[1].y - ru.bounding_box[0].y);*/
   Mat character_unit;
-  cutImage(img, character_unit, ru.bounding_box[0].x,
-           ru.bounding_box[0].y,
+  cutImage(img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
            ru.bounding_box[1].x - ru.bounding_box[0].x,
            ru.bounding_box[1].y - ru.bounding_box[0].y);
   double scale_size = 20;
-  scaleImage(character_unit, character_unit.cols * scale_size, character_unit.rows* scale_size);
+  scaleImage(character_unit, character_unit.cols * scale_size,
+             character_unit.rows * scale_size);
   //Mat out;
 
   //character_unit = out;
-  imwrite("/home/michael/tmp_output/"+StringUtil::toString(tmp_cnt++)+".jpg", character_unit);
+  imwrite(
+      "/home/michael/tmp_output/" + StringUtil::toString(tmp_cnt++) + ".jpg",
+      character_unit);
 
-  api->SetImage((uchar*)character_unit.data, character_unit.cols, character_unit.rows, img.channels()
-                ,character_unit.cols);
+  api->SetImage((uchar*) character_unit.data, character_unit.cols,
+                character_unit.rows, img.channels(), character_unit.cols);
   ru.confidence = api->MeanTextConf();
   ru.content = api->GetUTF8Text()/*"a"*/;
   character_unit.deallocate();
 }
-void WapOcrApi::cutImage(const Mat &src, Mat &dst, int x, int y, int width, int height)
-{
+void WapOcrApi::cutImage(const Mat &src, Mat &dst, int x, int y, int width,
+                         int height) {
   dst = Mat(src, cv::Rect2i(x, y, width, height));
 
   //printf( "%d %d\n", width, height);
@@ -325,16 +391,52 @@ void WapOcrApi::cutImage(const Mat &src, Mat &dst, int x, int y, int width, int 
   //imshow("xx", dst);
   //waitKey();
 }
-void WapOcrApi::scaleImage(Mat &src, double new_width, double new_height)
-{
+void WapOcrApi::scaleImage(Mat &src, double new_width, double new_height) {
   IplImage srcImg(src);
-  IplImage* dstImg = cvCreateImage(CvSize(new_width, new_height), srcImg.depth, src.channels());
-  cvResize(&srcImg,dstImg,CV_INTER_CUBIC);
+  IplImage* dstImg = cvCreateImage(CvSize(new_width, new_height), srcImg.depth,
+                                   src.channels());
+  cvResize(&srcImg, dstImg, CV_INTER_CUBIC);
   src = cvarrToMat(dstImg);
 }
-void WapOcrApi::pocessImage(Mat &mat)
-{
-
+void WapOcrApi::writeCharacter(const Mat &src, Mat &dst, ResultUnit unit, int x,
+                               int y) {
+  for (int i = 0; i < unit.getHeight(); i++)
+    for (int j = 0; j < unit.getWidth(); j++) {
+      if (unit.bounding_box[0].y + i < 0
+          || unit.bounding_box[0].y + i >= dst.rows
+          || unit.bounding_box[0].x + j < 0
+          || unit.bounding_box[0].x + j >= dst.cols)
+        continue;
+      if (i + y < 0 || i + y >= dst.rows || j + x < 0 || j + x >= dst.cols)
+        continue;
+      dst.at<uchar>(i + y, j + x) = src.at<uchar>(unit.bounding_box[0].y + i,
+                                                  unit.bounding_box[0].x + j);
+    }
+}
+// format the image to be more neat
+void WapOcrApi::formatImage(const Mat &src, Mat &dst, OcrDetailResult *result,
+                            map<pair<int, int>, ResultUnit> &pos_map) {
+  dst = Mat(src.rows, src.cols, src.type());
+  // make the white background
+  memset(dst.data, 255, dst.rows * dst.cols * dst.channels());
+  int space = 50;
+  vector<ResultUnit> result_list = result->getResult();
+  int last_index = 0;  // line index
+  int y_pos = 0;     // each line 's y coordinate
+  int x_pos = 0;     // each character's start at x coordinate
+  int max_height = 0;
+  for (auto ru : result_list) {
+    if (ru.line_index != last_index) {
+      y_pos += max_height + space;
+      x_pos = 10;
+      last_index = ru.line_index;
+      max_height = 0;
+    }
+    pos_map[make_pair(x_pos, y_pos)] = ru;
+    writeCharacter(src, dst, ru, x_pos, y_pos);
+    x_pos += space + ru.getWidth();
+    max_height = max(ru.getHeight(), max_height);
+  }
 }
 WapOcrApi::~WapOcrApi() {
 // TODO Auto-generated destructor stub

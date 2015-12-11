@@ -1,8 +1,8 @@
 /*
- * WapOcrApi.h
+ * wap_ocr_api.h
  *
  *  Created on: Nov 30, 2015
- *      Author: michael
+ *      Author: michael chen
  */
 
 #ifndef SRC_API_WAP_OCR_API_H_
@@ -15,12 +15,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
+#include <map>
 #include "dto/ocr_result_dto.h"
 class WapOcrApi {
 public:
 	WapOcrApi();
-	static std::string recognitionToText(cv::Mat img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
+	static std::string recognitionToText(const cv::Mat &img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
 	static void release();
 	virtual ~WapOcrApi();
 private:
@@ -41,7 +41,13 @@ private:
 	static void recognizeUnit(ResultUnit &u);
 	static void cutImage(const Mat &src, Mat &dst, int x, int y, int width, int height);
 	static void scaleImage(Mat &src, double new_width, double new_height);
-	static void pocessImage(Mat &);
+	// format the image to be more neat
+	static void formatImage(const Mat &src, Mat &dst, OcrDetailResult *result, std::map<pair<int,int>, ResultUnit> &pos_map);
+  // write the character from src to dst at (x, y)
+	static void writeCharacter(const Mat &src, Mat &dst, ResultUnit unit, int x, int y);
+	// recognition with tesseract
+  static void recognitionWithTesseract(const cv::Mat &img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
+
 };
 
 #endif /* SRC_API_WAP_OCR_API_H_ */

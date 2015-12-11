@@ -25,14 +25,15 @@ void ocrPrintBoundingBox(const cv::Mat& src,
                          tesseract::PageSegMode page_seg_mode,
                          tesseract::PageIteratorLevel level,
                          const std::string& lang) {
-  tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
-  api->Init(NULL, lang.c_str());
-  api->SetPageSegMode(page_seg_mode);
-  api->SetImage(reinterpret_cast<uchar*>(src.data), src.cols, src.rows, 1,
-                src.cols);
-  api->Recognize(NULL);
+  tesseract::TessBaseAPI api;
+  api.Init(NULL, lang.c_str());
 
-  tesseract::ResultIterator* ri = api->GetIterator();
+  api.SetPageSegMode(page_seg_mode);
+  api.SetImage(reinterpret_cast<uchar*>(src.data), src.cols, src.rows, 1,
+               src.cols);
+  api.Recognize(NULL);
+
+  tesseract::ResultIterator* ri = api.GetIterator();
   if (ri != 0) {
     do {
       const char* word = ri->GetUTF8Text(level);
@@ -44,8 +45,7 @@ void ocrPrintBoundingBox(const cv::Mat& src,
       delete[] word;
     } while (ri->Next(level));
   }
-  api->End();
-  delete api;
+  api.End();
 }
 
 void drawOcrResult(const cv::Mat &in_img, const OcrDetailResult &result,

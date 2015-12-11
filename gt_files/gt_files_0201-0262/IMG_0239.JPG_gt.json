@@ -1,0 +1,237 @@
+[
+  {
+    "chars": [
+      {
+        "text": "2", 
+        "bounding_box": [
+          1076, 
+          711, 
+          1102, 
+          756
+        ], 
+        "confidence": 78.79
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1115, 
+          711, 
+          1141, 
+          757
+        ], 
+        "confidence": 75.35
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          1156, 
+          711, 
+          1170, 
+          756
+        ], 
+        "confidence": 76.19
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          1193, 
+          710, 
+          1218, 
+          756
+        ], 
+        "confidence": 78.54
+      }, 
+      {
+        "text": "/", 
+        "bounding_box": [
+          1232, 
+          708, 
+          1257, 
+          760
+        ], 
+        "confidence": 74.81
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1271, 
+          710, 
+          1296, 
+          755
+        ], 
+        "confidence": 81.02
+      }, 
+      {
+        "text": "6", 
+        "bounding_box": [
+          1309, 
+          710, 
+          1335, 
+          755
+        ], 
+        "confidence": 76.01
+      }, 
+      {
+        "text": "/", 
+        "bounding_box": [
+          1349, 
+          707, 
+          1373, 
+          759
+        ], 
+        "confidence": 77.55
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1387, 
+          710, 
+          1413, 
+          755
+        ], 
+        "confidence": 76.3
+      }, 
+      {
+        "text": "4", 
+        "bounding_box": [
+          1426, 
+          709, 
+          1451, 
+          754
+        ], 
+        "confidence": 75.46
+      }
+    ], 
+    "type": "date"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          1410, 
+          2115, 
+          1438, 
+          2164
+        ], 
+        "confidence": 89.72
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          1455, 
+          2112, 
+          1470, 
+          2164
+        ], 
+        "confidence": 96.18
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          1495, 
+          2112, 
+          1523, 
+          2164
+        ], 
+        "confidence": 93.26
+      }, 
+      {
+        "text": "4", 
+        "bounding_box": [
+          1538, 
+          2112, 
+          1565, 
+          2163
+        ], 
+        "confidence": 90.65
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1580, 
+          2112, 
+          1608, 
+          2164
+        ], 
+        "confidence": 89.84
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1625, 
+          2111, 
+          1682, 
+          2171
+        ], 
+        "confidence": 92.1
+      }
+    ], 
+    "type": "money"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          1203, 
+          2208, 
+          1257, 
+          2309
+        ], 
+        "confidence": 90.5
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          1293, 
+          2203, 
+          1321, 
+          2309
+        ], 
+        "confidence": 83.9
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          1372, 
+          2203, 
+          1427, 
+          2309
+        ], 
+        "confidence": 92.36
+      }, 
+      {
+        "text": "4", 
+        "bounding_box": [
+          1459, 
+          2203, 
+          1513, 
+          2309
+        ], 
+        "confidence": 92.54
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1543, 
+          2203, 
+          1599, 
+          2308
+        ], 
+        "confidence": 88.35
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1629, 
+          2203, 
+          1688, 
+          2325
+        ], 
+        "confidence": 95.66
+      }
+    ], 
+    "type": "money"
+  }
+]

@@ -16,10 +16,10 @@ ShadowRemove::~ShadowRemove() {
   // TODO Auto-generated destructor stub
 }
 void ShadowRemove::removeShadow(Mat& mat) {
-  //return;
+
   //Mat out;
- // GaussianBlur(mat, out, Size(3, 3), 0, 0);
- // mat = out;
+  //GaussianBlur(mat, out, Size(3, 3), 0, 0);
+  //mat = out;
   //namedWindow("xx",CV_WINDOW_NORMAL);
   //  imshow("xx", out);
   //  waitKey();

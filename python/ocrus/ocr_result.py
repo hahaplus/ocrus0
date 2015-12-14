@@ -122,22 +122,9 @@ def extract_date(s):
     if matches:
         for m in matches:
             if m:
-                year = m.group(1)
-                pos = len(year) - 1
-                num_digit = 0
-                while True:
-                    ch = replace_if_exist(year[pos], REPLACE_TABLE).strip()
-                    if unicode.isdigit(ch):
-                        num_digit += 1
-                    if num_digit >= 4:
-                        break
-                    if pos == 0:
-                        break
-                    pos -= 1
-
-                print u'Pos %d-%d: %s' % (m.start() + pos, m.end(),
-                                          s[m.start() + pos: m.end()])
-                result.append((m.start() + pos, m.end()))
+                print u'Pos %d-%d: %s' % (m.start(), m.end(),
+                                          s[m.start(): m.end()])
+                result.append((m.start(), m.end()))
 
     matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\]フエ]{4} #Year
                                 /

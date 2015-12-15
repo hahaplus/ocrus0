@@ -68,9 +68,9 @@ sudo make install
 Install Tesseract
 
 ```
-git clone https://github.com/tesseract-ocr/tesseract.git
+git clone https://github.com/csuncs89/tesseract.git
 cd tesseract
-git checkout 3.04.00
+git checkout develop
 ```
 
 Run following commands to install Tesseract:

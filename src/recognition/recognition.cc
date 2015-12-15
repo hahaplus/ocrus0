@@ -28,6 +28,12 @@ void ocrPrintBoundingBox(const cv::Mat& src,
   tesseract::TessBaseAPI api;
   api.Init(NULL, lang.c_str());
 
+  // Fraction of neighbourhood, default: 0.4
+  api.SetVariable("textord_occupancy_threshold", "0.6");
+
+  //Find vertical and horizontal line objects and removes them, default: true
+  api.SetVariable("find_remove_lines", "false");
+
   api.SetPageSegMode(page_seg_mode);
   api.SetImage(reinterpret_cast<uchar*>(src.data), src.cols, src.rows, 1,
                src.cols);

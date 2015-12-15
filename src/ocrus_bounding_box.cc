@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   Binarize::binarize(gray_img, binarize_img);
 
-  //DenoiseLinePoint::removeNoise(binarize_img);
+  DenoiseLinePoint::removeNoise(binarize_img);
 
   ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "jpn+jpnRSN");
 

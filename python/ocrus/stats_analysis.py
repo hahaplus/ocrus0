@@ -137,7 +137,7 @@ def pretty_print_stats_cmp(stats_cmp):
              stat_cmp['stat2']['num_wrong_lines'],
              stat_cmp['correct_delta'])
     print '''Img: Image, C: Correct1, T: Total,
-    Acc: Accuracy, W: Wrong, C_D: Correct Delta'''
+Acc: Accuracy, W: Wrong, C_D: Correct Delta'''
 
 if __name__ == '__main__':
     pass

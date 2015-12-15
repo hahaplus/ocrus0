@@ -1,0 +1,55 @@
+Coordinate system for blob in TO_ROW
+^ y
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|       -----------------(right2, top2)
+|       |               |
+|       |               |
+|       |               |
+|       |               |
+|       -----------------
+| (left2, bottom2)
+|
+----------------------------------> x
+
+left2, bottom2, right2, top2
+
+
+Coordinate for the BoundingBox function
+-----------------------------------> x
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|    (left1, top1)      (right2, 
+|                        img_height-top2)
+|       -----------------
+|       |               |
+|       |               |
+|       |               |
+|       |               |
+|       -----------------
+|  (left2,              (right1, bottom1)
+|   img_height - bottom2)                 
+|
+v y
+
+left1 = left2
+top1 = img_height - bottom2 - (top2 - bottom2)
+
+right1 = right2
+bottom1 = img_height - top2 + (top2 - bottom2)

@@ -1,16 +1,26 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+
 import os
 import sys
+import time
 import multiprocessing
 
 
-def run_cmd_list(cmd_list, count, count_all):
-    print "Progress: %d/%d" % (count, count_all)
+def run_cmd_list(cmd_list, count, count_all, prog_bounding_box):
+    print >> sys.stderr, "Progress: %d/%d" % (count, count_all)
     for cmd in cmd_list:
+        t1 = time.time()
+
         print 'Running cmd:', cmd
         os.system(cmd)
+
+        t2 = time.time()
+
+        if cmd.startswith(prog_bounding_box):
+            print '{"cmd": "%s", "time_spent": %s}' % (cmd, t2 - t1)
+
 
 prog_bounding_box = 'ocrus_bounding_box'
 prog_draw_bbox = 'ocrus_draw_bbox.py'
@@ -81,8 +91,10 @@ for path_image in open(path_image_list):
 
     tasks.append(cmd_list)
 
-pool = multiprocessing.Pool()
+pool = multiprocessing.Pool(processes=1)
 for count, cmd_list in enumerate(tasks):
-    pool.apply_async(run_cmd_list, [cmd_list, count + 1, len(tasks)])
+    pool.apply_async(
+        run_cmd_list, [cmd_list, count + 1,
+                       len(tasks), prog_bounding_box])
 pool.close()
 pool.join()

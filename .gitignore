@@ -45,6 +45,5 @@ test/*
 .idea/
 images
 ocrResult
-*test.cpp
 
 python/build

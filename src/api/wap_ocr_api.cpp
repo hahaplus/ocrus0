@@ -73,7 +73,7 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
   map<int, vector<ResultUnit>> replace_map;
   for (auto ru : second_pass.getResult())
   {
-    if (pos_map.count(make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y))) continue;
+    if (!pos_map.count(make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y))) continue;
     ResultUnit first_ru = pos_map[make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y)];
 
     // find the result unit index in first pass covered by first_ru
@@ -87,8 +87,9 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
       if (ru.confidence > result_list[*index_set.begin()].confidence )
       {
         is_del[*index_set.begin()] = true;
-        //new_result_list.push_back(ru);
-        replace_map[*index_set.begin()].push_back(ru);
+
+        new_result_list.push_back(ResultUnit(first_ru.bounding_box, ru.content, ru.candidates, ru.confidence, ru.line_index));
+        //replace_map[*index_set.begin()].push_back(first_ru);
       }
     }
   }
@@ -99,7 +100,9 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
       new_result_list.push_back(result_list[i]);
     }
   }
+
   result->setResult(new_result_list);
+  optimize(result);
   //namedWindow("xx",CV_WINDOW_NORMAL);
   //imshow("xx", src);
   //waitKey();
@@ -121,9 +124,10 @@ void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
     printf("Could not initialize tesseract.\n");
     exit(-1);
   }
+  api->SetVariable("find_remove_lines", "false");
   WapOcrApi::img = src.clone();
   api->SetVariable("save_blob_choices", "T");
-  //api->SetPageSegMode(PSM_SINGLE_COLUMN);
+  api->SetPageSegMode(PSM_SINGLE_COLUMN);
   api->SetImage((uchar*) src.data, src.cols, src.rows, src.channels(),
                 src.cols);
   api->Recognize(0);
@@ -433,6 +437,7 @@ void WapOcrApi::formatImage(const Mat &src, Mat &dst, OcrDetailResult *result,
       max_height = 0;
     }
     pos_map[make_pair(x_pos, y_pos)] = ru;
+    ResultUnit dbg = pos_map[make_pair(x_pos, y_pos)];
     writeCharacter(src, dst, ru, x_pos, y_pos);
     x_pos += space + ru.getWidth();
     max_height = max(ru.getHeight(), max_height);

@@ -27,6 +27,14 @@ class ResultUnit {
     bounding_box[0] = cv::Point2i(1e6, 1e6);
     bounding_box[1] = cv::Point2i(-1e6, -1e6);
   }
+  ResultUnit(vector<Point2i> &bbox, string content, vector<pair<string, float> > candidates, float confi, int line_index) {
+    this->bounding_box = bbox;
+    this->content = content;
+    this->candidates = candidates;
+    this->confidence = confi;
+    this->line_index = line_index;
+  }
+
   ResultUnit(vector<Point2i> &bbox, string content) {
     this->bounding_box = bbox;
     this->content = content;

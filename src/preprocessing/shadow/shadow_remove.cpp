@@ -73,7 +73,7 @@ void ShadowRemove::removeShadow(Mat& mat) {
     vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<
         Vec<uchar, 1> >(ymat, (uchar) shadow_pixel, 15);
     for (int i = 0; i < block_list.size(); i++) {
-      if (block_list[i].size() > 60*60) {
+      if (block_list[i].size() > 50*50) {
         vector<pair<int, int> > &block = block_list[i];
         for (int j = 0; j < block.size(); j++) {
           pair<int, int> pos = block[j];

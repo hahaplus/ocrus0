@@ -1,16 +1,6 @@
 [
   {
-    "chars": [
-      {
-        "text": "9", 
-        "bounding_box": [
-          1767, 
-          643, 
-          1821, 
-          721
-        ], 
-        "confidence": 70.3
-      }, 
+    "chars": [ 
       {
         "text": "2", 
         "bounding_box": [

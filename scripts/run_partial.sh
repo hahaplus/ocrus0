@@ -6,7 +6,11 @@ if [ ! -f "$1" ] ; then
 fi
 
 PATH_IMAGE_LIST="$1"
+
 PATH_STATS=${PATH_IMAGE_LIST}_stats.json
+PATH_STATS_DATE=${PATH_IMAGE_LIST}_stats_date.json
+PATH_STATS_MONEY=${PATH_IMAGE_LIST}_stats_money.json
+
 PATH_RESULT="$2"
 
 # echo Copy groud truth files ...
@@ -20,16 +24,20 @@ sudo make install
 echo Generate ocr_lines files ...
 ocrus_to_ocr_lines.py symbol $PATH_IMAGE_LIST
 
-# echo Draw ocr_lines ...
-# ocrus_draw_ocr_lines_all.py $PATH_IMAGE_LIST
+#echo Draw ocr_lines ...
+#ocrus_draw_ocr_lines_all.py $PATH_IMAGE_LIST
 
 echo Calculate accuracy ...
+ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS_DATE date
+ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS_MONEY money
 ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS
 echo Accuracy results stored in $PATH_STATS
 
 echo Copying results ...
-cp /home/csuncs89/3-useful/2015-11-useful/ocrus0_build/Photos/*_symbol.* "$PATH_RESULT"
-cp /media/sf_D_DRIVE/3-useful/2015-12-useful/61TestingData/*_symbol.* "$PATH_RESULT"
+for PATH_IMG in `cat $PATH_IMAGE_LIST`
+do
+  cp ${PATH_IMG}_symbol.* "$PATH_RESULT"
+done
 
 cp $PATH_STATS $PATH_RESULT
 

@@ -95,6 +95,9 @@ def calc_correct_lines(ocr_lines_gt, ocr_lines):
 
         if line_ok:
             num_correct_lines += 1
+            ocr_line_gt['recognized'] = True
+        else:
+            ocr_line_gt['recognized'] = False
 
     return num_correct_lines
 

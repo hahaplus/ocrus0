@@ -5,7 +5,7 @@ ocr_lines = [
 
   { // Define a money or date line
   
-    "type": "money", // Values: "money" or "date"
+    "type": "money", // Value: "money" or "date"
     
     "chars": // Characters in this line
       [
@@ -20,11 +20,13 @@ ocr_lines = [
         { // Define another character
         }
         
-      ]
+      ],
+      
+      // Optional. Indicate whether this line is correctly recognized. Value: true or false
+      "recognized": true
   },
   
   { // Define another money or date line
-  
   }
   
 ]
@@ -50,6 +52,7 @@ or date.
 
 Format for stats calculation
 stats = [
+
   { // Define stat for an image
     "id_image": "0001",
     "num_lines": 4,

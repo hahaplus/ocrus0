@@ -39,6 +39,20 @@ num_correct_lines = 0
 
 stats = []
 
+dirs_bad_line = set()
+for path_image in open(path_image_list):
+    path_image = path_image.strip()
+    if path_image == '':
+        continue
+    dir_bad_line = os.path.join(os.path.dirname(path_image), 'bad_lines')
+    dirs_bad_line.add(dir_bad_line)
+for dir_bad_line in dirs_bad_line:
+    print dir_bad_line
+    import shutil
+    if os.path.exists(dir_bad_line):
+        shutil.rmtree(dir_bad_line)
+    os.mkdir(dir_bad_line)
+
 for path_image in open(path_image_list):
     path_image = path_image.strip()
     if path_image == '':
@@ -64,6 +78,31 @@ for path_image in open(path_image_list):
     each_num_lines[id_image] = len(ocr_lines_gt)
     each_num_correct_lines[id_image] = calc_correct_lines(
         ocr_lines_gt, ocr_lines)
+
+    path_symbol_img = path_image + '_symbol.png'
+    dir_bad_line = os.path.join(os.path.dirname(path_image), 'bad_lines')
+
+    if not all([ocr_line_gt['recognized'] for ocr_line_gt in ocr_lines_gt]):
+        from PIL import Image
+        img = Image.open(path_symbol_img)
+        img.load()
+        bad_line_id = 1
+        for ocr_line_gt in ocr_lines_gt:
+            left_min, top_min = float('inf'), float('inf')
+            right_max, bottom_max = 0, 0
+            if not ocr_line_gt['recognized']:
+                base_line_img = '%s_%s.png' % (os.path.basename(path_image),
+                                               bad_line_id)
+                path_line_img = os.path.join(dir_bad_line, base_line_img)
+                print 'Crop bad line to', path_line_img, '...'
+                for ch in ocr_line_gt['chars']:
+                    left_min = min(left_min, ch['bounding_box'][0])
+                    top_min = min(top_min, ch['bounding_box'][1])
+                    right_max = max(right_max, ch['bounding_box'][2])
+                    bottom_max = max(bottom_max, ch['bounding_box'][3])
+                img.crop([left_min - 30, top_min - 30,
+                          right_max + 30, bottom_max + 30]).save(path_line_img)
+                bad_line_id += 1
 
     num_lines += len(ocr_lines_gt)
     num_correct_lines += each_num_correct_lines[id_image]

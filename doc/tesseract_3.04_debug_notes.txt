@@ -308,3 +308,53 @@ thresholds  prev_threshold           thresholds[line_index]
 
 there might be a leap in occupation
 
+-----
+Now debug the word classification part
+File: api/baseapi.cpp
+Line 895
+tesseract_->recog_all_words(page_res_, monitor, NULL, NULL, 0)
+
+
+File: ccmain/control.cpp
+Line 287
+/**
+ * recog_all_words()
+ *
+ * Walk the page_res, recognizing all the words.
+ * If monitor is not null, it is used as a progress monitor/timeout/cancel.
+ * If dopasses is 0, all recognition passes are run,
+ * 1 just pass 1, 2 passes2 and higher.
+ * If target_word_box is not null, special things are done to words that
+ * overlap the target_word_box:
+ * if word_config is not null, the word config file is read for just the
+ * target word(s), otherwise, on pass 2 and beyond ONLY the target words
+ * are processed (Jetsoft modification.)
+ * Returns false if we cancelled prematurely.
+ *
+ * @param page_res page structure
+ * @param monitor progress monitor
+ * @param word_config word_config file
+ * @param target_word_box specifies just to extract a rectangle
+ * @param dopasses 0 - all, 1 just pass 1, 2 passes 2 and higher
+ */
+bool Tesseract::recog_all_words(PAGE_RES* page_res,
+                                ETEXT_DESC* monitor,
+                                const TBOX* target_word_box,
+                                const char* word_config,
+                                int dopasses)
+monitor: NULL ?
+target_word_box: NULL
+word_config: NULL
+dopasses: 1
+
+Line 148
+/** If tesseract is to be run, sets the words up ready for it. */
+void Tesseract::SetupAllWordsPassN(int pass_n,
+                                   const TBOX* target_word_box,
+                                   const char* word_config,
+                                   PAGE_RES* page_res,
+                                   GenericVector<WordData>* words) 
+pass_n: 1
+target_word_box: NULL
+word_config: NULL
+page_res: Page results

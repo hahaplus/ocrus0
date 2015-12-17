@@ -27,7 +27,9 @@ using namespace cv;
    * please set T as Vec3b
    *
    * distance = sqrt(sum((ai-bi)^2))  a, b are elemet T. i range(1, channels)
-   *AlgorithmUtil
+   *
+   * AlgorithmUtil
+   * the pair is (row, col)
    * return all adjacent location block
    */
   template <typename T>

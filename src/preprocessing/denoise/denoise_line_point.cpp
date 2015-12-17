@@ -35,8 +35,8 @@ void DenoiseLinePoint::removeNoise(Mat &src) {
         right_bottom.first = max(right_bottom.first, point.first);
         right_bottom.second = max(right_bottom.second, point.second);
       }
-      width.push_back(right_bottom.second - left_top.second);
-      height.push_back(right_bottom.first - left_top.first);
+      width.push_back(right_bottom.second - left_top.second+1);
+      height.push_back(right_bottom.first - left_top.first+1);
     }
     int avg_width = AlgorithmUtil::getAverageValue(width);
     int avg_height = AlgorithmUtil::getAverageValue(height);
@@ -62,14 +62,16 @@ void DenoiseLinePoint::removeNoise(Mat &src) {
         right_bottom.first = max(right_bottom.first, point.first);
         right_bottom.second = max(right_bottom.second, point.second);
       }
-      width.push_back(right_bottom.second - left_top.second);
-      height.push_back(right_bottom.first - left_top.first);
+      width.push_back(right_bottom.second - left_top.second + 1);
+      height.push_back(right_bottom.first - left_top.first + 1);
     }
     avg_width = AlgorithmUtil::getAverageValue(width);
     avg_height = AlgorithmUtil::getAverageValue(height);
     for (int i = 0; i < blocks.size(); i++) {
-      if ((width[i] >= 0.1 * src.cols) || (height[i] >= 0.1 * src.rows) || width[i] / height[i] > 8) {
+      if ((width[i] >= 0.1 * src.cols) || (height[i] >= 0.1 * src.rows) || width[i] / height[i] > 8
+          ) {
         for (auto pix : blocks[i]) {
+
           src.at<uchar>(pix.first, pix.second) = 255;
         }
       } else {

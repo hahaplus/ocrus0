@@ -10,6 +10,7 @@
 #include "dto/ocr_result_dto.h"
 #include "preprocessing/binarize/binarize.h"
 #include "recognition/recognition.h"
+#include "binarization/wap_binarize.h"
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Print the bounding boxes of an image\n"
@@ -38,9 +39,10 @@ int main(int argc, char *argv[]) {
 
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
   //cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
-  ShadowRemove::removeShadow(img);
+  //ShadowRemove::removeShadow(img);
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
-  Binarize::binarize(gray_img, binarize_img);
+  //Binarize::binarize(gray_img, binarize_img);
+  ocrus::binarize(gray_img, binarize_img);
   DenoiseLinePoint::removeNoise(binarize_img);
 
   OcrDetailResult ocr_detail_result;

@@ -21,7 +21,8 @@ make
 sudo make install
 
 echo Recognize and generate bounding box files ...
-ocrus_draw_all.py $PROG_BOUNDING_BOX both 4 symbol $PATH_IMAGE_LIST > ocrus_draw_all_time.txt
+ocrus_draw_all.py $PROG_BOUNDING_BOX both 4 symbol $PATH_IMAGE_LIST
+# ocrus_draw_all.py $PROG_BOUNDING_BOX both 4 symbol $PATH_IMAGE_LIST > ocrus_draw_all_time.txt
 
 echo Generate ocr_lines files ...
 ocrus_to_ocr_lines.py symbol $PATH_IMAGE_LIST
@@ -29,8 +30,8 @@ ocrus_to_ocr_lines.py symbol $PATH_IMAGE_LIST
 echo Draw ocr_lines ...
 ocrus_draw_ocr_lines_all.py $PATH_IMAGE_LIST
 
-echo Calculate running time ...
-ocrus_running_time.py ocrus_draw_all_time.txt
+# echo Calculate running time ...
+# ocrus_running_time.py ocrus_draw_all_time.txt
 
 echo Calculate accuracy ...
 ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS_DATE date

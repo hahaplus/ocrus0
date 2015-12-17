@@ -5,6 +5,7 @@ install(PROGRAMS
             ocrus_draw_ocr_lines_all.py ocrus_draw_gt_all.py 
             ocrus_calc_accuracy.py ocrus_cmp_stats.py
             ocrus_show_accuracy.py
+            ocrus_running_time.py
         DESTINATION bin)
 
 install(CODE "execute_process(COMMAND python setup.py install 

@@ -95,6 +95,9 @@ def calc_correct_lines(ocr_lines_gt, ocr_lines):
 
         if line_ok:
             num_correct_lines += 1
+            ocr_line_gt['recognized'] = True
+        else:
+            ocr_line_gt['recognized'] = False
 
     return num_correct_lines
 
@@ -137,7 +140,7 @@ def pretty_print_stats_cmp(stats_cmp):
              stat_cmp['stat2']['num_wrong_lines'],
              stat_cmp['correct_delta'])
     print '''Img: Image, C: Correct1, T: Total,
-    Acc: Accuracy, W: Wrong, C_D: Correct Delta'''
+Acc: Accuracy, W: Wrong, C_D: Correct Delta'''
 
 if __name__ == '__main__':
     pass

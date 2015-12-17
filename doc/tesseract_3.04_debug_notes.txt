@@ -1,0 +1,360 @@
+Tesseract 3.04.00 Debug Notes
+
+Environment
+  Ubuntu 14.04
+  GCC 4.8.4
+  GDB 7.7.1
+  Eclipse 4.5.1 with CDT
+  Build from ocrus0 commit 01f4db772afb68f027acd0c655eeef25a1b772ab
+  
+Command: ocrus_bounding_box symbol \
+ /home/csuncs89/0-priceless/programming/ImageProcess/Debug/Photos/Photo-0004.jpg
+
+File: src/recognition/recognition.cc
+Line 26
+  api->SetImage(reinterpret_cast<uchar*>(src.data), src.cols, src.rows, 1,
+                src.cols);
+src.cols: 2448
+src.rows: 3264
+
+File: api/baseapi.cpp
+
+Line 525
+/**
+ * Provide an image for Tesseract to recognize. Format is as
+ * TesseractRect above. Does not copy the image buffer, or take
+ * ownership. The source image may be destroyed after Recognize is called,
+ * either explicitly or implicitly via one of the Get*Text functions.
+ * SetImage clears all recognition results, and sets the rectangle to the
+ * full image, so it may be followed immediately by a GetUTF8Text, and it
+ * will automatically perform recognition.
+ */
+void TessBaseAPI::SetImage(const unsigned char* imagedata,
+                           int width, int height,
+                           int bytes_per_pixel, int bytes_per_line)
+
+Line 2003
+  /** Common code for setting the image. Returns true if Init has been called. */
+  TESS_LOCAL bool InternalSetImage();
+
+  
+Line 2009
+/// Base class for all tesseract image thresholding classes.
+/// Specific classes can add new thresholding methods by
+/// overriding ThresholdToPix.
+/// Each instance deals with a single image, but the design is intended to
+/// be useful for multiple calls to SetRectangle and ThresholdTo* if
+/// desired.
+thresholder_ = new ImageThresholder;
+
+
+Line 2010
+  /** Delete the pageres and clear the block list ready for a new page. */
+  ClearResults();
+
+Line 2126
+  // Clear as much used memory as possible without resetting the adaptive
+  // classifier or losing any other classifier data.
+  tesseract_->Clear();
+
+Some data structures
+  PAGE_RES*         page_res_;        ///< The page-level data.
+  BLOCK_LIST*       block_list_;      ///< The page layout.
+  GenericVector<ParagraphModel *>* paragraph_models_;
+  ParagraphModel //A geometric model of paragraph indentation and alignment.
+block_list_ is NULL here, so block_list_ = new BLOCK_LIST
+
+Line 529
+    thresholder_->SetImage(imagedata, width, height,
+                           bytes_per_pixel, bytes_per_line);
+Note: the imagedata is saved in pix_ field of thresholder
+                           
+File: ccmain/thresholder.cpp
+Line 62
+// SetImage makes a copy of all the image data, so it may be deleted
+// immediately after this call.
+// Greyscale of 8 and color of 24 or 32 bits per pixel may be given.
+// Palette color images will not work properly and must be converted to
+// 24 bit.
+// Binary images of 1 bit per pixel may also be given but they must be
+// byte packed with the MSB of the first byte being the first pixel, and a
+// one pixel is WHITE. For binary images set bytes_per_pixel=0.
+void ImageThresholder::SetImage(const unsigned char* imagedata,
+                                int width, int height,
+                                int bytes_per_pixel, int bytes_per_line)
+
+Line 148
+// Pix vs raw, which to use? Pix is the preferred input for efficiency,
+// since raw buffers are copied.
+// SetImage for Pix clones its input, so the source pix may be pixDestroyed
+// immediately after, but may not go away until after the Thresholder has
+// finished with it.
+void ImageThresholder::SetImage(const Pix* pix)
+
+l_uint32             wpl;         /* 32-bit words/line                 */
+
+Line 208
+// Common initialization shared between SetImage methods.
+void ImageThresholder::Init()
+
+Line 119
+// Store the coordinates of the rectangle to process for later use.
+// Doesn't actually do any thresholding.
+void ImageThresholder::SetRectangle(int left, int top, int width, int height)
+left: 0
+top: 0
+width: 2448
+height: 3264
+
+File: api/baseapi.cpp
+
+Line 830
+  /**
+   * Recognize the image from SetAndThresholdImage, generating Tesseract
+   * internal structures. Returns 0 on success.
+   * Optional. The Get*Text functions below will call Recognize if needed.
+   * After Recognize, the output is kept internally until the next SetImage.
+   */
+int TessBaseAPI::Recognize(ETEXT_DESC* monitor);
+
+Line 833
+  /**
+   * Find lines from the image making the BLOCK_LIST.
+   * @return 0 on success.
+   */
+int FindLines()
+
+Line 2076
+Threshold(tesseract_->mutable_pix_binary());
+mutable_pix_binary() returns a pointer to pix_binary_
+/**
+ * Run the thresholder to make the thresholded image, returned in pix,
+ * which must not be NULL. *pix must be initialized to NULL, or point
+ * to an existing pixDestroyable Pix.
+ * The usual argument to Threshold is Tesseract::mutable_pix_binary().
+ */
+void TessBaseAPI::Threshold(Pix** pix)
+
+File: ccmain/thresholder.cpp
+Line 174
+// Threshold the source image as efficiently as possible to the output Pix.
+// Creates a Pix and sets pix to point to the resulting pointer.
+// Caller must use pixDestroy to free the created Pix.
+void ImageThresholder::ThresholdToPix(PageSegMode pageseg_mode, Pix** pix)
+pageseg_mode: tesseract::PSM_SINGLE_BLOCK
+
+Line 179
+    OtsuThresholdRectToPix(pix_, pix);
+    
+Line 247
+// Otsu thresholds the rectangle, taking the rectangle from *this.
+void ImageThresholder::OtsuThresholdRectToPix(Pix* src_pix,
+                                              Pix** out_pix) 
+Otsu's method: binarization of image
+In computer vision and image processing, Otsu's method, named after 
+Nobuyuki Otsu (大津展之 Ōtsu Nobuyuki?), is used to automatically perform 
+clustering-based image thresholding,[1] or, the reduction of a graylevel 
+image to a binary image. 
+
+Line 280
+/// Threshold the rectangle, taking everything except the src_pix
+/// from the class, using thresholds/hi_values to the output pix.
+/// NOTE that num_channels is the size of the thresholds and hi_values
+// arrays and also the bytes per pixel in src_pix.
+void ImageThresholder::ThresholdRectToPix(Pix* src_pix,
+                                          int num_channels,
+                                          const int* thresholds,
+                                          const int* hi_values,
+                                          Pix** pix)
+pix here is just the &pix_binary_ mentioned above
+
+File: api/baseapi.cpp
+Line 2084
+  // Perform steps to prepare underlying binary image/other data structures for
+  // page segmentation. Uses the strategy specified in the global variable
+  // pageseg_devanagari_split_strategy for perform splitting while preparing for
+  // page segmentation.
+tesseract_->PrepareForPageseg();
+
+Line 691
+textord_use_cjk_fp_model: what for?
+
+  // Image used for input to layout analysis and tesseract recognition.
+  // May be modified by the ShiroRekhaSplitter to eliminate the top-line.
+  pix_binary_;
+  
+Line 2115
+  if (tesseract_->SegmentPage(input_file_, block_list_, osd_tess, &osr) < 0)
+
+File: ccmain/pagesegmain.cpp
+Line 109
+/**
+ * Segment the page according to the current value of tessedit_pageseg_mode.
+ * pix_binary_ is used as the source image and should not be NULL.
+ * On return the blocks list owns all the constructed page layout.
+ */
+int Tesseract::SegmentPage(const STRING* input_file, BLOCK_LIST* blocks,
+                           Tesseract* osd_tess, OSResults* osr)
+Line 117
+  // If a UNLV zone file can be found, use that instead of segmentation.
+Note: What this line says might be useful
+(Later I found maybe not, block is not the bounding box)
+
+It seems that the coordinate system for BLOCK is different for bounding box
+
+Line 180
+  textord_.TextordPage(pageseg_mode, reskew_, width, height, pix_binary_,
+                       pix_thresholds_, pix_grey_, splitting || cjk_mode,
+                       &diacritic_blobs, blocks, &to_blocks);
+pageseg_mode: tesseract::PSM_SINGLE_BLOCK
+reskew_: xcoord: 1, ycoord: 0
+width: 2448
+height: 3264
+  // Make the textlines and words inside each block.
+  // binary_pix is mandatory and is the binarized input after line removal.
+  // grey_pix is optional, but if present must match the binary_pix in size,
+  // and must be a *real* grey image instead of binary_pix * 255.
+  // thresholds_pix is expected to be present iff grey_pix is present and
+  // can be an integer factor reduction of the grey_pix. It represents the
+  // thresholds that were used to create the binary_pix from the grey_pix.
+  // diacritic_blobs contain small confusing components that should be added
+  // to the appropriate word(s) in case they are really diacritics.
+  void TextordPage(PageSegMode pageseg_mode, const FCOORD &reskew, int width,
+                   int height, Pix *binary_pix, Pix *thresholds_pix,
+                   Pix *grey_pix, bool use_box_bottoms,
+                   BLOBNBOX_LIST *diacritic_blobs, BLOCK_LIST *blocks,
+                   TO_BLOCK_LIST *to_blocks);
+
+File: textord/textord.cpp
+Line 276
+    // AutoPageSeg was not used, so we need to find_components first.
+    find_components(binary_pix, blocks, to_blocks);
+/**********************************************************************
+ * find_components
+ *
+ * Find the C_OUTLINEs of the connected components in each block, put them
+ * in C_BLOBs, and filter them by size, putting the different size
+ * grades on different lists in the matching TO_BLOCK in to_blocks.
+ **********************************************************************/
+void Textord::find_components(Pix* pix, BLOCK_LIST *blocks,
+                              TO_BLOCK_LIST *to_blocks)
+                              
+------------------------------------------
+Below are for debug the bug of merged lines
+And the commit of tesseract is
+8b7456820ec9acd1f234670d52f513db9c7ea89e
+in https://github.com/csuncs89/tesseract.git
+
+File textord/makerow.cpp
+Line 850
+/**
+ * @name compute_line_occupation
+ *
+ * Compute the pixel projection back on the y axis given the global
+ * skew. Also compute the 1st derivative.
+ */
+void compute_line_occupation(                    //project blobs
+                             TO_BLOCK *block,    //block to do
+                             float gradient,     //global skew
+                             inT32 min_y,        //min coord in block
+                             inT32 max_y,        //in block
+                             inT32 *occupation,  //output projection
+                             inT32 *deltas       //derivative
+                            )
+
+Line 916
+/**
+ * compute_occupation_threshold
+ *
+ * Compute thresholds for textline or not for the occupation array.
+ */
+void compute_occupation_threshold(                    //project blobs
+                                  inT32 low_window,   //below result point
+                                  inT32 high_window,  //above result point
+                                  inT32 line_count,   //array sizes
+                                  inT32 *occupation,  //input projection
+                                  inT32 *thresholds   //output thresholds
+                                 )
+This function will calculate in a sliding window, 
+thresholds[line_index] = (sum - min_occ) / divisor + min_occ;
+where sum is the sum in the window, min_occ is the minimum value in the window
+the bigger the thresholds value, ???
+                        
+Line 935
+low_window: 102
+high_window: 152
+divisor: 635
+sum: occupation([0-102, 103-254])
+high_index: 254
+
+Line 997
+/**
+ * @name compute_dropout_distances
+ *
+ * Compute the distance from each coordinate to the nearest dropout.
+ */
+void compute_dropout_distances(                    //project blobs
+                               inT32 *occupation,  //input projection
+                               inT32 *thresholds,  //output thresholds
+                               inT32 line_count    //array sizes
+                              ) 
+a dropout might be similar to a leap in occupation
+                              
+Line 1018
+after while loop
+occupation  occupation[line_index-1] occupation[line_index]
+                ^                               v
+thresholds  prev_threshold           thresholds[line_index]
+
+there might be a leap in occupation
+
+-----
+Now debug the word classification part
+File: api/baseapi.cpp
+Line 895
+tesseract_->recog_all_words(page_res_, monitor, NULL, NULL, 0)
+
+
+File: ccmain/control.cpp
+Line 287
+/**
+ * recog_all_words()
+ *
+ * Walk the page_res, recognizing all the words.
+ * If monitor is not null, it is used as a progress monitor/timeout/cancel.
+ * If dopasses is 0, all recognition passes are run,
+ * 1 just pass 1, 2 passes2 and higher.
+ * If target_word_box is not null, special things are done to words that
+ * overlap the target_word_box:
+ * if word_config is not null, the word config file is read for just the
+ * target word(s), otherwise, on pass 2 and beyond ONLY the target words
+ * are processed (Jetsoft modification.)
+ * Returns false if we cancelled prematurely.
+ *
+ * @param page_res page structure
+ * @param monitor progress monitor
+ * @param word_config word_config file
+ * @param target_word_box specifies just to extract a rectangle
+ * @param dopasses 0 - all, 1 just pass 1, 2 passes 2 and higher
+ */
+bool Tesseract::recog_all_words(PAGE_RES* page_res,
+                                ETEXT_DESC* monitor,
+                                const TBOX* target_word_box,
+                                const char* word_config,
+                                int dopasses)
+monitor: NULL ?
+target_word_box: NULL
+word_config: NULL
+dopasses: 1
+
+Line 148
+/** If tesseract is to be run, sets the words up ready for it. */
+void Tesseract::SetupAllWordsPassN(int pass_n,
+                                   const TBOX* target_word_box,
+                                   const char* word_config,
+                                   PAGE_RES* page_res,
+                                   GenericVector<WordData>* words) 
+pass_n: 1
+target_word_box: NULL
+word_config: NULL
+page_res: Page results

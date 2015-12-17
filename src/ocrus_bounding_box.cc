@@ -10,10 +10,11 @@
 
 #include "tesseract/baseapi.h"
 
+#include "binarization/wap_binarize.h"
+#include "preprocessing/denoise/denoise_line_point.h"
+#include "preprocessing/shadow/shadow_remove.h"
 #include "recognition/recognition.h"
 #include "workflow/processor.h"
-#include "preprocessing/shadow/shadow_remove.h"
-#include "preprocessing/denoise/denoise_line_point.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
@@ -43,13 +44,13 @@ int main(int argc, char *argv[]) {
 
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
 
-  ShadowRemove::removeShadow(img);
+  //ShadowRemove::removeShadow(img);
 
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
 
-  Binarize::binarize(gray_img, binarize_img);
+  ocrus::binarize(gray_img, binarize_img);
 
-  //DenoiseLinePoint::removeNoise(binarize_img);
+  DenoiseLinePoint::removeNoise(binarize_img);
 
   ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "jpn+jpnRSN");
 

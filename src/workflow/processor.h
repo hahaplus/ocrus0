@@ -14,7 +14,6 @@
 #include "../salientRecognition/execute.h"
 #include "../preprocessing/utils/FileUtil.h"
 #include "../borderPosition/border.h"
-#include "../textDetect/textarea.h"
 #include "../preprocessing/binarize/binarize.h"
 #include "../preprocessing/deskew/deskew.h"
 #include "../preprocessing/GaussianSPDenoise/denoise.h"
@@ -213,7 +212,7 @@ public:
 		cout << "text detection..." << endl;
 		start = getSystemTime();
 		vector<Mat> textPieces;
-		textDetect(outputBD, textPieces, res == -1 ? false : true);
+	//	textDetect(outputBD, textPieces, res == -1 ? false : true);
 		end = getSystemTime();
 		printf("text detection time: %lld ms\n", end - start);
 

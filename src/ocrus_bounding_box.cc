@@ -44,8 +44,6 @@ int main(int argc, char *argv[]) {
 
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
 
-  //ShadowRemove::removeShadow(img);
-
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
 
   ocrus::binarize(gray_img, binarize_img);

@@ -22,14 +22,13 @@ public:
 	WapOcrApi();
 	static std::string recognitionToText(const cv::Mat &img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
 	static void release();
-	virtual ~WapOcrApi();
 private:
 	/*
 	 * overlap ratio (0.0 ~ 1.0)to be judged as overlap
 	 * */
 	static double epsX, epsY;
 	static tesseract::TessBaseAPI *api;
-	static cv::Mat img;
+	//static cv::Mat img;
 	// merge and split
 	static void getBBox(const cv::Mat &img, OcrDetailResult* odr); // get The bounding box of the character
 	static void optimize(OcrDetailResult*);

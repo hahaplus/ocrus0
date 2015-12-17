@@ -8,6 +8,7 @@ set (LIBS
 FILE(GLOB SRC api/*.cpp
               preprocessing/*/*.cpp
               util/*.cpp
+              textExtraction/*.cpp
               recognition/recognition.cc)
 
 add_executable(ImageProcess main.cpp ${SRC})

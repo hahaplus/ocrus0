@@ -25,20 +25,20 @@ void WapOcrApi::release() {
   }
 }
 int AlgorithmUtil::connect_threshold = 0;
-Mat WapOcrApi::img;
+//Mat WapOcrApi::img;
 tesseract::TessBaseAPI *WapOcrApi::api;
 /*
  * overlap ratio (0.0 ~ 1.0)to judge as overlap
  * */
 double WapOcrApi::epsY = 0.5;
-double WapOcrApi::epsX = -0.01;
+double WapOcrApi::epsX = -0.3;
 string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
                                     int cut_level, OcrDetailResult* result) {
   if (result == NULL) {
     result = new OcrDetailResult;
   }
   recognitionWithTesseract(src, lang, cut_level, result);
-  return result->toString(cut_level);
+  //return result->toString(cut_level);
   // first pass
   OcrDetailResult &first_pass = *result;
 
@@ -46,16 +46,16 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
   OcrDetailResult format_result;
   getBBox(src, &format_result);
   optimize(&format_result);
+  Mat out_img;
+  ocrus::drawOcrResult(src, format_result, &out_img);
+  imwrite("/home/michael/tmp.jpg", out_img);
   Mat formatImg;
   map<pair<int, int>, ResultUnit> pos_map;
   formatImage(src, formatImg, &format_result, pos_map);
 
   OcrDetailResult second_pass;
   recognitionWithTesseract(formatImg, lang, cut_level, &second_pass);
-  Mat out_img;
 
-  ocrus::drawOcrResult(formatImg, second_pass, &out_img);
-  imwrite("/home/michael/tmp.jpg", out_img);
   // use second_pass result to fix incorrect result of first_pass
   // first build a origin map  (pixel coordinate ----> resultUnit index)
   vector<ResultUnit> result_list = first_pass.getResult();
@@ -84,12 +84,15 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
           }
     if (index_set.size() == 1)
     {
-      if (ru.confidence > result_list[*index_set.begin()].confidence )
+      ResultUnit ori_ru = result_list[*index_set.begin()];
+      //if (ru.confidence > first_ru.confidence )
+      if (ru.getHeight() * ru.getWidth() < ori_ru.getHeight() * ori_ru.getWidth()
+          && ru.getHeight() * ru.getWidth() > 0.5 * ori_ru.getHeight() * ori_ru.getWidth())
       {
         is_del[*index_set.begin()] = true;
 
-        new_result_list.push_back(ResultUnit(first_ru.bounding_box, ru.content, ru.candidates, ru.confidence, ru.line_index));
-        //replace_map[*index_set.begin()].push_back(first_ru);
+        //new_result_list.push_back(ResultUnit(first_ru.bounding_box, ru.content, ru.candidates, ru.confidence, ru.line_index));
+        replace_map[*index_set.begin()].push_back(ResultUnit(first_ru.bounding_box, ru.content, ru.candidates, ru.confidence, ru.line_index));
       }
     }
   }
@@ -99,10 +102,17 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
     {
       new_result_list.push_back(result_list[i]);
     }
+    else
+    {
+      for (auto ru : replace_map[i])
+      {
+       new_result_list.push_back(ru);
+      }
+    }
   }
 
   result->setResult(new_result_list);
-  optimize(result);
+  //optimize(result);
   //namedWindow("xx",CV_WINDOW_NORMAL);
   //imshow("xx", src);
   //waitKey();
@@ -125,7 +135,8 @@ void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
     exit(-1);
   }
   api->SetVariable("find_remove_lines", "false");
-  WapOcrApi::img = src.clone();
+  api->SetVariable("textord_occupancy_threshold", "0.6");
+  //WapOcrApi::img = src.clone();
   api->SetVariable("save_blob_choices", "T");
   api->SetPageSegMode(PSM_SINGLE_COLUMN);
   api->SetImage((uchar*) src.data, src.cols, src.rows, src.channels(),
@@ -267,7 +278,7 @@ void WapOcrApi::mergeAndSplit(vector<ResultUnit> &line) {
                                 line[i + 1].bounding_box[1].x);
     }
     if (!overlap(next_interval, interval_back,
-                 epsX * (next_interval.second - next_interval.first))) {
+                 epsX * ((next_interval.second - next_interval.first)))) {
       interval_back = make_pair(-1, -1);
       handle(segment);
       for (int j = 0; j < segment.size(); j++) {
@@ -354,18 +365,9 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
 int tmp_cnt = 0;
 void WapOcrApi::recognizeUnit(ResultUnit &ru) {
   return;
-  //api = new tesseract::TessBaseAPI();
-  //api->Init(NULL, "jpn");
-  //api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
-  // api->TesseractRect(img.clone().data,1,img.step1(),ru.bounding_box[0].x, ru.bounding_box[0].y,
-  //                    ru.bounding_box[1].x - ru.bounding_box[0].x,
-//                     ru.bounding_box[1].y - ru.bounding_box[0].y);
+ /*
   api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
-  //api->SetImage((uchar*) img.clone().data, img.cols, img.rows, img.channels(),
-  //               img.cols);
-  /*api->SetRectangle(ru.bounding_box[0].x, ru.bounding_box[0].y,
-   ru.bounding_box[1].x - ru.bounding_box[0].x,
-   ru.bounding_box[1].y - ru.bounding_box[0].y);*/
+
   Mat character_unit;
   cutImage(img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
            ru.bounding_box[1].x - ru.bounding_box[0].x,
@@ -383,8 +385,9 @@ void WapOcrApi::recognizeUnit(ResultUnit &ru) {
   api->SetImage((uchar*) character_unit.data, character_unit.cols,
                 character_unit.rows, img.channels(), character_unit.cols);
   ru.confidence = api->MeanTextConf();
-  ru.content = api->GetUTF8Text()/*"a"*/;
+  ru.content = api->GetUTF8Text()/*"a";
   character_unit.deallocate();
+  */
 }
 void WapOcrApi::cutImage(const Mat &src, Mat &dst, int x, int y, int width,
                          int height) {
@@ -423,7 +426,7 @@ void WapOcrApi::formatImage(const Mat &src, Mat &dst, OcrDetailResult *result,
   dst = Mat(src.rows, src.cols, src.type());
   // make the white background
   memset(dst.data, 255, dst.rows * dst.cols * dst.channels());
-  int space = 50;
+  int space = 70;
   vector<ResultUnit> result_list = result->getResult();
   int last_index = 0;  // line index
   int y_pos = 0;     // each line 's y coordinate
@@ -443,8 +446,5 @@ void WapOcrApi::formatImage(const Mat &src, Mat &dst, OcrDetailResult *result,
     max_height = max(ru.getHeight(), max_height);
   }
 }
-WapOcrApi::~WapOcrApi() {
-// TODO Auto-generated destructor stub
 
-}
 

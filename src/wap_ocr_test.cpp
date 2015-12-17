@@ -11,6 +11,8 @@
 #include "preprocessing/binarize/binarize.h"
 #include "recognition/recognition.h"
 #include "binarization/wap_binarize.h"
+#include "util/general.h"
+#include "textDetect/simple_text_detect.h"
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Print the bounding boxes of an image\n"
@@ -41,9 +43,10 @@ int main(int argc, char *argv[]) {
   //cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
   //ShadowRemove::removeShadow(img);
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
+  Rect text_area = SimpleTextDetect::simpleDetect(gray_img);
   //Binarize::binarize(gray_img, binarize_img);
   ocrus::binarize(gray_img, binarize_img);
-  DenoiseLinePoint::removeNoise(binarize_img);
+  DenoiseLinePoint::removeNoise(binarize_img, &text_area);
 
   OcrDetailResult ocr_detail_result;
   WapOcrApi::recognitionToText(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);

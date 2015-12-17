@@ -18,8 +18,23 @@ DenoiseLinePoint::DenoiseLinePoint() {
 DenoiseLinePoint::~DenoiseLinePoint() {
   // TODO Auto-generated destructor stub
 }
-void DenoiseLinePoint::removeNoise(Mat &src) {
+void DenoiseLinePoint::removeNoise(Mat &src, Rect *text_area) {
   //return;
+  // remove all the black pixel outside the text_area
+  if (text_area)
+  {
+     for (int i = 0; i < src.rows; i++)
+       for (int j = 0; j < src.cols; j++)
+       {
+         // outside the area
+         int height = i - text_area->y + 1;
+         int width = j - text_area->x + 1;
+         if (width < 0 || width > text_area->width || height < 0 || height > text_area->height)
+         {
+           src.at<uchar>(i, j) = 255;
+         }
+       }
+  }
   vector<vector<pair<int, int> > > blocks = AlgorithmUtil::floodFillInMat<
       Vec<uchar, 1> >(src, 0, 0);
   vector<int> width, height;
@@ -68,8 +83,8 @@ void DenoiseLinePoint::removeNoise(Mat &src) {
     avg_width = AlgorithmUtil::getAverageValue(width);
     avg_height = AlgorithmUtil::getAverageValue(height);
     for (int i = 0; i < blocks.size(); i++) {
-      if ((width[i] >= 0.1 * src.cols) || (height[i] >= 0.1 * src.rows) || width[i] / height[i] > 8
-          ) {
+
+      if ((width[i] >= 0.1 * src.cols) || (height[i] >= 0.1 * src.rows)) {
         for (auto pix : blocks[i]) {
 
           src.at<uchar>(pix.first, pix.second) = 255;

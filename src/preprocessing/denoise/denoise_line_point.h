@@ -16,7 +16,7 @@ class DenoiseLinePoint {
   /*
    * @para src is the binary image
    */
-  static void removeNoise(cv::Mat &src);
+  static void removeNoise(cv::Mat &src, Rect *text_area = NULL);
 };
 
 #endif /* SRC_PREPROCESSING_DENOISE_DENOISE_LINE_POINT_H_ */

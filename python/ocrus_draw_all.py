@@ -91,7 +91,7 @@ for path_image in open(path_image_list):
 
     tasks.append(cmd_list)
 
-pool = multiprocessing.Pool(processes=1)
+pool = multiprocessing.Pool()
 for count, cmd_list in enumerate(tasks):
     pool.apply_async(
         run_cmd_list, [cmd_list, count + 1,

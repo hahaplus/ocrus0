@@ -6,8 +6,8 @@
  * Written by Chang Sun
  */
 
-#ifndef OCRUS_BINARIZATION_H_
-#define OCRUS_BINARIZATION_H_
+#ifndef OCRUS_BINARIZATION_WAP_BINARIZE_H_
+#define OCRUS_BINARIZATION_WAP_BINARIZE_H_
 
 #include <string>
 
@@ -24,27 +24,31 @@ enum NiblackVersion {
   WOLFJOLION,
 };
 
-#define uget(x,y)    at<unsigned char>(y,x)
-#define uset(x,y,v)  at<unsigned char>(y,x)=v;
-#define fget(x,y)    at<float>(y,x)
-#define fset(x,y,v)  at<float>(y,x)=v;
-
-// *************************************************************
-// glide a window across the image and
-// create two maps: mean and standard deviation.
-//
-// Version patched by Thibault Yohan (using opencv integral images)
-// *************************************************************
-double calcLocalStats(Mat &im, Mat &map_m, Mat &map_s, int winx, int winy);
-
-/**********************************************************
- * The binarization routine
- **********************************************************/
+/**
+ * The Niblack, Sauvola, and WolfJolion binarization algorithms
+ *
+ * @param im: Image to binarize
+ * @param Mat: The binarized image
+ * @param version: Indicate which algorithm to use
+ * @param winx: Width of window
+ * @param winy: Width of window
+ * @param k: Algorithm parameter
+ * @param dR: Algorithm parameter
+ *
+ * Adapted from version 2.4 in
+ * http://liris.cnrs.fr/christian.wolf/software/binarize/index.html
+ */
 void NiblackSauvolaWolfJolion(Mat im, Mat output, NiblackVersion version,
                               int winx, int winy, double k, double dR);
 
+/**
+ * Binarize an image
+ *
+ * @param src: Image to binarize
+ * @param dst: The binarized image
+ */
 void binarize(Mat& src, Mat& dst);
 
 }  // namespace ocrus
 
-#endif  // OCRUS_BINARIZATION_H_
+#endif  // OCRUS_BINARIZATION_WAP_BINARIZE_H_

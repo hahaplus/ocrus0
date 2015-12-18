@@ -1,5 +1,5 @@
 /*
- * Recognition functionalities
+ * Binarization of image
  *
  * Copyright (C) 2015 Works Applications, all rights reserved
  *
@@ -12,67 +12,103 @@
 
 namespace ocrus {
 
-double calcLocalStats(Mat &im, Mat &map_m, Mat &map_s, int winx, int winy) {
+/**
+ * Glide a rect window across the image and create two stats images:
+ * mean and standard deviation.
+ *
+ * @param im: Image mat for calculation
+ * @param map_m: Mean stat image, coordinates are window center
+ * @param map_s: Standard deviation stat image, coordinates are window center
+ * @param winx: Width of the window
+ * @param winy: height of the window
+ * @return: Max value in map_s
+ *
+ * Adapted from version 2.4 in
+ * http://liris.cnrs.fr/christian.wolf/software/binarize/index.html
+ */
+static double calcLocalStats(Mat &im, Mat &map_m, Mat &map_s, int winx,
+                             int winy) {
   Mat im_sum, im_sum_sq;
   cv::integral(im, im_sum, im_sum_sq, CV_64F);
 
   double m, s, max_s, sum, sum_sq;
-  int wxh = winx / 2;
-  int wyh = winy / 2;
-  int x_firstth = wxh;
-  int y_lastth = im.rows - wyh - 1;
-  int y_firstth = wyh;
+
+  int winx_half = winx / 2;
+  int winy_half = winy / 2;
+
+  int y_firstth = winy_half;
+  int y_lastth = im.rows - winy_half - 1;
+
   double winarea = winx * winy;
 
   max_s = 0;
   for (int j = y_firstth; j <= y_lastth; j++) {
     sum = sum_sq = 0;
 
-    sum = im_sum.at<double>(j - wyh + winy, winx)
-        - im_sum.at<double>(j - wyh, winx)
-        - im_sum.at<double>(j - wyh + winy, 0) + im_sum.at<double>(j - wyh, 0);
-    sum_sq = im_sum_sq.at<double>(j - wyh + winy, winx)
-        - im_sum_sq.at<double>(j - wyh, winx)
-        - im_sum_sq.at<double>(j - wyh + winy, 0)
-        + im_sum_sq.at<double>(j - wyh, 0);
+    // j : [winy_half, im.rows - winy_half - 1]
+    // row: [j - winy_half, j - winy_half + winy)
+    // col: [0, winx)
+    // Suppose winy is even
+    // When j is min, [0, winy) x [0, winx)
+    // When j is max, [rows - 1 - winy, rows -1) x [0, winx)
+    sum = im_sum.at<double>(j - winy_half + winy, winx)
+        - im_sum.at<double>(j - winy_half, winx)
+        - im_sum.at<double>(j - winy_half + winy, 0)
+        + im_sum.at<double>(j - winy_half, 0);
+    sum_sq = im_sum_sq.at<double>(j - winy_half + winy, winx)
+        - im_sum_sq.at<double>(j - winy_half, winx)
+        - im_sum_sq.at<double>(j - winy_half + winy, 0)
+        + im_sum_sq.at<double>(j - winy_half, 0);
 
     m = sum / winarea;
     s = sqrt((sum_sq - m * sum) / winarea);
-    if (s > max_s)
+    if (s > max_s) {
       max_s = s;
-
-    map_m.fset(x_firstth, j, m);
-    map_s.fset(x_firstth, j, s);
+    }
+    // ----------------
+    // | *
+    // | *
+    // | *
+    // ----------------
+    map_m.at<float>(j, winx_half) = m;
+    map_s.at<float>(j, winx_half) = s;
 
     // Shift the window, add and remove new/old values to the histogram
     for (int i = 1; i <= im.cols - winx; i++) {
 
       // Remove the left old column and add the right new column
-      sum -= im_sum.at<double>(j - wyh + winy, i)
-          - im_sum.at<double>(j - wyh, i)
-          - im_sum.at<double>(j - wyh + winy, i - 1)
-          + im_sum.at<double>(j - wyh, i - 1);
-      sum += im_sum.at<double>(j - wyh + winy, i + winx)
-          - im_sum.at<double>(j - wyh, i + winx)
-          - im_sum.at<double>(j - wyh + winy, i + winx - 1)
-          + im_sum.at<double>(j - wyh, i + winx - 1);
+      // When j is min, i is min
+      // sum = sum - [0, winy) x [0, 1) + [0, winy) x [winx, winx + 1)
+      sum -= im_sum.at<double>(j - winy_half + winy, i)
+          - im_sum.at<double>(j - winy_half, i)
+          - im_sum.at<double>(j - winy_half + winy, i - 1)
+          + im_sum.at<double>(j - winy_half, i - 1);
+      sum += im_sum.at<double>(j - winy_half + winy, i + winx)
+          - im_sum.at<double>(j - winy_half, i + winx)
+          - im_sum.at<double>(j - winy_half + winy, i + winx - 1)
+          + im_sum.at<double>(j - winy_half, i + winx - 1);
 
-      sum_sq -= im_sum_sq.at<double>(j - wyh + winy, i)
-          - im_sum_sq.at<double>(j - wyh, i)
-          - im_sum_sq.at<double>(j - wyh + winy, i - 1)
-          + im_sum_sq.at<double>(j - wyh, i - 1);
-      sum_sq += im_sum_sq.at<double>(j - wyh + winy, i + winx)
-          - im_sum_sq.at<double>(j - wyh, i + winx)
-          - im_sum_sq.at<double>(j - wyh + winy, i + winx - 1)
-          + im_sum_sq.at<double>(j - wyh, i + winx - 1);
+      sum_sq -= im_sum_sq.at<double>(j - winy_half + winy, i)
+          - im_sum_sq.at<double>(j - winy_half, i)
+          - im_sum_sq.at<double>(j - winy_half + winy, i - 1)
+          + im_sum_sq.at<double>(j - winy_half, i - 1);
+      sum_sq += im_sum_sq.at<double>(j - winy_half + winy, i + winx)
+          - im_sum_sq.at<double>(j - winy_half, i + winx)
+          - im_sum_sq.at<double>(j - winy_half + winy, i + winx - 1)
+          + im_sum_sq.at<double>(j - winy_half, i + winx - 1);
 
       m = sum / winarea;
       s = sqrt((sum_sq - m * sum) / winarea);
-      if (s > max_s)
+      if (s > max_s) {
         max_s = s;
-
-      map_m.fset(i+wxh, j, m);
-      map_s.fset(i+wxh, j, s);
+      }
+      // ----------------
+      // |   * ...
+      // |   * ...
+      // |   * ...
+      // ----------------
+      map_m.at<float>(j, winx_half + i) = m;
+      map_s.at<float>(j, winx_half + i) = s;
     }
   }
 
@@ -85,12 +121,16 @@ void NiblackSauvolaWolfJolion(Mat im, Mat output, NiblackVersion version,
   double m, s, max_s;
   double th = 0;
   double min_I, max_I;
-  int wxh = winx / 2;
-  int wyh = winy / 2;
-  int x_firstth = wxh;
-  int x_lastth = im.cols - wxh - 1;
-  int y_lastth = im.rows - wyh - 1;
-  int y_firstth = wyh;
+
+  int winx_half = winx / 2;
+  int winy_half = winy / 2;
+
+  int x_firstth = winx_half;
+  int x_lastth = im.cols - winx_half - 1;
+
+  int y_firstth = winy_half;
+  int y_lastth = im.rows - winy_half - 1;
+
   int mx, my;
 
   // Create local statistics and store them in a double matrices
@@ -103,97 +143,121 @@ void NiblackSauvolaWolfJolion(Mat im, Mat output, NiblackVersion version,
   Mat thsurf(im.rows, im.cols, CV_32F);
 
   // Create the threshold surface, including border processing
-  // ----------------------------------------------------
-
+  //
+  // 1 1 1 1 1 1 1|1 2
+  // 1 1 1 1 1 1 1|1 2
+  // 1 1 1 1 1 x_firstth
+  //-------y_firstth-------------------
+  // 1 1 1 1 1 1 1|1 2
+  // 3 3 3 3 3 3 3|3
+  // Digits are pixel values
+  //
+  // Comment by Chang Sun: The border processing might not be very adequate
   for (int j = y_firstth; j <= y_lastth; j++) {
 
     // NORMAL, NON-BORDER AREA IN THE MIDDLE OF THE WINDOW:
     for (int i = 0; i <= im.cols - winx; i++) {
 
-      m = map_m.fget(i+wxh, j);
-      s = map_s.fget(i+wxh, j);
+      m = map_m.at<float>(j, i + winx_half);
+      s = map_s.at<float>(j, i + winx_half);
 
       // Calculate the threshold
       switch (version) {
 
         case NIBLACK:
-        th = m + k*s;
-        break;
+          th = m + k * s;
+          break;
 
         case SAUVOLA:
-        th = m * (1 + k*(s/dR-1));
-        break;
+          th = m * (1 + k * (s / dR - 1));
+          break;
 
         case WOLFJOLION:
-        th = m + k * (s/max_s-1) * (m-min_I);
-        break;
+          th = m + k * (s / max_s - 1) * (m - min_I);
+          break;
 
         default:
-        cerr << "Unknown threshold type in ImageThresholder::surfaceNiblackImproved()\n";
-        exit (1);
+          cerr << "Unknown NiblackVersion value\n";
+          exit(1);
       }
 
-      thsurf.fset(i+wxh,j,th);
+      thsurf.at<float>(j, i + winx_half) = th;
 
-      if (i==0) {
+      if (i == 0) {
         // LEFT BORDER
-        for (int i=0; i<=x_firstth; ++i)
-        thsurf.fset(i,j,th);
+        for (int ii = 0; ii <= x_firstth; ++ii) {
+          thsurf.at<float>(j, ii) = th;
+        }
 
         // LEFT-UPPER CORNER
-        if (j==y_firstth)
-        for (int u=0; u<y_firstth; ++u)
-        for (int i=0; i<=x_firstth; ++i)
-        thsurf.fset(i,u,th);
+        if (j == y_firstth) {
+          for (int u = 0; u < y_firstth; ++u) {
+            for (int ii = 0; ii <= x_firstth; ++ii) {
+              thsurf.at<float>(u, ii) = th;
+            }
+          }
+        }
 
         // LEFT-LOWER CORNER
-        if (j==y_lastth)
-        for (int u=y_lastth+1; u<im.rows; ++u)
-        for (int i=0; i<=x_firstth; ++i)
-        thsurf.fset(i,u,th);
+        if (j == y_lastth) {
+          for (int u = y_lastth + 1; u < im.rows; ++u) {
+            for (int ii = 0; ii <= x_firstth; ++ii) {
+              thsurf.at<float>(u, ii) = th;
+            }
+          }
+        }
       }
 
       // UPPER BORDER
-      if (j==y_firstth)
-      for (int u=0; u<y_firstth; ++u)
-      thsurf.fset(i+wxh,u,th);
+      if (j == y_firstth) {
+        for (int u = 0; u < y_firstth; ++u) {
+          thsurf.at<float>(u, i + winx_half) = th;
+        }
+      }
 
       // LOWER BORDER
-      if (j==y_lastth)
-      for (int u=y_lastth+1; u<im.rows; ++u)
-      thsurf.fset(i+wxh,u,th);
+      if (j == y_lastth) {
+        for (int u = y_lastth + 1; u < im.rows; ++u) {
+          thsurf.at<float>(u, i + winx_half) = th;
+        }
+      }
     }
 
     // RIGHT BORDER
-    for (int i=x_lastth; i<im.cols; ++i)
-    thsurf.fset(i,j,th);
+    for (int i = x_lastth; i < im.cols; ++i) {
+      thsurf.at<float>(j, i) = th;
+    }
 
     // RIGHT-UPPER CORNER
-    if (j==y_firstth)
-    for (int u=0; u<y_firstth; ++u)
-    for (int i=x_lastth; i<im.cols; ++i)
-    thsurf.fset(i,u,th);
+    if (j == y_firstth) {
+      for (int u = 0; u < y_firstth; ++u) {
+        for (int i = x_lastth; i < im.cols; ++i) {
+          thsurf.at<float>(u, i) = th;
+        }
+      }
+    }
 
     // RIGHT-LOWER CORNER
-    if (j==y_lastth)
-    for (int u=y_lastth+1; u<im.rows; ++u)
-    for (int i=x_lastth; i<im.cols; ++i)
-    thsurf.fset(i,u,th);
-  }
-  cerr << "surface created" << endl;
-
-  for (int y = 0; y < im.rows; ++y)
-    for (int x = 0; x < im.cols; ++x) {
-      if (im.uget(x,y)>=thsurf.fget(x,y))
-      {
-        output.uset(x,y,255);
-      }
-      else
-      {
-        output.uset(x,y,0);
+    if (j == y_lastth) {
+      for (int u = y_lastth + 1; u < im.rows; ++u) {
+        for (int i = x_lastth; i < im.cols; ++i) {
+          thsurf.at<float>(u, i) = th;
+        }
       }
     }
   }
+
+  for (int y = 0; y < im.rows; ++y) {
+    for (int x = 0; x < im.cols; ++x) {
+      if (im.at<unsigned char>(y, x) >= thsurf.at<float>(y, x)) {
+        output.at<unsigned char>(y, x) = 255;
+      } else {
+        output.at<unsigned char>(y, x) = 0;
+      }
+    }
+  }
+
+}
 
 void binarize(Mat& src, Mat& dst) {
   CV_Assert(src.channels() == 1);

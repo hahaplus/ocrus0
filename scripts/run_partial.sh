@@ -35,12 +35,14 @@ echo Accuracy results stored in $PATH_STATS
 
 echo Copying results ...
 rm -r ${PATH_RESULT}/bad_lines
-mkdir ${PATH_RESULT}/bad_lines
+mkdir -p ${PATH_RESULT}/bad_lines
 for PATH_IMG in `cat $PATH_IMAGE_LIST`
 do
   cp ${PATH_IMG}_symbol.* "$PATH_RESULT"
   mv `dirname ${PATH_IMG}`/bad_lines/*.png ${PATH_RESULT}/bad_lines/ 2> /dev/null
 done
 cp $PATH_STATS $PATH_RESULT
+cp $PATH_STATS_DATE $PATH_RESULT
+cp $PATH_STATS_MONEY $PATH_RESULT
 
 echo Exited

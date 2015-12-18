@@ -41,7 +41,7 @@ echo Accuracy results stored in $PATH_STATS
 
 echo Copying results ...
 rm -r ${PATH_RESULT}/bad_lines
-mkdir ${PATH_RESULT}/bad_lines
+mkdir -p ${PATH_RESULT}/bad_lines
 for PATH_IMG in `cat $PATH_IMAGE_LIST`
 do
   cp ${PATH_IMG}_symbol.png "$PATH_RESULT"

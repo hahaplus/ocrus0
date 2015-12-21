@@ -1,4 +1,5 @@
 # coding=utf-8
+
 '''
 Analysis and statistics for results
 
@@ -6,6 +7,8 @@ Copyright (C) 2015 Works Applications, all rights reserved
 
 @author: Chang Sun
 '''
+
+import sys
 
 OVERLAP_PERCENT = 0.1
 
@@ -102,21 +105,21 @@ def calc_correct_lines(ocr_lines_gt, ocr_lines):
     return num_correct_lines
 
 
-def pretty_print_stats(stats):
+def pretty_print_stats(stats, f=sys.stdout):
     '''
     Print stats to stdout in pretty format
 
     @param stats: The stats of OCR results
     '''
 
-    print '%20s %5s %5s %8s %5s' % ('Img', 'C', 'T', 'Acc', 'W')
+    print >> f, '%20s %5s %5s %8s %5s' % ('Img', 'C', 'T', 'Acc', 'W')
     for stat in stats:
-        print '%20s %5d %5d %8.3f %5d' % (stat['id_image'],
-                                          stat['num_correct_lines'],
-                                          stat['num_lines'],
-                                          stat['accuracy'],
-                                          stat['num_wrong_lines'])
-    print 'Img: Image, C: Correct, T: Total, Acc: Accuracy, W: Wrong'
+        print >> f, '%20s %5d %5d %8.3f %5d' % (stat['id_image'],
+                                                stat['num_correct_lines'],
+                                                stat['num_lines'],
+                                                stat['accuracy'],
+                                                stat['num_wrong_lines'])
+    print >> f, 'Img: Image, C: Correct, T: Total, Acc: Accuracy, W: Wrong'
 
 
 def pretty_print_stats_cmp(stats_cmp):

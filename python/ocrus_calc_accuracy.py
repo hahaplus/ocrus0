@@ -4,6 +4,8 @@
 import os
 import sys
 import json
+import shutil
+from PIL import Image
 
 from ocrus.stats_analysis import calc_correct_lines, pretty_print_stats
 
@@ -40,18 +42,27 @@ num_correct_lines = 0
 stats = []
 
 dirs_bad_line = set()
+dirs_good = set()
+dirs_bad = set()
 for path_image in open(path_image_list):
     path_image = path_image.strip()
     if path_image == '':
         continue
+
     dir_bad_line = os.path.join(os.path.dirname(path_image), 'bad_lines')
     dirs_bad_line.add(dir_bad_line)
-for dir_bad_line in dirs_bad_line:
-    print dir_bad_line
-    import shutil
-    if os.path.exists(dir_bad_line):
-        shutil.rmtree(dir_bad_line)
-    os.mkdir(dir_bad_line)
+
+    dir_good = os.path.join(os.path.dirname(path_image), 'good')
+    dirs_good.add(dir_good)
+
+    dir_bad = os.path.join(os.path.dirname(path_image), 'bad')
+    dirs_bad.add(dir_bad)
+
+for dirs in [dirs_bad_line, dirs_good, dirs_bad]:
+    for dir_ in dirs:
+        if os.path.exists(dir_):
+            shutil.rmtree(dir_)
+        os.mkdir(dir_)
 
 for path_image in open(path_image_list):
     path_image = path_image.strip()
@@ -83,7 +94,10 @@ for path_image in open(path_image_list):
     dir_bad_line = os.path.join(os.path.dirname(path_image), 'bad_lines')
 
     if not all([ocr_line_gt['recognized'] for ocr_line_gt in ocr_lines_gt]):
-        from PIL import Image
+        shutil.copy(path_image + '_ocr_lines.json',
+                    os.path.join(os.path.dirname(path_image), 'bad'))
+        shutil.copy(path_image + '_ocr_lines.png',
+                    os.path.join(os.path.dirname(path_image), 'bad'))
         img = Image.open(path_symbol_img)
         img.load()
         bad_line_id = 1
@@ -103,6 +117,11 @@ for path_image in open(path_image_list):
                 img.crop([left_min - 30, top_min - 30,
                           right_max + 30, bottom_max + 30]).save(path_line_img)
                 bad_line_id += 1
+    else:
+        shutil.copy(path_image + '_ocr_lines.json',
+                    os.path.join(os.path.dirname(path_image), 'good'))
+        shutil.copy(path_image + '_ocr_lines.png',
+                    os.path.join(os.path.dirname(path_image), 'good'))
 
     num_lines += len(ocr_lines_gt)
     num_correct_lines += each_num_correct_lines[id_image]
@@ -122,7 +141,11 @@ for path_image in open(path_image_list):
                   'accuracy': each_accuracy[id_image]})
 
 stats.sort(key=lambda x: x['num_wrong_lines'])
+
+f_stats_txt = open(base_stats + '.txt', 'w')
+
 pretty_print_stats(stats)
+pretty_print_stats(stats, f=f_stats_txt)
 if base_stats:
     json.dump(stats, open(base_stats, 'w'), indent=2)
 
@@ -130,4 +153,7 @@ accuracy = float(num_correct_lines) / num_lines
 
 if line_type is not None:
     print "Line type:", line_type
+    print >> f_stats_txt, "Line type:", line_type
 print 'Accuracy: %.3f (%d/%d)' % (accuracy, num_correct_lines, num_lines)
+print >> f_stats_txt, 'Accuracy: %.3f (%d/%d)' % (
+    accuracy, num_correct_lines, num_lines)

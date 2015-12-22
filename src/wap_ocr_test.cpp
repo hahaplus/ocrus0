@@ -13,6 +13,9 @@
 #include "binarization/wap_binarize.h"
 #include "util/general.h"
 #include "textDetect/simple_text_detect.h"
+#include "opencv2/highgui/highgui.hpp"
+#include "preprocessing/enhancement/enhancement.h"
+
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Print the bounding boxes of an image\n"
@@ -43,11 +46,24 @@ int main(int argc, char *argv[]) {
   //cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
   //ShadowRemove::removeShadow(img);
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
-  Rect text_area = SimpleTextDetect::simpleDetect(gray_img);
+  IplImage gray_input(gray_img);
+  IplImage *gray_output = cvCreateImage(cvGetSize(&gray_input), 8, 1);
+  //ImageStretchByHistogram(&gray_input, gray_output);
+  //gray_img = cvarrToMat(gray_output);
+
+  //Rect text_area = SimpleTextDetect::simpleDetect(gray_img);
   //Binarize::binarize(gray_img, binarize_img);
   ocrus::binarize(gray_img, binarize_img);
-  DenoiseLinePoint::removeNoise(binarize_img, &text_area);
 
+ // IplImage input_image(binarize_img);
+  //IplImage *img_dilate = cvCreateImage(cvGetSize(&input_image), 8, 1);
+  //cvDilate(&input_image, img_dilate, NULL,1); //膨胀
+  //cvErode( img_dilate, &input_image, NULL,1);
+
+  //binarize_img
+  DenoiseLinePoint::removeNoise(binarize_img);
+  //Enhancement::enhancementAndBinarize(gray_img, binarize_img);
+  //General::showImage(binarize_img);
   OcrDetailResult ocr_detail_result;
   WapOcrApi::recognitionToText(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);
   for (auto ru : ocr_detail_result.getResult())

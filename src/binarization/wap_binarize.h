@@ -12,8 +12,6 @@
 #include <string>
 
 #include <opencv2/opencv.hpp>
-#include <tesseract/baseapi.h>
-
 #include "dto/ocr_result_dto.h"
 
 namespace ocrus {
@@ -38,7 +36,7 @@ enum NiblackVersion {
  * Adapted from version 2.4 in
  * http://liris.cnrs.fr/christian.wolf/software/binarize/index.html
  */
-void NiblackSauvolaWolfJolion(Mat im, Mat output, NiblackVersion version,
+void NiblackSauvolaWolfJolion(cv::Mat im, cv::Mat output, NiblackVersion version,
                               int winx, int winy, double k, double dR);
 
 /**
@@ -47,7 +45,7 @@ void NiblackSauvolaWolfJolion(Mat im, Mat output, NiblackVersion version,
  * @param src: Image to binarize
  * @param dst: The binarized image
  */
-void binarize(Mat& src, Mat& dst);
+void binarize(const cv::Mat& src, cv::Mat& dst);
 
 }  // namespace ocrus
 

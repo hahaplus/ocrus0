@@ -9,7 +9,7 @@
 #include "wap_binarize.h"
 
 #include <opencv2/opencv.hpp>
-
+using namespace cv;
 namespace ocrus {
 
 /**
@@ -259,7 +259,7 @@ void NiblackSauvolaWolfJolion(Mat im, Mat output, NiblackVersion version,
 
 }
 
-void binarize(Mat& src, Mat& dst) {
+void binarize(const Mat& src, Mat& dst) {
   CV_Assert(src.channels() == 1);
   Mat tmp = src.clone();
   int winx = 40;

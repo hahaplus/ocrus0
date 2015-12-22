@@ -23,10 +23,10 @@ using namespace cv;
    * floodFill in a mat.
    * the pixel which get a distance between seed_value that is less or equal than connect_threshold will be judged as a seed.
    * when the difference between pixel is less or equal than connect_threshold will be judged as adjacent.
-   * T is related to the channels of the img, if img is a single channel img, please set T uchar, and if img has three channels
+   * T is related to the channels of the img, if img is a single channel img, please set T Vec<uchar,1>, and if img has three channels
    * please set T as Vec3b
    *
-   * distance = sqrt(sum((ai-bi)^2))  a, b are elemet T. i range(1, channels)
+   * distance = sqrt(sum((ai-bi)^2))  a, b are element T. i range(1, channels)
    *
    * AlgorithmUtil
    * the pair is (row, col)
@@ -116,6 +116,7 @@ T AlgorithmUtil::getAverageValue(vector<T> &list)
     {
         res += a;
     }
+    if (list.size())
     res /= list.size();
     return res;
 }

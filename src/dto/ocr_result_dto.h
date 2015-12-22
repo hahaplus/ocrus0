@@ -12,7 +12,7 @@
 
 #include "util/string_util.h"
 using namespace std;
-using namespace cv;
+
 class ResultUnit {
  public:
   vector<cv::Point2i> bounding_box;  // every symbol's bounding_box
@@ -27,7 +27,7 @@ class ResultUnit {
     bounding_box[0] = cv::Point2i(1e6, 1e6);
     bounding_box[1] = cv::Point2i(-1e6, -1e6);
   }
-  ResultUnit(vector<Point2i> &bbox, string content, vector<pair<string, float> > candidates, float confi, int line_index) {
+  ResultUnit(vector<cv::Point2i> &bbox, string content, vector<pair<string, float> > candidates, float confi, int line_index) {
     this->bounding_box = bbox;
     this->content = content;
     this->candidates = candidates;
@@ -35,7 +35,7 @@ class ResultUnit {
     this->line_index = line_index;
   }
 
-  ResultUnit(vector<Point2i> &bbox, string content) {
+  ResultUnit(vector<cv::Point2i> &bbox, string content) {
     this->bounding_box = bbox;
     this->content = content;
     this->line_index = 0;
@@ -43,11 +43,11 @@ class ResultUnit {
   }
   int getWidth()
   {
-    return bounding_box[1].x - bounding_box[0].x;
+    return bounding_box[1].x - bounding_box[0].x + 1;
   }
   int getHeight()
   {
-    return bounding_box[1].y - bounding_box[0].y;
+    return bounding_box[1].y - bounding_box[0].y + 1;
   }
 };
 class OcrDetailResult {

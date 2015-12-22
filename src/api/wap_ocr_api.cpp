@@ -38,7 +38,7 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
     result = new OcrDetailResult;
   }
   recognitionWithTesseract(src, lang, cut_level, result);
-  //return result->toString(cut_level);
+  return result->toString(cut_level);
   // first pass
   OcrDetailResult &first_pass = *result;
 
@@ -135,7 +135,7 @@ void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
     exit(-1);
   }
   api->SetVariable("find_remove_lines", "false");
-  api->SetVariable("textord_occupancy_threshold", "0.6");
+  //api->SetVariable("textord_occupancy_threshold", "0.2");
   //WapOcrApi::img = src.clone();
   api->SetVariable("save_blob_choices", "T");
   api->SetPageSegMode(PSM_SINGLE_COLUMN);

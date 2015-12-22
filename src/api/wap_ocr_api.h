@@ -38,12 +38,12 @@ private:
 	static bool overlap(pair<int, int> a, pair<int, int> b, int eps = 0);
 	static void handle(vector<ResultUnit> &segment);
 	static void recognizeUnit(ResultUnit &u);
-	static void cutImage(const Mat &src, Mat &dst, int x, int y, int width, int height);
-	static void scaleImage(Mat &src, double new_width, double new_height);
+	static void cutImage(const cv::Mat &src, cv::Mat &dst, int x, int y, int width, int height);
+	static void scaleImage(cv::Mat &src, double new_width, double new_height);
 	// format the image to be more neat
-	static void formatImage(const Mat &src, Mat &dst, OcrDetailResult *result, std::map<pair<int,int>, ResultUnit> &pos_map);
+	static void formatImage(const cv::Mat &src, cv::Mat &dst, OcrDetailResult *result, std::map<pair<int,int>, ResultUnit> &pos_map);
   // write the character from src to dst at (x, y)
-	static void writeCharacter(const Mat &src, Mat &dst, ResultUnit unit, int x, int y);
+	static void writeCharacter(const cv::Mat &src, cv::Mat &dst, ResultUnit unit, int x, int y);
 	// recognition with tesseract
   static void recognitionWithTesseract(const cv::Mat &img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
 

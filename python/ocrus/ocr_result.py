@@ -17,14 +17,17 @@ import re
 REPLACE_TABLE = {
     u'ー': u'1',
     u'一': u'1',
+    u'ュ'  :    u'1',
     u'。': u'0',
     u'〇': u'0',
     u'o': u'0',
     u'O': u'0',
-    u'ら':  u'5',
+    u'ら':    u'5',
+    u'ヲ':    u'5',
     u'g': u'9',
     u'乃': u'月',
     u'巳': u'日',
+    u'ノ':      u'/',
     u'\\': u'￥',
     u'~': u' ',
     u'E': u'日',
@@ -112,11 +115,11 @@ def extract_date(s):
     @param s: A unicode string
     @return: A list of (start_pos, end_pos)
     '''
-    matches = re.finditer(ur'''([0-9ー一。〇oOらg\[\],フ'エ]?[0-9ー一。〇oOらg\[\]~\s,フ'エ]*) # Year
+    matches = re.finditer(ur'''([0-9ー一。〇oOらg\[\],フ'エュヲ]?[0-9ー一。〇oOらg\[\]~\s,フ'エュヲ]*) # Year
                         [年]?
-                        [0-9ー一。〇oOらg\[\]\s,フ'エ]+ # Month
+                        [0-9ー一。〇oOらg\[\]\s,フ'エュヲ]+ # Month
                         [月乃]
-                        [0-9ー一。〇oOらg\[\]\s,フ'エ]+ # Day
+                        [0-9ー一。〇oOらg\[\]\s,フ'エュヲ]+ # Day
                         [日巳曰E臼8]''', s, re.X)
     result = []
     if matches:
@@ -126,11 +129,11 @@ def extract_date(s):
                                           s[m.start(): m.end()])
                 result.append((m.start(), m.end()))
 
-    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\]フエ]{4} #Year
-                                /
-                               [0-9ー一。〇oOらg\[\]フエ]{2}# Month
-                               /
-                               [0-9ー一。〇oOらg\[\]フエ]{2} # Day
+    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\]フエュヲ]{4} #Year
+                                                                                   [/ノ]
+                               [0-9ー一。〇oOらg\[\]フエュヲ]{2}# Month
+                                                                                   [/ノ]
+                               [0-9ー一。〇oOらg\[\]フエュヲ]{2} # Day
                             ''', s, re.X)
     if matches:
         for m in matches:
@@ -149,7 +152,7 @@ def extract_money(s):
     @return: A list of (start_pos, end_pos)
     '''
     matches = re.finditer(
-        ur'([\\￥¥半芋斐韮]*[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フ\'エ]*円)|([\\￥¥半芋斐韮]+[0-9ー一。〇oOらg\[\]フ\'エ][0-9ー一。〇oOらg\[\]~\s,フエ]*)',
+        ur'([\\￥¥半芋斐韮]*[0-9ー一。〇oOらg\[\]フ\'エュヲ][0-9ー一。〇oOらg\[\]~\s,フ\'エュヲ]*円)|([\\￥¥半芋斐韮]+[0-9ー一。〇oOらg\[\]フ\'エュヲ][0-9ー一。〇oOらg\[\]~\s,フエュヲ]*)',
         s)
     result = []
     if matches:

@@ -9,6 +9,7 @@ FILE(GLOB SRC api/*.cpp
               preprocessing/*/*.cpp
               util/*.cpp
               binarization/*.cc
+              
               textDetect/*.cpp
               recognition/recognition.cc)
 

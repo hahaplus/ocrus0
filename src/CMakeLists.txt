@@ -19,11 +19,15 @@ add_executable(ocrus_bounding_box
                ocrus_bounding_box.cc ${SRC})
 target_link_libraries(ocrus_bounding_box ${LIBS})
 
+add_executable(ocrus_candidates
+               ocrus_candidates.cc ${SRC})
+target_link_libraries(ocrus_candidates ${LIBS})
+
 add_executable(ocrus_ocr_draw ocrus_ocr_draw.cc ${SRC})
 target_link_libraries(ocrus_ocr_draw ${LIBS})
 
 add_executable(wap_ocr_test wap_ocr_test.cpp ${SRC})
 target_link_libraries(wap_ocr_test ${LIBS})
 
-INSTALL(TARGETS ocrus_bounding_box ocrus_ocr_draw wap_ocr_test
+INSTALL(TARGETS ocrus_bounding_box ocrus_candidates ocrus_ocr_draw wap_ocr_test
         RUNTIME DESTINATION bin)

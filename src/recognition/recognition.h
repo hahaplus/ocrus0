@@ -35,6 +35,15 @@ void ocrPrintBoundingBox(const cv::Mat& src,
                          const std::string& lang);
 
 /**
+ * OCR a grayscale image and print the word, confidence, bounding box and
+ * candidates
+ *
+ * @param gray_image: A grayscale image
+ * @param lang: Language setting that tesseract accepts, eg. eng+jpn
+ */
+void ocrPrintCandidates(const cv::Mat& gray_img, const std::string& lang);
+
+/**
  * Draw the OCR result to image
  *
  * @param src_img Image to draw on

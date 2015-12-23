@@ -14,7 +14,9 @@ ocr_lines = [
           "text": "9",
           "confidence": 61.91, // Optional
           "bounding_box": [411, 1778, 431, 1906],
-          "candidates": ["9", "g", "q"] // Optional
+          
+          // Optional, a list of (character, confidence)
+          "candidates": [("9", 61.91), ("g", 50.00), ("q", 40.00)] 
         },
         
         { // Define another character
@@ -38,7 +40,9 @@ ocr_chars = [
     "text": "9",
     "confidence": 61.91, // Optional
     "bounding_box": [411, 1778, 431, 1906],
-    "candidates": ["9", "g", "q"] // Optional
+    
+    // Optional, a list of (character, confidence)
+    "candidates": [("9", 61.91), ("g", 50.00), ("q", 40.00)] 
   },
   
   { // Define another character

@@ -28,10 +28,13 @@ void ocrPrintBoundingBox(const cv::Mat& src,
   tesseract::TessBaseAPI api;
   api.Init(NULL, lang.c_str());
 
+  //api.SetVariable("tessedit_dump_choices", "true");
+  //api.SetVariable("classify_debug_level", "2");
+
   // Fraction of neighbourhood, default: 0.4
   api.SetVariable("textord_occupancy_threshold", "0.6");
 
-  //Find vertical and horizontal line objects and removes them, default: true
+  // Find vertical and horizontal line objects and removes them, default: true
   api.SetVariable("find_remove_lines", "false");
 
   api.SetPageSegMode(page_seg_mode);
@@ -49,6 +52,52 @@ void ocrPrintBoundingBox(const cv::Mat& src,
       printf("word: '%s';  \tconf: %.2f; bounding_box: %d,%d,%d,%d;\n", word,
              conf, x1, y1, x2, y2);
       delete[] word;
+    } while (ri->Next(level));
+  }
+  api.End();
+}
+
+void ocrPrintCandidates(const cv::Mat& gray_img, const std::string& lang) {
+  tesseract::PageSegMode page_seg_mode = tesseract::PSM_SINGLE_COLUMN;
+  tesseract::PageIteratorLevel level = tesseract::RIL_SYMBOL;
+
+  tesseract::TessBaseAPI api;
+  api.Init(NULL, lang.c_str());
+
+  api.SetVariable("tessedit_dump_choices", "true");
+  api.SetVariable("classify_debug_level", "2");
+
+  // Fraction of neighbourhood, default: 0.4
+  api.SetVariable("textord_occupancy_threshold", "0.6");
+
+  // Find vertical and horizontal line objects and removes them, default: true
+  api.SetVariable("find_remove_lines", "false");
+
+  api.SetPageSegMode(page_seg_mode);
+  api.SetImage(reinterpret_cast<uchar*>(gray_img.data), gray_img.cols, gray_img.rows, 1,
+               gray_img.cols);
+  api.Recognize(NULL);
+
+  tesseract::ResultIterator* ri = api.GetIterator();
+  if (ri != 0) {
+    do {
+      const char* word = ri->GetUTF8Text(level);
+      float conf = ri->Confidence(level);
+      int x1, y1, x2, y2;
+      ri->BoundingBox(level, &x1, &y1, &x2, &y2);
+      printf("word: '%s';  \tconf: %.2f; bounding_box: %d,%d,%d,%d;\n", word,
+             conf, x1, y1, x2, y2);
+      delete[] word;
+
+      printf("  ");
+      tesseract::ChoiceIterator choiceIterator(*ri);
+      do {
+        const char* text = choiceIterator.GetUTF8Text();
+        float confidence  = choiceIterator.Confidence();
+        printf("(%s, %.2f); ", text, confidence);
+      } while (choiceIterator.Next());
+      printf("\n");
+
     } while (ri->Next(level));
   }
   api.End();

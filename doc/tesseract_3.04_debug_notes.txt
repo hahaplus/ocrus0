@@ -358,3 +358,43 @@ pass_n: 1
 target_word_box: NULL
 word_config: NULL
 page_res: Page results
+
+Line 174
+      word->word->SetupForRecognition(unicharset, this, BestPix(),
+                                      tessedit_ocr_engine_mode, NULL,
+                                      classify_bln_numeric_mode,
+                                      textord_use_cjk_fp_model,
+                                      poly_allow_detailed_fx,
+                                      word->row, word->block);
+
+File: ccstruct/pageres.cpp
+Line 294
+// Sets up the members used in recognition: bln_boxes, chopped_word,
+// seam_array, denorm.  Returns false if
+// the word is empty and sets up fake results.  If use_body_size is
+// true and row->body_size is set, then body_size will be used for
+// blob normalization instead of xheight + ascrise. This flag is for
+// those languages that are using CJK pitch model and thus it has to
+// be true if and only if tesseract->textord_use_cjk_fp_model is
+// true.
+// If allow_detailed_fx is true, the feature extractor will receive fine
+// precision outline information, allowing smoother features and better
+// features on low resolution images.
+// The norm_mode_hint sets the default mode for normalization in absence
+// of any of the above flags.
+// norm_box is used to override the word bounding box to determine the
+// normalization scale and offset.
+// Returns false if the word is empty and sets up fake results.
+bool WERD_RES::SetupForRecognition(const UNICHARSET& unicharset_in,
+                                   tesseract::Tesseract* tess, Pix* pix,
+                                   int norm_mode,
+                                   const TBOX* norm_box,
+                                   bool numeric_mode,
+                                   bool use_body_size,
+                                   bool allow_detailed_fx,
+                                   ROW *row, const BLOCK* block);
+norm_mode: 0
+norm_box: NULL
+numeric_mode: false
+use_body_size: true
+allow_detailed_fx: false

@@ -8,6 +8,8 @@ fi
 PATH_IMAGE_LIST="$1"
 PATH_RESULT="$2"
 
+mkdir -p "${PATH_RESULT}"
+
 PATH_STATS=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats.json
 PATH_STATS_DATE=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_date.json
 PATH_STATS_MONEY=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_money.json

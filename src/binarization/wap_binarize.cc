@@ -259,12 +259,12 @@ void NiblackSauvolaWolfJolion(Mat im, Mat output, NiblackVersion version,
 
 }
 
-void binarize(const Mat& src, Mat& dst) {
+void binarize(const Mat& src, Mat& dst, double k) {
   CV_Assert(src.channels() == 1);
   Mat tmp = src.clone();
   int winx = 40;
   int winy = 40;
-  double k = 0.1;
+  // double k = 0.4;              modified by michael chen 2015.12.23
   dst.create(src.size(), src.type());
   NiblackSauvolaWolfJolion(tmp, dst, WOLFJOLION, winx, winy, k, 128);
 }

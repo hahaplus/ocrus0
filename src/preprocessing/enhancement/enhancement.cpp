@@ -64,6 +64,8 @@ void Enhancement::imageStretchByHistogram(IplImage *src1, IplImage *dst1)
       ((uchar*) (dst1->imageData + dst1->widthStep * y))[x] = p1[v] * 255 + 0.5;
     }
   }
+
+
 }
 
 void Enhancement::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
@@ -90,10 +92,19 @@ void Enhancement::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
 }
 void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst) {
 
+  /*Mat out;
+      int center = 100;
+      double alpha = 1.1;
+      double beta = (1 - alpha) * center;
+      src.convertTo(src, src.type(), alpha, beta);
+      ocrus::binarize(src, dst);
+      // General::showImage(dst);
+      return;*/
   Mat binarize_img, enhanced_binarize_img;
   OcrDetailResult boxes;
   //======================get the box of character=======================
   ocrus::binarize(src, binarize_img);
+  //General::showImage(binarize_img);
   Rect text_area = SimpleTextDetect::simpleDetect(src);
 
   DenoiseLinePoint::removeNoise(binarize_img, &text_area);
@@ -106,8 +117,11 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst) {
   IplImage gray_output = *cvCreateImage(cvGetSize(&gray_input), 8, 1);
   imageStretchByHistogram(&gray_input, &gray_output);
   Mat gray_img = cv::cvarrToMat(&gray_output);
-  ocrus::binarize(gray_img, enhanced_binarize_img);
 
+
+
+  ocrus::binarize(gray_img, enhanced_binarize_img, 0.45);
+  //General::showImage(enhanced_binarize_img);
   vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<
         Vec<uchar, 1> >(enhanced_binarize_img, 0, 0);
   // draw

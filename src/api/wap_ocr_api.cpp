@@ -135,7 +135,7 @@ void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
     exit(-1);
   }
   api->SetVariable("find_remove_lines", "false");
-  //api->SetVariable("textord_occupancy_threshold", "0.2");
+  api->SetVariable("textord_occupancy_threshold", "0.6");
   //WapOcrApi::img = src.clone();
   api->SetVariable("save_blob_choices", "T");
   api->SetPageSegMode(PSM_SINGLE_COLUMN);

@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
 
   //Rect text_area = SimpleTextDetect::simpleDetect(gray_img);
   //Binarize::binarize(gray_img, binarize_img);
-  ocrus::binarize(gray_img, binarize_img);
+  //ocrus::binarize(gray_img, binarize_img);
 
  // IplImage input_image(binarize_img);
   //IplImage *img_dilate = cvCreateImage(cvGetSize(&input_image), 8, 1);
@@ -61,8 +61,9 @@ int main(int argc, char *argv[]) {
   //cvErode( img_dilate, &input_image, NULL,1);
 
   //binarize_img
-  DenoiseLinePoint::removeNoise(binarize_img);
-  //Enhancement::enhancementAndBinarize(gray_img, binarize_img);
+  Enhancement::enhancementAndBinarize(gray_img, binarize_img);
+  //DenoiseLinePoint::removeNoise(binarize_img);
+
   //General::showImage(binarize_img);
   OcrDetailResult ocr_detail_result;
   WapOcrApi::recognitionToText(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);

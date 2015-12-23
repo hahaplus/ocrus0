@@ -12,6 +12,7 @@ PATH_STATS=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats.json
 PATH_STATS_DATE=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_date.json
 PATH_STATS_MONEY=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_money.json
 
+echo $PATH_STATS
 
 echo Build and install ...
 make

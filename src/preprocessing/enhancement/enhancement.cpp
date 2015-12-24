@@ -90,7 +90,7 @@ void Enhancement::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
  // double avg_w = AlgorithmUtil::getAverageValue<double>(avg_width);
   //odr->setResult(filted_result);
 }
-void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst) {
+void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, double k) {
 
   /*Mat out;
       int center = 100;
@@ -105,9 +105,15 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst) {
   //======================get the box of character=======================
   ocrus::binarize(src, binarize_img);
 
+
   Rect text_area = SimpleTextDetect::simpleDetect(src);
 
   DenoiseLinePoint::removeNoise(binarize_img, &text_area);
+  if (k==0)
+  {
+      dst = binarize_img;
+      return;
+  }
   //General::showImage(binarize_img);
   //getBBox(binarize_img, &boxes);
   //=====================================================================
@@ -121,7 +127,7 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst) {
   GaussianBlur(gray_img, gray_img, Size(3,3), 0, 0);
   //bilateralFilter(gray_img, dst, 10, 40, 40);
  // gray_img = dst;
-  ocrus::binarize(gray_img, enhanced_binarize_img, 0.8);
+  ocrus::binarize(gray_img, enhanced_binarize_img, 1.0 - k);
   //General::showImage(enhanced_binarize_img);
   vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<
         Vec<uchar, 1> >(enhanced_binarize_img, 0, 0);

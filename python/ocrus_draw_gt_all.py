@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import shutil
 import os
 import sys
 from ocrus.ocr_drawing import draw_ocr_lines
@@ -33,3 +34,12 @@ for path_image in open(path_image_list):
         format(path_image=path_image)
 
     draw_ocr_lines(path_ocr_lines, path_img, path_output_img)
+
+    dir_gt = os.path.join(os.path.dirname(path_output_img), 'gt')
+    if not os.path.exists(dir_gt):
+        os.mkdir(dir_gt)
+    shutil.copy(path_output_img, dir_gt)
+
+    dir_gt_bad = os.path.join(os.path.dirname(path_output_img), 'gt_bad')
+    if not os.path.exists(dir_gt_bad):
+        os.mkdir(dir_gt_bad)

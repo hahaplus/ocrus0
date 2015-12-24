@@ -19,7 +19,7 @@ TEXT_COLOR = (255, 0, 0)
 CONFIDENCE_COLOR = (0, 128, 0)
 BOX_COLOR = (0, 0, 255)
 
-font_text = ImageFont.truetype(FONT_PATH, 24, encoding='utf-8')
+font_text = ImageFont.truetype(FONT_PATH, 48, encoding='utf-8')
 font_confidence = ImageFont.truetype(FONT_PATH, 12, encoding='utf-8')
 
 

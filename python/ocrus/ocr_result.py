@@ -12,39 +12,91 @@ Created on Dec 4, 2015
 import io
 import json
 import re
+import math
 
-
-REPLACE_TABLE = {
-    u'ー': u'1',
-    u'一': u'1',
-    u'ュ'  :    u'1',
-    u'。': u'0',
-    u'〇': u'0',
-    u'o': u'0',
-    u'O': u'0',
-    u'ら':    u'5',
-    u'ヲ':    u'5',
-    u'g': u'9',
-    u'乃': u'月',
-    u'巳': u'日',
-    u'ノ':      u'/',
-    u'\\': u'￥',
-    u'~': u' ',
-    u'E': u'日',
-    u',': u' ',
-    u']': u'1',
-    u'[': u'1',
-    u'¥': u'￥',
-    u'臼': u'日',
+# Replace table for digits
+DIGITS_REPLACE_REG = {
+    u'。': u'0', u'〇': u'0', u'o': u'0', u'O': u'0', u'U': u'0', u'u': u'0',
+    u'囗': u'0',
+    u'ー': u'1', u'一': u'1',
+    u'ュ':   u'1', u'エ':  u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
+    u'ユ': u'1',
+    u'ら':    u'5', u'ヲ':    u'5', u's': u'5', u'S': u'5',
     u'フ':  u'7',
-    u'半': u'￥',
-    u"'": u' ',
-    u'エ':  u'1',
-    u'曰': u'日',
-    u'芋': u'￥',
-    u'斐': u'￥',
-    u'韮': u'￥',
+    u'g': u'9',
 }
+
+DIGITS_REPLACE = dict(
+    DIGITS_REPLACE_REG.items() + {u']': u'1', u'[': u'1', }.items())
+
+# These characters are in digits and are treated as blank
+BLANK_REPLACE = {
+    u' ': u' ',
+    u'~': u' ',
+    u',': u' ',
+    u"'": u' ',
+    u'"': u' ',
+    u'〟': u' ',
+    u'丶': u' ',
+    u'_': u' ',
+    u'・': u' ',
+    u'`': u' ',
+    u'_': u' ',
+}
+
+DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())
+
+# Replace table for money prefix
+MONEY_PREFIX_REPLACE_REG = {
+    u'¥': u'￥',
+    u'半': u'￥', u'芋': u'￥', u'斐': u'￥', u'韮': u'￥', u'輩': u'￥',
+    u'一': u'-',
+}
+
+MONEY_PREFIX_REPLACE = dict(
+    MONEY_PREFIX_REPLACE_REG.items() + {u'\\': u'￥', }.items())
+
+# Replace table for money suffix
+MONEY_SUFFIX_REPLACE = {
+}
+
+# Replace table for year symbol
+YEAR_SYM_REPLACE = {
+    u'午': u'年',
+    u'什': u'年',
+}
+
+# Replace table for month symbol
+MONTH_SYM_REPLACE = {
+    u'乃': u'月',
+    u'刀': u'月',
+    u'ノ':      u'/',
+}
+
+# Replace table for day symbol
+DAY_SYM_REPLACE = {
+    u'巳': u'日', u'E': u'日', u'臼': u'日', u'曰': u'日',
+    u'口': u'日', u'囗': u'日', u'8': u'日', u'g': u'日',
+    u'ロ': u'日', u'6': u'日', u'凵': u'日',
+}
+
+digit = ur'0-9\[\]' + u''.join(DIGITS_REPLACE_REG)
+blank = ur'\s' + u''.join(BLANK_REPLACE)
+digitblank = digit + blank
+
+digit1 = u'[' + digit + u']'
+blank1 = u'[' + blank + u']'
+digitblank1 = u'[' + digitblank + u']'
+
+digit0_1 = digit1 + u'?'
+
+digit_star = digit1 + u'*'
+blank_star = blank1 + u'*'
+digitblank_star = digitblank1 + u'*'
+
+digit_plus = digit1 + u'+'
+blank_plus = blank1 + u'+'
+digitblank_plus = digitblank1 + u'+'
 
 
 def parse_line_v1(line):
@@ -98,14 +150,15 @@ def normalize_ocr_lines(path_ocr_lines):
         json_file.write(unicode(data))
 
 
-def replace_if_exist(ch, table):
+def replace_if_exist(unicode_s, table):
     '''
-    Replace ch by a substitute in table is ch exists in table, otherwise keep
-    @param ch: A char
+    Replace unicode_s by a substitute in table
+    if ch of unicode_s exists in table, otherwise keep
+    @param unicode: A unicode string
     @param table: A replacement table
-    @return: A replaced char or ch itself
+    @return: A replaced unicode string
     '''
-    return table[ch] if ch in table else ch
+    return u''.join([table[ch] if ch in table else ch for ch in unicode_s])
 
 
 def extract_date(s):
@@ -113,34 +166,56 @@ def extract_date(s):
     Extract dates from a unicode string
 
     @param s: A unicode string
-    @return: A list of (start_pos, end_pos)
+    @return: A list of (start_pos, end_pos, replaced_s)
     '''
-    matches = re.finditer(ur'''([0-9ー一。〇oOらg\[\],フ'エュヲ]?[0-9ー一。〇oOらg\[\]~\s,フ'エュヲ]*) # Year
-                        [年]?
-                        [0-9ー一。〇oOらg\[\]\s,フ'エュヲ]+ # Month
-                        [月乃]
-                        [0-9ー一。〇oOらg\[\]\s,フ'エュヲ]+ # Day
-                        [日巳曰E臼8]''', s, re.X)
+
+    reg_s = ur'(' + digitblank_plus + u')' + \
+        u'([年/' + u''.join(YEAR_SYM_REPLACE) + u'])' + \
+        u'(' + blank_star + digit1 + blank_star + \
+            digit0_1 + blank_star + u')' + \
+        u'([月/' + u''.join(MONTH_SYM_REPLACE) + u'])' + \
+        u'(' + blank_star + digit1 + blank_star + \
+            digit0_1 + blank_star + u')' + \
+        u'([日' + u''.join(DAY_SYM_REPLACE) + u']?)'
+
+    matches = re.finditer(reg_s, s, re.X)
     result = []
     if matches:
         for m in matches:
             if m:
-                print u'Pos %d-%d: %s' % (m.start(), m.end(),
-                                          s[m.start(): m.end()])
-                result.append((m.start(), m.end()))
+                pos = 0
+                replaced = []
+                for i, g in enumerate(m.groups()):
+                    if g:
+                        if i == 0:
+                            pos = len(g) - 1
+                            count_digit = 0
+                            while pos >= 0 and count_digit < 4:
+                                if not g[pos] in BLANK_REPLACE:
+                                    count_digit += 1
+                                pos -= 1
+                            pos += 1
+                            replaced.append(
+                                replace_if_exist(g[pos:],
+                                                 DIGITS_BLANK_REPLACE))
+                        elif i in [2, 4]:
+                            replaced.append(
+                                replace_if_exist(g, DIGITS_BLANK_REPLACE))
+                        elif i == 1:
+                            replaced.append(
+                                replace_if_exist(g, YEAR_SYM_REPLACE))
+                        elif i == 3:
+                            replaced.append(
+                                replace_if_exist(g, MONTH_SYM_REPLACE))
+                        elif i == 5:
+                            replaced.append(
+                                replace_if_exist(g, DAY_SYM_REPLACE))
 
-    matches = re.finditer(ur'''[0-9ー一。〇oOらg\[\]フエュヲ]{4} #Year
-                                                                                   [/ノ]
-                               [0-9ー一。〇oOらg\[\]フエュヲ]{2}# Month
-                                                                                   [/ノ]
-                               [0-9ー一。〇oOらg\[\]フエュヲ]{2} # Day
-                            ''', s, re.X)
-    if matches:
-        for m in matches:
-            if m:
-                print u'Pos %d-%d: %s' % (m.start(), m.end(),
-                                          s[m.start(): m.end()])
-                result.append((m.start(), m.end()))
+                print u'Pos %d-%d: %s, replaced as: %s' % (
+                    m.start() + pos, m.end(),  s[m.start() + pos: m.end()],
+                    u''.join(replaced))
+                result.append((m.start() + pos, m.end(), u''.join(replaced)))
+
     return result
 
 
@@ -149,18 +224,87 @@ def extract_money(s):
     Extract money amounts from a unicode string
 
     @param s: A unicode string
-    @return: A list of (start_pos, end_pos)
+    @return: A list of (start_pos, end_pos, replaced_s)
     '''
-    matches = re.finditer(
-        ur'([\\￥¥半芋斐韮]*[0-9ー一。〇oOらg\[\]フ\'エュヲ][0-9ー一。〇oOらg\[\]~\s,フ\'エュヲ]*円)|([\\￥¥半芋斐韮]+[0-9ー一。〇oOらg\[\]フ\'エュヲ][0-9ー一。〇oOらg\[\]~\s,フエュヲ]*)',
-        s)
+    reg_s = ur'([一\-]?[\\￥' + u''.join(MONEY_PREFIX_REPLACE_REG) + u']?)' + \
+        u'(' + blank_star + digit1 + digitblank_star + u')' + \
+        u'([円' + u''.join(MONEY_SUFFIX_REPLACE) + u']?)'
+
+    matches = re.finditer(reg_s, s)
     result = []
     if matches:
         for m in matches:
-            print u'Pos %d-%d: %s' % (m.start(), m.end(),
-                                      s[m.start(): m.end()])
-            result.append((m.start(), m.end()))
+            if m.group(1) or m.group(3):
+                replaced = []
+                all_digits = True
+                for i, g in enumerate(m.groups()):
+                    if g:
+                        if i == 0:
+                            g_str = replace_if_exist(g, MONEY_PREFIX_REPLACE)
+                            print u'g_str: %s' % g_str
+                            if u'￥' not in g_str:
+                                g_str = replace_if_exist(g_str, {u'-': u'1'})
+                            else:
+                                all_digits = False
+                            replaced.append(g_str)
+                        elif i == 1:
+                            replaced.append(
+                                replace_if_exist(g, DIGITS_BLANK_REPLACE))
+                        elif i == 2:
+                            replaced.append(
+                                replace_if_exist(g, MONEY_SUFFIX_REPLACE))
+                            all_digits = False
+                if not all_digits:
+                    print u'Pos %d-%d: %s, replaced as: %s' % (
+                        m.start(), m.end(), s[m.start():m.end()],
+                        u''.join(replaced))
+                    result.append((m.start(), m.end(), u''.join(replaced)))
+
     return result
+
+
+def in_number_field(ch):
+    return ch.isdigit() or ch in DIGITS_REPLACE or ch in BLANK_REPLACE
+
+
+def in_symbol_field(ch):
+    return not in_number_field(ch)
+
+
+def search_field(ocr_chars, pos, in_field):
+    '''
+    Search for a field in ocr_chars
+    @param ocr_chars: OCR chars
+    @param pos: Position in ocr_chars to search backward and forward
+    @param in_field: in_field(ocr_chars[...]['text']) should be True
+    @return: A tuple (field_start, field_end) or
+            None if pos is invalid or in_field(ocr_chars[pos]['text']) is False
+    '''
+    if pos < 0 or pos >= len(ocr_chars):
+        return None
+    if not in_field(ocr_chars[pos]['text']):
+        return None
+    field_start = pos
+    while field_start >= 0 and \
+            in_field(ocr_chars[field_start]['text']):
+        field_start -= 1
+    field_start += 1
+
+    field_end = pos
+    while field_end < len(ocr_chars) and \
+            in_field(ocr_chars[field_end]['text']):
+        field_end += 1
+    field_end -= 1
+
+    return (field_start, field_end)
+
+
+def count_digits_similar(ocr_chars):
+    count = 0
+    for ocr_char in ocr_chars:
+        if ocr_char['text'].isdigit() or ocr_char['text'] in DIGITS_REPLACE:
+            count += 1
+    return count
 
 
 def to_ocr_lines(ocr_chars):
@@ -183,33 +327,63 @@ def to_ocr_lines(ocr_chars):
     ocr_lines = []
 
     pos_dates = extract_date(text)
-    for start_pos, end_pos in pos_dates:
+    for start_pos, end_pos, replaced_s in pos_dates:
         ocr_line = {'type': 'date',
                     'chars': []}
         for pos in range(start_pos, end_pos):
+            ocr_chars[pos]['text'] = replaced_s[pos - start_pos]
             ocr_line['chars'].append(ocr_chars[pos])
         ocr_lines.append(ocr_line)
 
     pos_moneys = extract_money(text)
-    for start_pos, end_pos in pos_moneys:
+    for start_pos, end_pos, replaced_s in pos_moneys:
         ocr_line = {'type': 'money',
                     'chars': []}
         for pos in range(start_pos, end_pos):
+            ocr_chars[pos]['text'] = replaced_s[pos - start_pos]
             ocr_line['chars'].append(ocr_chars[pos])
         ocr_lines.append(ocr_line)
-
-    # Make replacements
-    for ocr_line in ocr_lines:
-        for ch in ocr_line['chars']:
-            ch['text'] = replace_if_exist(ch['text'], REPLACE_TABLE)
 
     # Remove whitespace characters
     for ocr_line in ocr_lines:
         ocr_line['chars'] = [
             ch for ch in ocr_line['chars'] if ch['text'].strip() != '']
 
+    # Remove characters that are far away
+    for ocr_line in ocr_lines:
+        dists = []
+        centers = []
+        for ch in ocr_line['chars']:
+            bbox = map(float, ch['bounding_box'])
+            center_x, center_y = (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3])
+            centers.append((center_x, center_y))
+        if len(centers) >= 2:
+            for pos in range(1, len(centers)):
+                dists.append(math.sqrt(
+                    (centers[pos][0] - centers[pos - 1][0])**2 +
+                    (centers[pos][1] - centers[pos - 1][1])**2))
+            dist_average = sum(dists) / len(dists)
+            ocr_chars = []
+            start = 0
+            end = len(dists) - 1
+            '''
+            0           1   2    3    4               5
+            c1          c2  c3   c4   c5              c6
+                  0        1   2    3          4
+                        start      end
+            '''
+            while start < len(dists) and \
+                    dists[start] > dist_average * 2:
+                start += 1
+            while end >= 0 and \
+                    dists[end] > dist_average * 2:
+                end -= 1
+
+            for pos in range(start, end + 2):
+                ocr_chars.append(ocr_line['chars'][pos])
+            ocr_line['chars'] = ocr_chars
+
     return ocr_lines
 
 if __name__ == '__main__':
-    extract_date(u'abab \t 2015年一2月 2一日 haha')
     pass

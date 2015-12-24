@@ -109,7 +109,7 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, doubl
   Rect text_area = SimpleTextDetect::simpleDetect(src);
 
   DenoiseLinePoint::removeNoise(binarize_img, &text_area);
-  if (k==0)
+  if ( abs(k) < 1e-6 )   // k is very low then do not need enhance
   {
       dst = binarize_img;
       return;

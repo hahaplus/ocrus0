@@ -46,8 +46,8 @@ int main(int argc, char *argv[]) {
   //cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
   //ShadowRemove::removeShadow(img);
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
-  IplImage gray_input(gray_img);
-  IplImage *gray_output = cvCreateImage(cvGetSize(&gray_input), 8, 1);
+  //IplImage gray_input(gray_img);
+  //IplImage *gray_output = cvCreateImage(cvGetSize(&gray_input), 8, 1);
   //ImageStretchByHistogram(&gray_input, gray_output);
   //gray_img = cvarrToMat(gray_output);
 

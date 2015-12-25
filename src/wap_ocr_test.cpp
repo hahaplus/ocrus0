@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   //cvErode( img_dilate, &input_image, NULL,1);
 
   //binarize_img
-  Enhancement::enhancementAndBinarize(gray_img, binarize_img);
+  Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0.5);
   //DenoiseLinePoint::removeNoise(binarize_img);
 
   //General::showImage(binarize_img);

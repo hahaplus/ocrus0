@@ -102,13 +102,22 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, doubl
       return;*/
   Mat binarize_img, enhanced_binarize_img;
   OcrDetailResult boxes;
+
+  //for (int i = 0; i < 2; i++)
+  // smooth
+  GaussianBlur(src, src, Size(3,3), 0, 0);
+  // sharpen
+  Mat kernel(3,3,CV_32F,Scalar(-1));
+  kernel.at<float>(1,1) = 9;
+  filter2D(src, src, src.depth(),kernel);
+  //General::showImage(src);
   //======================get the box of character=======================
   ocrus::binarize(src, binarize_img);
 
 
   Rect text_area = SimpleTextDetect::simpleDetect(src);
 
-  DenoiseLinePoint::removeNoise(binarize_img, &text_area);
+  DenoiseLinePoint::removeNoise(binarize_img/*, &text_area*/);
   if ( abs(k) < 1e-6 )   // k is very low then do not need enhance
   {
       dst = binarize_img;
@@ -123,7 +132,7 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, doubl
   IplImage gray_output = *cvCreateImage(cvGetSize(&gray_input), 8, 1);
   imageStretchByHistogram(&gray_input, &gray_output);
   Mat gray_img = cv::cvarrToMat(&gray_output);
-  for (int i =0; i < 5; i++)
+  for (int i =0; i < 3; i++)
   GaussianBlur(gray_img, gray_img, Size(3,3), 0, 0);
   //bilateralFilter(gray_img, dst, 10, 40, 40);
  // gray_img = dst;

@@ -6,6 +6,7 @@
  */
 
 #include <textDetect/simple_text_detect.h>
+#include "util/general.h"
 using namespace cv;
 using namespace std;
 SimpleTextDetect::SimpleTextDetect() {
@@ -35,6 +36,7 @@ cv::Rect SimpleTextDetect::simpleDetect(cv::Mat src)
   mser->detectRegions(grey_img, contours, boxes);
   Rect rt;
   Point left_top(1e6, 1e6), right_bottom(-1e6, -1e6);
+  Mat mask(src.rows, src.cols, src.type());
   for (auto character : contours)
    for (auto point : character)
    {
@@ -43,5 +45,6 @@ cv::Rect SimpleTextDetect::simpleDetect(cv::Mat src)
        right_bottom.x = max(right_bottom.x, point.x);
        right_bottom.y = max(right_bottom.y, point.y);
    }
+   //General::showImage(mask);
   return Rect(left_top.x, left_top.y, right_bottom.x - left_top.x, right_bottom.y - left_top.y );
 }

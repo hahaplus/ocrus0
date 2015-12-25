@@ -45,7 +45,7 @@ void NiblackSauvolaWolfJolion(cv::Mat im, cv::Mat output, NiblackVersion version
  * @param src: Image to binarize
  * @param dst: The binarized image
  */
-void binarize(const cv::Mat& src, cv::Mat& dst, double k =0.1);
+void binarize(const cv::Mat& src, cv::Mat& dst, double k = 0.1);
 
 }  // namespace ocrus
 

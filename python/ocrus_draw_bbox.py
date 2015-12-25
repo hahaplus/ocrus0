@@ -6,8 +6,9 @@ import codecs
 import os
 from PIL import Image, ImageDraw, ImageFont
 from ocrus.ocr_result import parse_line_v1
+from ocrus.ocr_drawing import FONT_PATH
 
-FONT_PATH = '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf'
+
 WORD_COLOR = (255, 0, 0)
 CONFIDENCE_COLOR = (0, 128, 0)
 BOX_COLOR = (0, 0, 255)

@@ -1,0 +1,237 @@
+[
+  {
+    "chars": [
+      {
+        "text": "2", 
+        "bounding_box": [
+          303, 
+          941, 
+          344, 
+          999
+        ], 
+        "confidence": 90.42
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          370, 
+          941, 
+          412, 
+          997
+        ], 
+        "confidence": 96.66
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          444, 
+          942, 
+          473, 
+          1000
+        ], 
+        "confidence": 93.94
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          508, 
+          942, 
+          546, 
+          998
+        ], 
+        "confidence": 87.83
+      }, 
+      {
+        "text": "年", 
+        "bounding_box": [
+          560, 
+          938, 
+          627, 
+          1005
+        ], 
+        "confidence": 84.4
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          645, 
+          943, 
+          673, 
+          1001
+        ], 
+        "confidence": 93.08
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          705, 
+          943, 
+          746, 
+          999
+        ], 
+        "confidence": 95.02
+      }, 
+      {
+        "text": "月", 
+        "bounding_box": [
+          761, 
+          938, 
+          813, 
+          1006
+        ], 
+        "confidence": 88.04
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          843, 
+          944, 
+          871, 
+          1003
+        ], 
+        "confidence": 92.43
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          905, 
+          943, 
+          942, 
+          1000
+        ], 
+        "confidence": 88.74
+      }, 
+      {
+        "text": "日", 
+        "bounding_box": [
+          964, 
+          940, 
+          1013, 
+          1008
+        ], 
+        "confidence": 93.96
+      }
+    ], 
+    "type": "date"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          964, 
+          1280, 
+          1020, 
+          1339
+        ], 
+        "confidence": 64.7
+      }, 
+      {
+        "text": "2", 
+        "bounding_box": [
+          1038, 
+          1280, 
+          1078, 
+          1337
+        ], 
+        "confidence": 82.17
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1103, 
+          1279, 
+          1144, 
+          1335
+        ], 
+        "confidence": 86.17
+      }, 
+      {
+        "text": "8", 
+        "bounding_box": [
+          1167, 
+          1279, 
+          1213, 
+          1335
+        ], 
+        "confidence": 87.23
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1235, 
+          1278, 
+          1277, 
+          1333
+        ], 
+        "confidence": 88.03
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1293, 
+          1271, 
+          1354, 
+          1343
+        ], 
+        "confidence": 87.48
+      }
+    ], 
+    "type": "money"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "2", 
+        "bounding_box": [
+          721, 
+          1433, 
+          801, 
+          1491
+        ], 
+        "confidence": 86.86
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          855, 
+          1432, 
+          934, 
+          1489
+        ], 
+        "confidence": 89.06
+      }, 
+      {
+        "text": "8", 
+        "bounding_box": [
+          982, 
+          1431, 
+          1072, 
+          1488
+        ], 
+        "confidence": 83.49
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1120, 
+          1430, 
+          1200, 
+          1487
+        ], 
+        "confidence": 91.73
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1236, 
+          1423, 
+          1354, 
+          1498
+        ], 
+        "confidence": 91.5
+      }
+    ], 
+    "type": "money"
+  }
+]

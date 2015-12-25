@@ -241,7 +241,6 @@ def extract_money(s):
                     if g:
                         if i == 0:
                             g_str = replace_if_exist(g, MONEY_PREFIX_REPLACE)
-                            print u'g_str: %s' % g_str
                             if u'￥' not in g_str:
                                 g_str = replace_if_exist(g_str, {u'-': u'1'})
                             else:

@@ -112,9 +112,9 @@ def pretty_print_stats(stats, f=sys.stdout):
     @param stats: The stats of OCR results
     '''
 
-    print >> f, '%20s %5s %5s %8s %5s' % ('Img', 'C', 'T', 'Acc', 'W')
+    print >> f, '%30s %5s %5s %8s %5s' % ('Img', 'C', 'T', 'Acc', 'W')
     for stat in stats:
-        print >> f, '%20s %5d %5d %8.3f %5d' % (stat['id_image'],
+        print >> f, '%30s %5d %5d %8.3f %5d' % (stat['id_image'],
                                                 stat['num_correct_lines'],
                                                 stat['num_lines'],
                                                 stat['accuracy'],
@@ -129,10 +129,10 @@ def pretty_print_stats_cmp(stats_cmp):
     @param stats_cmp: The comparing stats of OCR results
     '''
 
-    print '%20s %3s %3s %3s %6s %6s %3s %3s %3s' % \
+    print '%30s %3s %3s %3s %6s %6s %3s %3s %3s' % \
         ('Img', 'C1', 'C2', 'T', 'Acc1', 'Acc2', 'W1', 'W2', 'C_D')
     for stat_cmp in stats_cmp:
-        print '%20s %3s %3s %3s %6.3f %6.3f %3s %3s %3s' % \
+        print '%30s %3s %3s %3s %6.3f %6.3f %3s %3s %3s' % \
             (stat_cmp['id_image'],
              stat_cmp['stat1']['num_correct_lines'],
              stat_cmp['stat2']['num_correct_lines'],

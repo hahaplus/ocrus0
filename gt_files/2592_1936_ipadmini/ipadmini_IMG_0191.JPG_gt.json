@@ -1,0 +1,227 @@
+[
+  {
+    "chars": [
+      {
+        "text": "1", 
+        "bounding_box": [
+          554, 
+          924, 
+          571, 
+          981
+        ], 
+        "confidence": 95.18
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          598, 
+          923, 
+          629, 
+          980
+        ], 
+        "confidence": 91.46
+      }, 
+      {
+        "text": "年", 
+        "bounding_box": [
+          642, 
+          917, 
+          714, 
+          988
+        ], 
+        "confidence": 92.27
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          740, 
+          923, 
+          757, 
+          979
+        ], 
+        "confidence": 94.81
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          787, 
+          923, 
+          804, 
+          979
+        ], 
+        "confidence": 95.29
+      }, 
+      {
+        "text": "月", 
+        "bounding_box": [
+          831, 
+          918, 
+          887, 
+          986
+        ], 
+        "confidence": 91.95
+      }, 
+      {
+        "text": "2", 
+        "bounding_box": [
+          922, 
+          920, 
+          953, 
+          977
+        ], 
+        "confidence": 91.17
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          968, 
+          918, 
+          998, 
+          975
+        ], 
+        "confidence": 93.33
+      }, 
+      {
+        "text": "日", 
+        "bounding_box": [
+          1025, 
+          916, 
+          1070, 
+          979
+        ], 
+        "confidence": 93.21
+      }
+    ], 
+    "type": "date"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          1065, 
+          1144, 
+          1095, 
+          1197
+        ], 
+        "confidence": 90.95
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          1114, 
+          1140, 
+          1131, 
+          1196
+        ], 
+        "confidence": 81.41
+      }, 
+      {
+        "text": "2", 
+        "bounding_box": [
+          1157, 
+          1138, 
+          1189, 
+          1195
+        ], 
+        "confidence": 89.5
+      }, 
+      {
+        "text": "7", 
+        "bounding_box": [
+          1204, 
+          1136, 
+          1234, 
+          1193
+        ], 
+        "confidence": 86.43
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1251, 
+          1135, 
+          1282, 
+          1191
+        ], 
+        "confidence": 87.5
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1301, 
+          1132, 
+          1363, 
+          1198
+        ], 
+        "confidence": 95.67
+      }
+    ], 
+    "type": "money"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          840, 
+          1270, 
+          899, 
+          1376
+        ], 
+        "confidence": 86.95
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          937, 
+          1263, 
+          969, 
+          1374
+        ], 
+        "confidence": 97.41
+      }, 
+      {
+        "text": "2", 
+        "bounding_box": [
+          1024, 
+          1260, 
+          1084, 
+          1372
+        ], 
+        "confidence": 91.61
+      }, 
+      {
+        "text": "7", 
+        "bounding_box": [
+          1116, 
+          1258, 
+          1175, 
+          1369
+        ], 
+        "confidence": 84.11
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1210, 
+          1256, 
+          1271, 
+          1367
+        ], 
+        "confidence": 89.11
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1304, 
+          1252, 
+          1366, 
+          1382
+        ], 
+        "confidence": 91.57
+      }
+    ], 
+    "type": "money"
+  }
+]

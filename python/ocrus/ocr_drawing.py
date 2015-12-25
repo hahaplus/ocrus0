@@ -15,6 +15,7 @@ import json
 import sys
 
 FONT_PATH = '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf'
+# FONT_PATH = '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc'
 TEXT_COLOR = (255, 0, 0)
 CONFIDENCE_COLOR = (0, 128, 0)
 BOX_COLOR = (0, 0, 255)

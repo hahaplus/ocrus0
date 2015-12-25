@@ -1,0 +1,167 @@
+[
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          1128, 
+          986, 
+          1178, 
+          1058
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          1185, 
+          987, 
+          1217, 
+          1056
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "8", 
+        "bounding_box": [
+          1284, 
+          980, 
+          1328, 
+          1058
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "4", 
+        "bounding_box": [
+          1335, 
+          978, 
+          1379, 
+          1052
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1380, 
+          977, 
+          1433, 
+          1053
+        ], 
+        "confidence": null
+      }
+    ], 
+    "type": "money"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          841, 
+          1090, 
+          927, 
+          1156
+        ], 
+        "confidence": 70.74
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          954, 
+          1089, 
+          1006, 
+          1156
+        ], 
+        "confidence": 77.26
+      }, 
+      {
+        "text": "8", 
+        "bounding_box": [
+          1128, 
+          1077, 
+          1220, 
+          1157
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "4", 
+        "bounding_box": [
+          1233, 
+          1074, 
+          1323, 
+          1151
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1335, 
+          1073, 
+          1425, 
+          1152
+        ], 
+        "confidence": null
+      }
+    ], 
+    "type": "money"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          1136, 
+          1175, 
+          1179, 
+          1244
+        ], 
+        "confidence": 75.14
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          1191, 
+          1174, 
+          1221, 
+          1243
+        ], 
+        "confidence": 73.63
+      }, 
+      {
+        "text": "8", 
+        "bounding_box": [
+          1283, 
+          1172, 
+          1335, 
+          1244
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "4", 
+        "bounding_box": [
+          1338, 
+          1164, 
+          1385, 
+          1239
+        ], 
+        "confidence": null
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1383, 
+          1167, 
+          1433, 
+          1239
+        ], 
+        "confidence": null
+      }
+    ], 
+    "type": "money"
+  }
+]

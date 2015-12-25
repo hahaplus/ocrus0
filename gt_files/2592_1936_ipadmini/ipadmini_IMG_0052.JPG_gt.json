@@ -1,0 +1,237 @@
+[
+  {
+    "chars": [
+      {
+        "text": "2", 
+        "bounding_box": [
+          371, 
+          1031, 
+          408, 
+          1082
+        ], 
+        "confidence": 89.93
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          431, 
+          1034, 
+          468, 
+          1081
+        ], 
+        "confidence": 84.64
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          497, 
+          1032, 
+          521, 
+          1081
+        ], 
+        "confidence": 90.94
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          554, 
+          1031, 
+          588, 
+          1081
+        ], 
+        "confidence": 80.36
+      }, 
+      {
+        "text": "年", 
+        "bounding_box": [
+          600, 
+          1027, 
+          660, 
+          1085
+        ], 
+        "confidence": 81.43
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          677, 
+          1029, 
+          702, 
+          1079
+        ], 
+        "confidence": 88.64
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          730, 
+          1030, 
+          767, 
+          1078
+        ], 
+        "confidence": 87.29
+      }, 
+      {
+        "text": "月", 
+        "bounding_box": [
+          787, 
+          1022, 
+          829, 
+          1083
+        ], 
+        "confidence": 89.8
+      }, 
+      {
+        "text": "2", 
+        "bounding_box": [
+          852, 
+          1027, 
+          888, 
+          1079
+        ], 
+        "confidence": 88.54
+      }, 
+      {
+        "text": "7", 
+        "bounding_box": [
+          911, 
+          1026, 
+          947, 
+          1078
+        ], 
+        "confidence": 88.55
+      }, 
+      {
+        "text": "日", 
+        "bounding_box": [
+          969, 
+          1023, 
+          1013, 
+          1082
+        ], 
+        "confidence": 93.57
+      }
+    ], 
+    "type": "date"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          607, 
+          1194, 
+          708, 
+          1247
+        ], 
+        "confidence": 63.03
+      }, 
+      {
+        "text": "8", 
+        "bounding_box": [
+          737, 
+          1193, 
+          820, 
+          1246
+        ], 
+        "confidence": 79.66
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          864, 
+          1194, 
+          936, 
+          1246
+        ], 
+        "confidence": 84.9
+      }, 
+      {
+        "text": "8", 
+        "bounding_box": [
+          980, 
+          1192, 
+          1062, 
+          1244
+        ], 
+        "confidence": 75.82
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1106, 
+          1191, 
+          1178, 
+          1243
+        ], 
+        "confidence": 88.09
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1213, 
+          1186, 
+          1321, 
+          1249
+        ], 
+        "confidence": 88.06
+      }
+    ], 
+    "type": "money"
+  }, 
+  {
+    "chars": [
+      {
+        "text": "￥", 
+        "bounding_box": [
+          844, 
+          1507, 
+          895, 
+          1561
+        ], 
+        "confidence": 70.8
+      }, 
+      {
+        "text": "5", 
+        "bounding_box": [
+          914, 
+          1506, 
+          948, 
+          1559
+        ], 
+        "confidence": 82.82
+      }, 
+      {
+        "text": "1", 
+        "bounding_box": [
+          978, 
+          1507, 
+          1001, 
+          1559
+        ], 
+        "confidence": 92.67
+      }, 
+      {
+        "text": "0", 
+        "bounding_box": [
+          1034, 
+          1509, 
+          1070, 
+          1558
+        ], 
+        "confidence": 83.88
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1088, 
+          1501, 
+          1141, 
+          1564
+        ], 
+        "confidence": 89.61
+      }
+    ], 
+    "type": "money"
+  }
+]

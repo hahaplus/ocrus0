@@ -15,7 +15,7 @@
 #include "textDetect/simple_text_detect.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "preprocessing/enhancement/enhancement.h"
-
+#include "preprocessing/denoise/remove_line.h"
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Print the bounding boxes of an image\n"
@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
   //cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
   //ShadowRemove::removeShadow(img);
+  ocrus::removeRedLineFor406(img);
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
   //IplImage gray_input(gray_img);
   //IplImage *gray_output = cvCreateImage(cvGetSize(&gray_input), 8, 1);
@@ -61,7 +62,7 @@ int main(int argc, char *argv[]) {
   //cvErode( img_dilate, &input_image, NULL,1);
 
   //binarize_img
-  Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0.5);
+  Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0);
   //DenoiseLinePoint::removeNoise(binarize_img);
 
   //General::showImage(binarize_img);

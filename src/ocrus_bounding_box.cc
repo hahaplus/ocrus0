@@ -15,7 +15,7 @@
 #include "preprocessing/shadow/shadow_remove.h"
 #include "recognition/recognition.h"
 #include "workflow/processor.h"
-
+#include "preprocessing/denoise/remove_line.h"
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Print the bounding boxes of an image\n"
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   cv::Mat img, gray_img, binarize_img, box_img;
 
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
-
+  ocrus::removeRedLineFor406(img);
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
 
   ocrus::binarize(gray_img, binarize_img);

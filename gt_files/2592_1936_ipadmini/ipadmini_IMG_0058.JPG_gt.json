@@ -240,6 +240,16 @@
           739
         ], 
         "confidence": 84.61
+      }, 
+      {
+        "text": "円", 
+        "bounding_box": [
+          1257, 
+          700, 
+          1296, 
+          743
+        ], 
+        "confidence": null
       }
     ], 
     "type": "money"

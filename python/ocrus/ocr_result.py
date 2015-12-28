@@ -17,12 +17,13 @@ import math
 # Replace table for digits
 DIGITS_REPLACE_REG = {
     u'。': u'0', u'〇': u'0', u'o': u'0', u'O': u'0', u'U': u'0', u'u': u'0',
-    u'囗': u'0',
+    u'囗': u'0', u'D': u'0',
     u'ー': u'1', u'一': u'1',
     u'ュ':   u'1', u'エ':  u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
     u'ユ': u'1',
     u'ら':    u'5', u'ヲ':    u'5', u's': u'5', u'S': u'5',
     u'フ':  u'7',
+    u'B': u'8',
     u'g': u'9',
 }
 
@@ -42,6 +43,7 @@ BLANK_REPLACE = {
     u'・': u' ',
     u'`': u' ',
     u'_': u' ',
+    u'〝': u' ',
 }
 
 DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())
@@ -50,7 +52,7 @@ DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())
 MONEY_PREFIX_REPLACE_REG = {
     u'¥': u'￥',
     u'半': u'￥', u'芋': u'￥', u'斐': u'￥', u'韮': u'￥', u'輩': u'￥',
-    u'一': u'-',
+    u'一': u'-', u'ー': u'-',
 }
 
 MONEY_PREFIX_REPLACE = dict(
@@ -226,7 +228,7 @@ def extract_money(s):
     @param s: A unicode string
     @return: A list of (start_pos, end_pos, replaced_s)
     '''
-    reg_s = ur'([一\-]?[\\￥' + u''.join(MONEY_PREFIX_REPLACE_REG) + u']?)' + \
+    reg_s = ur'([ー一\-]?[\\￥' + u''.join(MONEY_PREFIX_REPLACE_REG) + u']?)' + \
         u'(' + blank_star + digit1 + digitblank_star + u')' + \
         u'([円' + u''.join(MONEY_SUFFIX_REPLACE) + u']?)'
 
@@ -242,7 +244,8 @@ def extract_money(s):
                         if i == 0:
                             g_str = replace_if_exist(g, MONEY_PREFIX_REPLACE)
                             if u'￥' not in g_str:
-                                g_str = replace_if_exist(g_str, {u'-': u'1'})
+                                g_str = replace_if_exist(
+                                    g_str, {u'-': u'1'})
                             else:
                                 all_digits = False
                             replaced.append(g_str)

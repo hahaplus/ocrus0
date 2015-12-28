@@ -100,6 +100,16 @@
           1111
         ], 
         "confidence": 82.96
+      }, 
+      {
+        "text": "日", 
+        "bounding_box": [
+          963, 
+          1055, 
+          1011, 
+          1119
+        ], 
+        "confidence": null
       }
     ], 
     "type": "date"

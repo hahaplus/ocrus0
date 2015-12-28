@@ -44,6 +44,7 @@ Install dependencies for ocrus0
 sudo apt-get install libgsl0-dev
 sudo apt-get install libgdal-dev
 sudo apt-get install python-pil
+sudo apt-get install realpath
 ```
 
 Install OpenCV 3.0.0

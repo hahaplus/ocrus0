@@ -7,6 +7,7 @@ set (LIBS
 
 FILE(GLOB SRC api/*.cpp
               preprocessing/*/*.cpp
+              preprocessing/*/*.cc
               util/*.cpp
               binarization/*.cc
               

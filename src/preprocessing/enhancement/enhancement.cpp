@@ -102,22 +102,13 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, doubl
       return;*/
   Mat binarize_img, enhanced_binarize_img;
   OcrDetailResult boxes;
-
-  for (int i = 0; i < 2; i++)
-  // smooth
-  GaussianBlur(src, src, Size(3,3), 0, 0);
-  // sharpen
-  Mat kernel(3,3,CV_32F,Scalar(-1));
-  kernel.at<float>(1,1) = 9;
-  filter2D(src, src, src.depth(),kernel);
-  //General::showImage(src);
   //======================get the box of character=======================
   ocrus::binarize(src, binarize_img);
 
 
-//  Rect text_area = SimpleTextDetect::simpleDetect(src);
+  //Rect text_area = SimpleTextDetect::simpleDetect(src);
 
-  DenoiseLinePoint::removeNoise(binarize_img/*, &text_area*/);
+  DenoiseLinePoint::removeNoise(binarize_img/*, &text_area*/ );
   if ( abs(k) < 1e-6 )   // k is very low then do not need enhance
   {
       dst = binarize_img;
@@ -125,6 +116,15 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, doubl
   }
   //General::showImage(binarize_img);
   //getBBox(binarize_img, &boxes);
+  //=======================smooth and sharpen=============================
+      //  for (int i = 0; i < 2; i++)
+        // smooth
+        GaussianBlur(src, src, Size(3,3), 0, 0);
+        // sharpen
+        Mat kernel(3,3,CV_32F,Scalar(-1));
+        kernel.at<float>(1,1) = 9;
+        filter2D(src, src, src.depth(),kernel);
+        //General::showImage(src);
   //=====================================================================
 
   //=======================get the enhanced binarize image===============

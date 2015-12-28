@@ -223,30 +223,5 @@
       }
     ], 
     "type": "money"
-  }, 
-  {
-    "chars": [
-      {
-        "text": "￥", 
-        "bounding_box": [
-          603, 
-          2542, 
-          619, 
-          2556
-        ], 
-        "confidence": 83.28
-      }, 
-      {
-        "text": "1", 
-        "bounding_box": [
-          670, 
-          2544, 
-          678, 
-          2550
-        ], 
-        "confidence": 84.47
-      }
-    ], 
-    "type": "money"
   }
 ]

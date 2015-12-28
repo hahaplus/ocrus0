@@ -56,7 +56,7 @@ void DenoiseLinePoint::removeNoise(Mat &src, Rect *text_area) {
     int avg_width = AlgorithmUtil::getAverageValue(width);
     int avg_height = AlgorithmUtil::getAverageValue(height);
     for (int i = 0; i < blocks.size(); i++) {
-      if ((width[i] < src.cols * 0.008 && height[i] < src.rows * 0.008)) {
+      if ((width[i] < src.cols * 0.004 && height[i] < src.rows * 0.004)) {
         for (auto pix : blocks[i]) {
           src.at<uchar>(pix.first, pix.second) = 255;
         }

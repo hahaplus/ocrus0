@@ -20,7 +20,7 @@ DIGITS_REPLACE_REG = {
     u'囗': u'0', u'D': u'0',
     u'ー': u'1', u'一': u'1',
     u'ュ':   u'1', u'エ':  u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
-    u'ユ': u'1',
+    u'ユ': u'1', u'工': u'1', u'I': u'1', u'i': u'1',
     u'ら':    u'5', u'ヲ':    u'5', u's': u'5', u'S': u'5',
     u'フ':  u'7',
     u'B': u'8',
@@ -60,6 +60,7 @@ MONEY_PREFIX_REPLACE = dict(
 
 # Replace table for money suffix
 MONEY_SUFFIX_REPLACE = {
+    u'川': u'円',
 }
 
 # Replace table for year symbol
@@ -346,12 +347,18 @@ def to_ocr_lines(ocr_chars):
             ocr_line['chars'].append(ocr_chars[pos])
         ocr_lines.append(ocr_line)
 
-    # Remove whitespace characters
-    for ocr_line in ocr_lines:
-        ocr_line['chars'] = [
-            ch for ch in ocr_line['chars'] if ch['text'].strip() != '']
+    # Remove characters that are far away from key characters
+    '''
+    111    2015年 03 月 02日
+    11     2015/03/1      1
+    一     -￥2323         11
+    1      3,456 円
 
-    # Remove characters that are far away
+             pos_head      pos_tail
+    0           1   2    3    4               5
+    c1          c2  c3   c4   c5              c6
+          0        1   2    3          4
+    '''
     for ocr_line in ocr_lines:
         dists = []
         centers = []
@@ -364,26 +371,78 @@ def to_ocr_lines(ocr_chars):
                 dists.append(math.sqrt(
                     (centers[pos][0] - centers[pos - 1][0])**2 +
                     (centers[pos][1] - centers[pos - 1][1])**2))
-            dist_average = sum(dists) / len(dists)
-            ocr_chars = []
-            start = 0
-            end = len(dists) - 1
-            '''
-            0           1   2    3    4               5
-            c1          c2  c3   c4   c5              c6
-                  0        1   2    3          4
-                        start      end
-            '''
-            while start < len(dists) and \
-                    dists[start] > dist_average * 2:
-                start += 1
-            while end >= 0 and \
-                    dists[end] > dist_average * 2:
-                end -= 1
 
-            for pos in range(start, end + 2):
+            pos_min = len(ocr_line['chars']) - 1
+            pos_max = 0
+            for pos_ch, ch in enumerate(ocr_line['chars']):
+                if ch['text'] in [u'年', u'月', u'日', u'/', u'￥', u'円']:
+                    pos_min = min(pos_min, pos_ch)
+                    pos_max = max(pos_max, pos_ch)
+
+            pos_tail = min(pos_max + 1, len(ocr_line['chars']) - 1)
+            while pos_tail < len(ocr_line['chars']) - 1:
+                normal_dist = float(sum(dists[pos_min:pos_tail])) / \
+                    len(dists[pos_min:pos_tail])
+                abnormal_dist = dists[pos_tail]
+                if abnormal_dist > normal_dist * 2.5:
+                    break
+                pos_tail += 1
+
+            pos_head = max(0, pos_tail - 1)
+            while pos_head > 0:
+                normal_dist = float(sum(dists[pos_head:pos_tail])) / \
+                    len(dists[pos_head:pos_tail])
+                abnormal_dist = dists[pos_head - 1]
+                if abnormal_dist > normal_dist * 2.5:
+                    break
+                pos_head -= 1
+
+            ocr_chars = []
+            for pos in range(pos_head, pos_tail + 1):
                 ocr_chars.append(ocr_line['chars'][pos])
             ocr_line['chars'] = ocr_chars
+
+            print 'pos_head, pos_tail: %s, %s' % (pos_head, pos_tail)
+
+    # Remove whitespace characters
+    for ocr_line in ocr_lines:
+        ocr_line['chars'] = [
+            ch for ch in ocr_line['chars'] if ch['text'].strip() != '']
+
+    # Remove characters that are far away
+#     for ocr_line in ocr_lines:
+#         dists = []
+#         centers = []
+#
+#         for ch in ocr_line['chars']:
+#             bbox = map(float, ch['bounding_box'])
+#             center_x, center_y = (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3])
+#             centers.append((center_x, center_y))
+#         if len(centers) >= 2:
+#             for pos in range(1, len(centers)):
+#                 dists.append(math.sqrt(
+#                     (centers[pos][0] - centers[pos - 1][0])**2 +
+#                     (centers[pos][1] - centers[pos - 1][1])**2))
+#             dist_average = sum(dists) / len(dists)
+#             ocr_chars = []
+#             start = 0
+#             end = len(dists) - 1
+#             '''
+#             0           1   2    3    4               5
+#             c1          c2  c3   c4   c5              c6
+#                   0        1   2    3          4
+#                         start      end
+#             '''
+#             while start < len(dists) and \
+#                     dists[start] > dist_average * 2:
+#                 start += 1
+#             while end >= 0 and \
+#                     dists[end] > dist_average * 2:
+#                 end -= 1
+#
+#             for pos in range(start, end + 2):
+#                 ocr_chars.append(ocr_line['chars'][pos])
+#             ocr_line['chars'] = ocr_chars
 
     return ocr_lines
 

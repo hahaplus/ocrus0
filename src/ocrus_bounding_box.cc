@@ -8,14 +8,15 @@
 
 #include <stdio.h>
 
-#include "tesseract/baseapi.h"
+#include <opencv2/opencv.hpp>
+#include <tesseract/baseapi.h>
 
 #include "binarization/wap_binarize.h"
 #include "preprocessing/denoise/denoise_line_point.h"
-#include "preprocessing/shadow/shadow_remove.h"
-#include "recognition/recognition.h"
-#include "workflow/processor.h"
 #include "preprocessing/denoise/remove_line.h"
+#include "preprocessing/enhancement/enhancement.h"
+#include "recognition/recognition.h"
+
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Print the bounding boxes of an image\n"
@@ -43,14 +44,19 @@ int main(int argc, char *argv[]) {
   cv::Mat img, gray_img, binarize_img, box_img;
 
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
+
   ocrus::removeRedLineFor406(img);
+
   cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
 
-  ocrus::binarize(gray_img, binarize_img);
+  ocrus::binarize(gray_img, binarize_img, 0.1);
 
   DenoiseLinePoint::removeNoise(binarize_img);
 
+  //Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0);
+
   ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "jpn+jpnRSN");
+  //ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "chi_sim+eng");
 
   cv::imwrite(path_img + "_gray.png", gray_img);
 

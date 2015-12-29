@@ -71,42 +71,42 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
   vector<bool> is_del(result_list.size(), false);
   vector<ResultUnit> new_result_list;
   map<int, vector<ResultUnit>> replace_map;
-  for (auto ru : second_pass.getResult())
-  {
-    if (!pos_map.count(make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y))) continue;
-    ResultUnit first_ru = pos_map[make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y)];
+  for (auto ru : second_pass.getResult()) {
+    if (!pos_map.count(make_pair(ru.bounding_box[0].x, ru.bounding_box[0].y)))
+      continue;
+    ResultUnit first_ru = pos_map[make_pair(ru.bounding_box[0].x,
+                                            ru.bounding_box[0].y)];
 
     // find the result unit index in first pass covered by first_ru
     set<int> index_set;
     for (int j = 0; j < first_ru.getWidth(); j++)
-          for (int k = 0; k < first_ru.getHeight(); k++) {
-            index_set.insert(origin_map[j + first_ru.bounding_box[0].x][k + first_ru.bounding_box[0].y]);
-          }
-    if (index_set.size() == 1)
-    {
+      for (int k = 0; k < first_ru.getHeight(); k++) {
+        index_set.insert(
+            origin_map[j + first_ru.bounding_box[0].x][k
+                + first_ru.bounding_box[0].y]);
+      }
+    if (index_set.size() == 1) {
       ResultUnit ori_ru = result_list[*index_set.begin()];
       //if (ru.confidence > first_ru.confidence )
-      if (ru.getHeight() * ru.getWidth() < ori_ru.getHeight() * ori_ru.getWidth()
-          && ru.getHeight() * ru.getWidth() > 0.5 * ori_ru.getHeight() * ori_ru.getWidth())
-      {
+      if (ru.getHeight() * ru.getWidth()
+          < ori_ru.getHeight() * ori_ru.getWidth()
+          && ru.getHeight() * ru.getWidth()
+              > 0.5 * ori_ru.getHeight() * ori_ru.getWidth()) {
         is_del[*index_set.begin()] = true;
 
         //new_result_list.push_back(ResultUnit(first_ru.bounding_box, ru.content, ru.candidates, ru.confidence, ru.line_index));
-        replace_map[*index_set.begin()].push_back(ResultUnit(first_ru.bounding_box, ru.content, ru.candidates, ru.confidence, ru.line_index));
+        replace_map[*index_set.begin()].push_back(
+            ResultUnit(first_ru.bounding_box, ru.content, ru.candidates,
+                       ru.confidence, ru.line_index));
       }
     }
   }
-  for (int i = 0; i < result_list.size(); i++)
-  {
-    if (!is_del[i])
-    {
+  for (int i = 0; i < result_list.size(); i++) {
+    if (!is_del[i]) {
       new_result_list.push_back(result_list[i]);
-    }
-    else
-    {
-      for (auto ru : replace_map[i])
-      {
-       new_result_list.push_back(ru);
+    } else {
+      for (auto ru : replace_map[i]) {
+        new_result_list.push_back(ru);
       }
     }
   }
@@ -130,7 +130,10 @@ void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
   if (api == NULL) {
     api = new tesseract::TessBaseAPI();
   }
-  if (api->Init(NULL, lang.c_str())) {
+  char *config[] = { (char*) ("wap") };
+
+  if (api->Init(NULL, lang.c_str(), OEM_DEFAULT, config, 1, NULL, NULL,
+                false)) {
     printf("Could not initialize tesseract.\n");
     exit(-1);
   }
@@ -193,8 +196,8 @@ void WapOcrApi::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
       ru.bounding_box[0].y = min(ru.bounding_box[0].y, b.first);
       ru.bounding_box[1].y = max(ru.bounding_box[1].y, b.first);
     }
-    avg_height.push_back(ru.bounding_box[1].y - ru.bounding_box[0].y);
-    avg_width.push_back(ru.bounding_box[1].x - ru.bounding_box[0].x);
+    avg_height.push_back(ru.bounding_box[1].y - ru.bounding_box[0].y + 1);
+    avg_width.push_back(ru.bounding_box[1].x - ru.bounding_box[0].x + 1);
     odr->push_back_symbol(ru);
   }
   double avg_h = AlgorithmUtil::getAverageValue<double>(avg_height);
@@ -203,8 +206,9 @@ void WapOcrApi::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
   vector<ResultUnit> filted_result;
   for (int i = 0; i < odr->getResultSize(); i++) {
     ResultUnit ru = odr->getResultAt(i);
-    pair<double, double> box_size(ru.bounding_box[1].x - ru.bounding_box[0].x,
-                                  ru.bounding_box[1].y - ru.bounding_box[0].y);
+    pair<double, double> box_size(
+        ru.bounding_box[1].x - ru.bounding_box[0].x + 1,
+        ru.bounding_box[1].y - ru.bounding_box[0].y + 1);
     if (box_size.first < avg_w || box_size.second < avg_h) {
       //continue;
     }
@@ -317,8 +321,8 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
   merge_unit.line_index = segment[0].line_index;
   // try to split
   // width / height
-  double width = merge_bounding_box[1].x - merge_bounding_box[0].x;
-  double height = merge_bounding_box[1].y - merge_bounding_box[0].y;
+  double width = merge_bounding_box[1].x - merge_bounding_box[0].x + 1;
+  double height = merge_bounding_box[1].y - merge_bounding_box[0].y + 1;
   double wh_ratio = width / (height * 0.8);
   if (false && wh_ratio > 1.5 && segment.size() > 1) {
     int part = (int) (wh_ratio + 0.5);  // round
@@ -365,29 +369,29 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
 int tmp_cnt = 0;
 void WapOcrApi::recognizeUnit(ResultUnit &ru) {
   return;
- /*
-  api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
+  /*
+   api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
 
-  Mat character_unit;
-  cutImage(img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
-           ru.bounding_box[1].x - ru.bounding_box[0].x,
-           ru.bounding_box[1].y - ru.bounding_box[0].y);
-  double scale_size = 20;
-  scaleImage(character_unit, character_unit.cols * scale_size,
-             character_unit.rows * scale_size);
-  //Mat out;
+   Mat character_unit;
+   cutImage(img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
+   ru.bounding_box[1].x - ru.bounding_box[0].x,
+   ru.bounding_box[1].y - ru.bounding_box[0].y);
+   double scale_size = 20;
+   scaleImage(character_unit, character_unit.cols * scale_size,
+   character_unit.rows * scale_size);
+   //Mat out;
 
-  //character_unit = out;
-  imwrite(
-      "/home/michael/tmp_output/" + StringUtil::toString(tmp_cnt++) + ".jpg",
-      character_unit);
+   //character_unit = out;
+   imwrite(
+   "/home/michael/tmp_output/" + StringUtil::toString(tmp_cnt++) + ".jpg",
+   character_unit);
 
-  api->SetImage((uchar*) character_unit.data, character_unit.cols,
-                character_unit.rows, img.channels(), character_unit.cols);
-  ru.confidence = api->MeanTextConf();
-  ru.content = api->GetUTF8Text()/*"a";
-  character_unit.deallocate();
-  */
+   api->SetImage((uchar*) character_unit.data, character_unit.cols,
+   character_unit.rows, img.channels(), character_unit.cols);
+   ru.confidence = api->MeanTextConf();
+   ru.content = api->GetUTF8Text()/*"a";
+   character_unit.deallocate();
+   */
 }
 void WapOcrApi::cutImage(const Mat &src, Mat &dst, int x, int y, int width,
                          int height) {
@@ -447,4 +451,63 @@ void WapOcrApi::formatImage(const Mat &src, Mat &dst, OcrDetailResult *result,
   }
 }
 
+void WapOcrApi::mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
+                               OcrDetailResult* main_result,
+                               OcrDetailResult* assit_result) {
+
+  // write the main_result into man_map
+  vector<vector<int> > main_map(main_img.rows, vector<int>(main_img.cols, -1));
+  for (int i = 0; i < main_result->getResultSize(); i++) {
+    ResultUnit ru = main_result->getResultAt(i);
+    for (int j = 0; j < ru.getHeight(); j++)
+      for (int k = 0; k < ru.getWidth(); k++) {
+        main_map[j + ru.bounding_box[0].y][k + ru.bounding_box[0].x] = i;
+      }
+  }
+
+  // check the assist_result
+  for (auto ru : assit_result->getResult()) {
+    double cnt = 0;
+    set<int> index_set;
+    for (int j = 0; j < ru.getHeight(); j++)
+      for (int k = 0; k < ru.getWidth(); k++) {
+        // assert(j + ru.bounding_box[0].y < main_map.size() );
+        if (j + ru.bounding_box[0].y >= main_img.rows
+            || k + ru.bounding_box[0].x >= main_img.cols) {
+          continue;
+        }
+        if (main_map[j + ru.bounding_box[0].y][k + ru.bounding_box[0].x]
+            != -1) {
+          cnt++;
+          index_set.insert(
+              main_map[j + ru.bounding_box[0].y][k + ru.bounding_box[0].x]);
+        }
+      }
+    //assert((ru.getHeight() * ru.getWidth()) != 0);
+    if (index_set.size() == 1 && cnt / (ru.getHeight() * ru.getWidth()) > 0.8) {
+      //assert(*index_set.begin() >=0 && *index_set.begin() < main_result->getResultSize() );
+      ResultUnit &ori_ru = main_result->getResultAt(*index_set.begin());
+
+      if (cnt / (ori_ru.getHeight() * ori_ru.getWidth()) > 0.8
+          && ori_ru.confidence <= ru.confidence) {
+        //assert((ori_ru.getHeight() * ori_ru.getWidth()) != 0);
+        // replace the result
+        ori_ru = ru;
+        for (int j = 0; j < ru.getHeight(); j++)
+          for (int k = 0; k < ru.getWidth(); k++) {
+            // assert(j + ru.bounding_box[0].y < main_img.rows && k + ru.bounding_box[0].x < main_img.cols);
+            // assert(j + ru.bounding_box[0].y >= 0 && k + ru.bounding_box[0].x >= 0);
+            // assert(j + ru.bounding_box[0].y < assit_img.rows && k + ru.bounding_box[0].x < assit_img.cols);
+            if (j + ru.bounding_box[0].y >= main_img.rows
+                || k + ru.bounding_box[0].x >= main_img.cols) {
+              continue;
+            }
+            main_img.at<uchar>(j + ru.bounding_box[0].y,
+                               k + ru.bounding_box[0].x) = assit_img.at<uchar>(
+                j + ru.bounding_box[0].y, k + ru.bounding_box[0].x);
+          }
+      }
+    }
+  }
+}
 

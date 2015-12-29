@@ -72,7 +72,7 @@ class OcrDetailResult {
   vector<ResultUnit> getResult() const {
     return symbols;
   }
-  ResultUnit getResultAt(int index)
+  ResultUnit& getResultAt(int index)
   {
     assert(index >= 0 && index < symbols.size());
     return symbols[index];

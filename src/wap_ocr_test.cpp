@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  cv::Mat img, gray_img, binarize_img, box_img;
+  cv::Mat img, gray_img, binarize_img, box_img, enhance_img;
 
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
   //cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
@@ -63,11 +63,14 @@ int main(int argc, char *argv[]) {
 
   //binarize_img
   Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0);
+  Enhancement::enhancementAndBinarize(gray_img, enhance_img, 0.7);
   //DenoiseLinePoint::removeNoise(binarize_img);
 
   //General::showImage(binarize_img);
-  OcrDetailResult ocr_detail_result;
+  OcrDetailResult ocr_detail_result, enhance_result;
   WapOcrApi::recognitionToText(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);
+  WapOcrApi::recognitionToText(enhance_img, "jpn+jpnRSN", 0, &enhance_result);
+  WapOcrApi::mergeOcrResult(binarize_img, enhance_img, &ocr_detail_result, &enhance_result );
   for (auto ru : ocr_detail_result.getResult())
   {
 

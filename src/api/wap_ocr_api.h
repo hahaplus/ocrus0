@@ -22,6 +22,7 @@ public:
 	WapOcrApi();
 	static std::string recognitionToText(const cv::Mat &img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
 	static void release();
+	static void mergeOcrResult(cv::Mat &mainImg, cv::Mat assitImg, OcrDetailResult* mainResult, OcrDetailResult* assitResult );
 private:
 	/*
 	 * overlap ratio (0.0 ~ 1.0)to be judged as overlap
@@ -46,6 +47,10 @@ private:
 	static void writeCharacter(const cv::Mat &src, cv::Mat &dst, ResultUnit unit, int x, int y);
 	// recognition with tesseract
   static void recognitionWithTesseract(const cv::Mat &img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
+  // merge ocr Result
+  // using assitImg's ocr Result to improve the result of mainImg
+  // if boundingbox in assitImg is overlap with the one in mainImg with a high confidence
+  // then replace the image.
 
 };
 

@@ -14,8 +14,8 @@ class Enhancement {
   Enhancement();
   /**
    * input a gray image output a enhanced Binarize image
-   * k from [0,1] means the intention of the enhancement
-   * the larger k give a stronger enhancement
+   * k ranges from [0,1] means the intention of the enhancement
+   * the larger k gives a stronger enhancement
    */
   static void enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, double k = 0);
   virtual ~Enhancement();

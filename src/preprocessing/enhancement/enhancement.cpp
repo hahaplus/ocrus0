@@ -11,7 +11,6 @@
 #include "preprocessing/denoise/denoise_line_point.h"
 #include "util/general.h"
 
-
 using namespace std;
 using namespace cv;
 Enhancement::Enhancement() {
@@ -65,7 +64,6 @@ void Enhancement::imageStretchByHistogram(IplImage *src1, IplImage *dst1)
     }
   }
 
-
 }
 
 void Enhancement::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
@@ -82,92 +80,98 @@ void Enhancement::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
       ru.bounding_box[0].y = min(ru.bounding_box[0].y, b.first);
       ru.bounding_box[1].y = max(ru.bounding_box[1].y, b.first);
     }
-   // avg_height.push_back(ru.bounding_box[1].y - ru.bounding_box[0].y);
+    // avg_height.push_back(ru.bounding_box[1].y - ru.bounding_box[0].y);
     //avg_width.push_back(ru.bounding_box[1].x - ru.bounding_box[0].x);
     odr->push_back_symbol(ru);
   }
- // double avg_h = AlgorithmUtil::getAverageValue<double>(avg_height);
- // double avg_w = AlgorithmUtil::getAverageValue<double>(avg_width);
+  // double avg_h = AlgorithmUtil::getAverageValue<double>(avg_height);
+  // double avg_w = AlgorithmUtil::getAverageValue<double>(avg_width);
   //odr->setResult(filted_result);
 }
-void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, double k) {
+void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst,
+                                         double k) {
 
   /*Mat out;
-      int center = 100;
-      double alpha = 1.1;
-      double beta = (1 - alpha) * center;
-      src.convertTo(src, src.type(), alpha, beta);
-      ocrus::binarize(src, dst);
-      // General::showImage(dst);
-      return;*/
+   int center = 100;
+   double alpha = 1.1;
+   double beta = (1 - alpha) * center;
+   src.convertTo(src, src.type(), alpha, beta);
+   ocrus::binarize(src, dst);
+   // General::showImage(dst);
+   return;*/
   Mat binarize_img, enhanced_binarize_img;
   OcrDetailResult boxes;
-  //======================get the box of character=======================
+  //======================get the original binarize image as a mask=======================
   ocrus::binarize(src, binarize_img);
-
 
   Rect text_area = SimpleTextDetect::simpleDetect(src);
 
-  DenoiseLinePoint::removeNoise(binarize_img, &text_area );
-  if ( abs(k) < 1e-6 )   // k is very low then do not need enhance
-  {
-      dst = binarize_img;
-      return;
+  DenoiseLinePoint::removeNoise(binarize_img, &text_area);
+  if (abs(k) < 1e-6)   // k is very low then do not need enhance
+      {
+    dst = binarize_img;
+    return;
   }
   //General::showImage(binarize_img);
   //getBBox(binarize_img, &boxes);
   //=======================smooth and sharpen=============================
-      //  for (int i = 0; i < 2; i++)
-        // smooth
-        GaussianBlur(src, src, Size(3,3), 0, 0);
-        // sharpen
-        Mat kernel(3,3,CV_32F,Scalar(-1));
-        kernel.at<float>(1,1) = 9;
-        filter2D(src, src, src.depth(),kernel);
-        //General::showImage(src);
+  //  for (int i = 0; i < 2; i++)
+  // smooth
+  Mat new_src;
+  GaussianBlur(src, new_src, Size(3, 3), 0, 0);
+  // sharpen
+  Mat kernel(3, 3, CV_32F, Scalar(-1)), sharp_result;
+  kernel.at<float>(1, 1) = 9;
+  filter2D(new_src, new_src, new_src.depth(), kernel);
+  /*for (int i = 0; i < sharp_result.rows; i++)
+    for (int j = 0; j < sharp_result.cols; j++)
+    {
+      if ( src.at<uchar>(i, j) > sharp_result.at<uchar>(i, j))
+        sharp_result.at<uchar>(i, j) = src.at<uchar>(i, j) - sharp_result.at<uchar>(i, j);
+      else
+        sharp_result.at<uchar>(i, j) = 0;
+    }*/
+  //General::showImage(sharp_result);
   //=====================================================================
 
   //=======================get the enhanced binarize image===============
-  IplImage gray_input(src);
+  IplImage gray_input(new_src);
   IplImage gray_output = *cvCreateImage(cvGetSize(&gray_input), 8, 1);
   imageStretchByHistogram(&gray_input, &gray_output);
   Mat gray_img = cv::cvarrToMat(&gray_output);
-  for (int i =0; i < 3; i++)
-  GaussianBlur(gray_img, gray_img, Size(3,3), 0, 0);
+  for (int i = 0; i < 3; i++)
+    GaussianBlur(gray_img, gray_img, Size(3, 3), 0, 0);
   //bilateralFilter(gray_img, dst, 10, 40, 40);
- // gray_img = dst;
+  // gray_img = dst;
   ocrus::binarize(gray_img, enhanced_binarize_img, 1.0 - k);
   //General::showImage(enhanced_binarize_img);
   vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<
-        Vec<uchar, 1> >(enhanced_binarize_img, 0, 0);
+      Vec<uchar, 1> >(enhanced_binarize_img, 0, 0);
   // draw
 
-
-
+  //=======================using the original image as a mask to filter the noise =====================================
   for (auto block : block_list) {
     //rectangle(enhanced_binarize_img, left_top, block.bounding_box[1],0);
     int cnt = 0, sum = 0;
-    for (auto pixel : block)
-    {
-        if (enhanced_binarize_img.at<uchar>(pixel.first, pixel.second) == 0)
+    for (auto pixel : block) {
+      if (enhanced_binarize_img.at<uchar>(pixel.first, pixel.second) == 0) {
+        sum++;
+        if (binarize_img.at<uchar>(pixel.first, pixel.second) == 0)
+          cnt++;
+      }
+    }
+    if (cnt < sum * 0.3)  // it means this is a noise so remove them
         {
-          sum++;
-          if (binarize_img.at<uchar>(pixel.first, pixel.second) == 0)
-            cnt++;
-        }
-     }
-    if (cnt < sum * 0.3) // it means this is a noise so remove them
-    {
-       for (auto pixel : block) {
-          enhanced_binarize_img.at<uchar>(pixel.first, pixel.second) = 255;
-       }
+      for (auto pixel : block) {
+        enhanced_binarize_img.at<uchar>(pixel.first, pixel.second) = 255;
+      }
     }
   }
 
   //for (int i = 0; i < 2; i++)
   //GaussianBlur(enhanced_binarize_img, enhanced_binarize_img, Size(3,3), 0, 0);
-    //bilateralFilter(enhanced_binarize_img, dst, 10, 40, 40);
+  //bilateralFilter(enhanced_binarize_img, dst, 10, 40, 40);
   dst = enhanced_binarize_img;
- // General::showImage(dst);
+   //General::showImage(dst);
 }
 

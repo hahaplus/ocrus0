@@ -47,3 +47,5 @@ images
 ocrResult
 
 python/build
+*.pyc
+

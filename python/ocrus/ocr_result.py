@@ -17,7 +17,7 @@ import math
 # Replace table for digits
 DIGITS_REPLACE_REG = {
     u'。': u'0', u'〇': u'0', u'o': u'0', u'O': u'0', u'U': u'0', u'u': u'0',
-    u'囗': u'0', u'D': u'0',
+    u'囗': u'0', u'D': u'0', u'ロ': u'0',
     u'ー': u'1', u'一': u'1',
     u'ュ':   u'1', u'エ':  u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
     u'ユ': u'1', u'工': u'1', u'I': u'1', u'i': u'1',

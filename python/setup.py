@@ -17,5 +17,5 @@ setup(name='OCRus',
       description='OCRus OCR CORE',
       author='Chang Sun',
       author_email='sun_ch@worksap.co.jp',
-      packages=['ocrus'],
+      packages=['ocrus', 'ocrus.neural_network'],
       )

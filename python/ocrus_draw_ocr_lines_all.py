@@ -21,7 +21,7 @@ for path_image in open(path_image_list):
     path_image = path_image.strip()
     if path_image == '':
         continue
-    print 'Draw for', path_image, '...'
+    # print 'Draw for', path_image, '...'
 
     path_ocr_lines = '{path_image}_ocr_lines.json'.\
         format(path_image=path_image)

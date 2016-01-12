@@ -230,11 +230,11 @@
         "text": "1", 
         "bounding_box": [
           1498, 
-          1476, 
-          1593, 
-          1562
+          1477, 
+          1545, 
+          1558
         ], 
-        "confidence": 73.9
+        "confidence": null
       }, 
       {
         "text": "9", 

@@ -2,112 +2,92 @@
   {
     "chars": [
       {
-        "text": "2", 
-        "bounding_box": [
-          837, 
-          693, 
-          900, 
-          768
-        ], 
-        "confidence": null
-      }, 
-      {
-        "text": "0", 
-        "bounding_box": [
-          897, 
-          702, 
-          939, 
-          774
-        ], 
-        "confidence": null
-      }, 
-      {
         "text": "1", 
         "bounding_box": [
-          939, 
-          693, 
-          969, 
-          771
+          783, 
+          692, 
+          818, 
+          781
         ], 
         "confidence": null
       }, 
       {
         "text": "5", 
         "bounding_box": [
-          972, 
-          696, 
-          1026, 
-          768
+          844, 
+          690, 
+          886, 
+          781
         ], 
         "confidence": null
       }, 
       {
         "text": "年", 
         "bounding_box": [
-          1023, 
-          690, 
-          1101, 
-          789
+          903, 
+          688, 
+          1002, 
+          795
         ], 
         "confidence": null
       }, 
       {
         "text": "1", 
         "bounding_box": [
-          1119, 
-          705, 
-          1164, 
-          765
+          1037, 
+          698, 
+          1077, 
+          785
         ], 
         "confidence": null
       }, 
       {
-        "text": "0", 
+        "text": "1", 
         "bounding_box": [
-          1161, 
-          702, 
-          1203, 
-          789
+          1103, 
+          700, 
+          1137, 
+          787
         ], 
         "confidence": null
       }, 
       {
         "text": "月", 
         "bounding_box": [
-          1209, 
-          699, 
-          1269, 
-          783
+          1162, 
+          698, 
+          1242, 
+          798
         ], 
         "confidence": null
       }, 
       {
-        "text": "0", 
+        "text": "1", 
         "bounding_box": [
-          1302, 
-          711, 
-          1350, 
-          789
+          1293, 
+          701, 
+          1329, 
+          786
         ], 
         "confidence": null
       }, 
       {
         "text": "2", 
         "bounding_box": [
-          1344, 
-          708, 
-          1389, 
-          777
+          1358, 
+          702, 
+          1398, 
+          787
         ], 
         "confidence": null
       }, 
       {
         "text": "日", 
         "bounding_box": [
-          1386, 
+          1432, 
           702, 
-          1452, 
-          786
+          1502, 
+          796
         ], 
         "confidence": null
       }

@@ -55,11 +55,11 @@
         "text": "1", 
         "bounding_box": [
           612, 
-          1061, 
-          667, 
-          1141
+          1060, 
+          645, 
+          1123
         ], 
-        "confidence": 65.68
+        "confidence": null
       }, 
       {
         "text": "1", 

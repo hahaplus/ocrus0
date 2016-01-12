@@ -214,12 +214,12 @@
       {
         "text": "0", 
         "bounding_box": [
-          1368, 
-          1933, 
+          1369, 
+          1935, 
           1417, 
-          2034
+          2007
         ], 
-        "confidence": 69.77
+        "confidence": null
       }, 
       {
         "text": "円", 

@@ -24,12 +24,12 @@
       {
         "text": "年", 
         "bounding_box": [
-          687, 
-          578, 
+          685, 
+          601, 
           755, 
-          667
+          668
         ], 
-        "confidence": 71.64
+        "confidence": null
       }, 
       {
         "text": "1", 

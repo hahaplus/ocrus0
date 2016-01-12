@@ -117,41 +117,6 @@
   {
     "chars": [
       {
-        "text": "6", 
-        "bounding_box": [
-          1246, 
-          457, 
-          1289, 
-          525
-        ], 
-        "confidence": 69.47
-      }, 
-      {
-        "text": "8", 
-        "bounding_box": [
-          1282, 
-          488, 
-          1317, 
-          498
-        ], 
-        "confidence": 44.37
-      }, 
-      {
-        "text": "円", 
-        "bounding_box": [
-          1319, 
-          472, 
-          1353, 
-          524
-        ], 
-        "confidence": 63.96
-      }
-    ], 
-    "type": "money"
-  }, 
-  {
-    "chars": [
-      {
         "text": "5", 
         "bounding_box": [
           1328, 

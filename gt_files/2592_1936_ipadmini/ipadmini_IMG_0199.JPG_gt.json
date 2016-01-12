@@ -119,12 +119,12 @@
       {
         "text": "￥", 
         "bounding_box": [
-          962, 
-          1198, 
-          997, 
-          1285
+          961, 
+          1195, 
+          999, 
+          1257
         ], 
-        "confidence": 65.0
+        "confidence": null
       }, 
       {
         "text": "1", 

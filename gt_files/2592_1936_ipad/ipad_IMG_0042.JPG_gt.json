@@ -199,12 +199,12 @@
       {
         "text": "3", 
         "bounding_box": [
-          766, 
-          1183, 
-          910, 
-          1289
+          807, 
+          1179, 
+          912, 
+          1262
         ], 
-        "confidence": 77.89
+        "confidence": null
       }, 
       {
         "text": "7", 

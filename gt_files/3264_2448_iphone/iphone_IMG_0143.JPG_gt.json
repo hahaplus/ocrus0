@@ -14,12 +14,12 @@
       {
         "text": "0", 
         "bounding_box": [
-          688, 
-          1383, 
-          736, 
-          1530
+          686, 
+          1459, 
+          740, 
+          1533
         ], 
-        "confidence": 76.85
+        "confidence": null
       }, 
       {
         "text": "1", 

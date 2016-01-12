@@ -139,12 +139,12 @@
       {
         "text": "0", 
         "bounding_box": [
-          1418, 
+          1446, 
           506, 
           1479, 
-          557
+          552
         ], 
-        "confidence": 66.2
+        "confidence": null
       }, 
       {
         "text": "9", 

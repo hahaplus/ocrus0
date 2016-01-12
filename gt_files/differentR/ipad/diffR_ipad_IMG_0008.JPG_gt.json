@@ -4,12 +4,12 @@
       {
         "text": "2", 
         "bounding_box": [
-          530, 
-          1112, 
-          562, 
-          1222
+          529, 
+          1175, 
+          565, 
+          1223
         ], 
-        "confidence": 92.69
+        "confidence": null
       }, 
       {
         "text": "0", 

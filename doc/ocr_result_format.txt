@@ -78,6 +78,12 @@ Some code snippets for using in gimp to get ground truth:
 月
 日
 
+y1 = '￥'
+y2 = '円'
+nian = '年'
+yue = '月'
+ri = '日'
+
 d = {"type": "date",
      "chars" : []}
 

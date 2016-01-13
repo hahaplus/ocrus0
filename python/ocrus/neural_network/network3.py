@@ -56,6 +56,7 @@ from theano.tensor.nnet import sigmoid
 # from theano.tensor import tanh
 
 from ocrus.neural_network.mnist_format import binary_img_to_mnist_array
+from ocrus.neural_network.mnist_format import remove_white_border
 
 
 # Constants
@@ -224,6 +225,55 @@ class Network(object):
             })
         return f_y_out()[0], f_prob()[0]
 
+    def predict_xs(self, xs):
+        '''
+        Predcit the ys_out, plural version of predict_x
+        @param xs: An array of x (x is a mnist float img)
+        @return: ((y_out,...), ((prob_y1, ...), ...))
+        '''
+
+        '''
+        len: 01-10:  1  [10-19]
+        len: 11-20:  2  [20-29]
+        ...
+        '''
+        len_xs = xs.shape[0]
+        num_batch = (len_xs + self.mini_batch_size - 1) / self.mini_batch_size
+        print 'num_batch:', num_batch
+        data_x = np.empty((num_batch * self.mini_batch_size, 784), np.float32)
+        data_x.fill(0)
+        data_x[:xs.shape[0]] = xs
+        test_x = theano.shared(
+            np.asarray(data_x, dtype=theano.config.floatX), borrow=True)
+
+        i = T.lscalar()
+        f_y_out = theano.function(
+            [i], self.layers[-1].y_out,
+            givens={
+                self.x:
+                test_x[
+                    i * self.mini_batch_size:
+                    (i + 1) * self.mini_batch_size],
+            })
+        f_prob = theano.function(
+            [i], self.layers[-1].output,
+            givens={
+                self.x:
+                test_x[
+                    i * self.mini_batch_size:
+                    (i + 1) * self.mini_batch_size],
+            })
+
+        y_out_all = []
+        prob_all = []
+        for i in range(num_batch):
+            for y_out in f_y_out(i):
+                y_out_all.append(y_out)
+            for prob_y in f_prob(i):
+                prob_all.append(prob_y)
+
+        return y_out_all[:len_xs], prob_all[:len_xs]
+
     def predict_img(self, path_binary_img):
         '''
         Predict the y_out and probability for each y
@@ -231,6 +281,7 @@ class Network(object):
         @return (y_out, (prob_y1, prob_y2, ...))
         '''
         binary_img = cv2.imread(path_binary_img, cv2.IMREAD_GRAYSCALE)
+        binary_img = remove_white_border(binary_img)
         return self.predict_x(binary_img_to_mnist_array(binary_img))
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,

@@ -19,6 +19,16 @@ path_image_list
 
 path_image_list = sys.argv[1].rstrip('/')
 
+print 'Normalize gt json files ...'
+for path_image in open(path_image_list):
+    path_image = path_image.strip()
+    if path_image == '':
+        continue
+    path_ocr_lines = '{path_image}_gt.json'.\
+        format(path_image=path_image)
+    normalize_ocr_lines(path_ocr_lines)
+
+
 for path_image in open(path_image_list):
     path_image = path_image.strip()
     if path_image == '':
@@ -27,7 +37,6 @@ for path_image in open(path_image_list):
 
     path_ocr_lines = '{path_image}_gt.json'.\
         format(path_image=path_image)
-    normalize_ocr_lines(path_ocr_lines)
     path_img = '{path_image}_binarize.png'.\
         format(path_image=path_image)
     path_output_img = '{path_image}_gt.png'.\

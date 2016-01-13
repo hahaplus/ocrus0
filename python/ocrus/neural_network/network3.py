@@ -55,7 +55,7 @@ from theano.tensor.signal import downsample
 from theano.tensor.nnet import sigmoid
 # from theano.tensor import tanh
 
-from ocrus.neural_network.mnist_format import binary_img_to_mnist_array
+from ocrus.neural_network.mnist_format import gray_img_to_mnist_array
 from ocrus.neural_network.mnist_format import remove_white_border
 
 
@@ -282,7 +282,7 @@ class Network(object):
         '''
         binary_img = cv2.imread(path_binary_img, cv2.IMREAD_GRAYSCALE)
         binary_img = remove_white_border(binary_img)
-        return self.predict_x(binary_img_to_mnist_array(binary_img))
+        return self.predict_x(gray_img_to_mnist_array(binary_img))
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             validation_data, test_data, lmbda=0.0):

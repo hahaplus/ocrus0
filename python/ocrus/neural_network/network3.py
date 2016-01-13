@@ -42,6 +42,7 @@ from Chris Olah (http://colah.github.io ).
 # Standard library
 import cPickle
 import gzip
+import os
 
 # Third-party libraries
 import cv2
@@ -128,8 +129,9 @@ class Network(object):
         @param mini_batch_size: Used in stochastic gradient descent
         '''
         self.layers = layers
+        self.path_params = path_params
 
-        if path_params:
+        if os.path.exists(self.path_params):
             params = cPickle.load(open(path_params, 'rb'))
             for i, layer in enumerate(self.layers):
                 layer.w = params[i][0]
@@ -374,6 +376,8 @@ class Network(object):
                         epoch, validation_accuracy))
                     if validation_accuracy >= best_validation_accuracy:
                         print("This is the best validation accuracy to date.")
+                        print("Save parameters ...")
+                        self.save_params(self.path_params)
                         best_validation_accuracy = validation_accuracy
                         best_iteration = iteration
                         if test_data:

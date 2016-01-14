@@ -48,7 +48,7 @@ string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
   optimize(&format_result);
   Mat out_img;
   ocrus::drawOcrResult(src, format_result, &out_img);
-  imwrite("/home/michael/tmp.jpg", out_img);
+  //imwrite("/home/michael/tmp.jpg", out_img);
   Mat formatImg;
   map<pair<int, int>, ResultUnit> pos_map;
   formatImage(src, formatImg, &format_result, pos_map);

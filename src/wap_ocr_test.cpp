@@ -63,10 +63,10 @@ int main(int argc, char *argv[]) {
 
   //binarize_img
   Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0);
-  Enhancement::enhancementAndBinarize(gray_img, enhance_img, 0.7);
+  Enhancement::enhancementAndBinarize(gray_img, enhance_img, 0.6);
   //DenoiseLinePoint::removeNoise(binarize_img);
 
-  //General::showImage(binarize_img);
+  //General::showImage(enhance_img);
   OcrDetailResult ocr_detail_result, enhance_result;
   WapOcrApi::recognitionToText(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);
   WapOcrApi::recognitionToText(enhance_img, "jpn+jpnRSN", 0, &enhance_result);

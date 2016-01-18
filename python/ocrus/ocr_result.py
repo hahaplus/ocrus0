@@ -18,19 +18,29 @@ import math
 DIGITS_REPLACE_REG = {
     u'。': u'0', u'〇': u'0', u'o': u'0', u'O': u'0', u'U': u'0', u'u': u'0',
     u'囗': u'0', u'D': u'0', u'ロ': u'0',
-    u'ー': u'1', u'一': u'1',
-    u'ュ':   u'1', u'エ':  u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
+    # u'ー': u'1', u'一': u'1',
+    u'ュ': u'1', u'エ': u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
     u'ユ': u'1', u'工': u'1', u'I': u'1', u'i': u'1',
-    u'ら':    u'5', u'ヲ':    u'5', u's': u'5', u'S': u'5',
-    u'フ':  u'7',
+    u'ら': u'5', u'ヲ': u'5', u's': u'5', u'S': u'5',
+    u'フ': u'7',
     u'B': u'8',
     u'g': u'9',
+
+    # For CNN
+    u'Q': u'0',
+    u'り': u'0',
+    u'j': u'1', u'l': u'1',
+    u'z': u'2', u'Z': u'2', u'ヨ': u'3',
+    u'ゔ': u'5',
+    u'守': u'5',
+    u'e': u'6',
+    u'ミ': u'8',
 }
 
 DIGITS_REPLACE = dict(
     DIGITS_REPLACE_REG.items() + {u']': u'1', u'[': u'1', }.items())
 
-# These characters are in digits and are treated as blank
+# These characters are in digit and are treated as blank
 BLANK_REPLACE = {
     u' ': u' ',
     u'~': u' ',
@@ -44,6 +54,10 @@ BLANK_REPLACE = {
     u'`': u' ',
     u'_': u' ',
     u'〝': u' ',
+
+    # For CNN
+    u'・': u' ',
+    u'，': u' ',
 }
 
 DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())
@@ -53,6 +67,14 @@ MONEY_PREFIX_REPLACE_REG = {
     u'¥': u'￥',
     u'半': u'￥', u'芋': u'￥', u'斐': u'￥', u'韮': u'￥', u'輩': u'￥',
     u'一': u'-', u'ー': u'-',
+
+    # For CNN
+    u'ヤ': u'￥',
+    u'ギ': u'￥',
+    u'Y': u'￥',
+    u'y': u'￥',
+    u'辛': u'￥',
+    u'卒': u'￥',
 }
 
 MONEY_PREFIX_REPLACE = dict(
@@ -61,6 +83,11 @@ MONEY_PREFIX_REPLACE = dict(
 # Replace table for money suffix
 MONEY_SUFFIX_REPLACE = {
     u'川': u'円',
+
+    # For CNN
+    u'丹': u'円',
+    u'm': u'円',
+    u'嗜': u'円',
 }
 
 # Replace table for year symbol
@@ -73,7 +100,7 @@ YEAR_SYM_REPLACE = {
 MONTH_SYM_REPLACE = {
     u'乃': u'月',
     u'刀': u'月',
-    u'ノ':      u'/',
+    u'ノ': u'/',
 }
 
 # Replace table for day symbol
@@ -81,6 +108,12 @@ DAY_SYM_REPLACE = {
     u'巳': u'日', u'E': u'日', u'臼': u'日', u'曰': u'日',
     u'口': u'日', u'囗': u'日', u'8': u'日', u'g': u'日',
     u'ロ': u'日', u'6': u'日', u'凵': u'日',
+
+    # For CNN
+    u'H': u'日',
+    u'甘': u'日',
+    u'臼': u'日',
+    u'H': u'日',
 }
 
 digit = ur'0-9\[\]' + u''.join(DIGITS_REPLACE_REG)
@@ -215,7 +248,7 @@ def extract_date(s):
                                 replace_if_exist(g, DAY_SYM_REPLACE))
 
                 print u'Pos %d-%d: %s, replaced as: %s' % (
-                    m.start() + pos, m.end(),  s[m.start() + pos: m.end()],
+                    m.start() + pos, m.end(), s[m.start() + pos: m.end()],
                     u''.join(replaced))
                 result.append((m.start() + pos, m.end(), u''.join(replaced)))
 

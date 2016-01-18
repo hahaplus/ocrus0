@@ -276,15 +276,15 @@ class Network(object):
 
         return y_out_all[:len_xs], prob_all[:len_xs]
 
-    def predict_img(self, path_binary_img):
+    def predict_img(self, path_gray_img):
         '''
         Predict the y_out and probability for each y
-        @param path_binary_img: Path to a binary img (0 for foreground)
-        @return (y_out, (prob_y1, prob_y2, ...))
+        @param path_gray_img: Path to a gray img (255 for background)
+        @return: (y_out, (prob_y1, prob_y2, ...))
         '''
-        binary_img = cv2.imread(path_binary_img, cv2.IMREAD_GRAYSCALE)
-        binary_img = remove_white_border(binary_img)
-        return self.predict_x(gray_img_to_mnist_array(binary_img))
+        gray_img = cv2.imread(path_gray_img, cv2.IMREAD_GRAYSCALE)
+        gray_img = remove_white_border(gray_img)
+        return self.predict_x(gray_img_to_mnist_array(gray_img))
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             validation_data, test_data, lmbda=0.0):

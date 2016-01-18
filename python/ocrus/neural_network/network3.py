@@ -287,12 +287,13 @@ class Network(object):
         return self.predict_x(gray_img_to_mnist_array(binary_img))
     # add by chenyuanqin
 
-    def predict_img_by_mat(self, img):
+    def predict_img_by_mat(self, mat):
         '''
         Predict the y_out and probability for each y
-        @param img: the matrix of img in 1-d vector
+        @param mat: the matrix of img in 1-d vector
         @return (y_out, (prob_y1, prob_y2, ...))
         '''
+        return self.predict_x(mat)
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             validation_data, test_data, lmbda=0.0):

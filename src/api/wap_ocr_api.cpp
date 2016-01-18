@@ -9,13 +9,51 @@
 #include "util/string_util.h"
 #include "util/algorithm_util.h"
 #include <set>
+#include <fstream>
 #include "recognition/recognition.h"
 using namespace std;
 using namespace tesseract;
 using namespace cv;
+int AlgorithmUtil::connect_threshold = 0;
+//Mat WapOcrApi::img;
+tesseract::TessBaseAPI *WapOcrApi::api;
+//dict of all the character
+vector<string> WapOcrApi::dict;
+string WapOcrApi::dict_path = "/home/michael/workspace/ocrus0_build/networkModel/chars_id.txt";
 
+//for the deeplearning
+PyObject* WapOcrApi::pMod = NULL;
+PyObject* WapOcrApi::pFunc = NULL;
+PyObject* WapOcrApi::pDict = NULL;
+/*
+ * overlap ratio (0.0 ~ 1.0)to judge as overlap
+ * */
+double WapOcrApi::epsY = 0.5;
+double WapOcrApi::epsX = -0.3;
 WapOcrApi::WapOcrApi() {
   // TODO Auto-generated constructor stub
+}
+void WapOcrApi::init()
+{
+    loadDict();
+    // Load the network module
+    Py_Initialize();
+    pMod = PyImport_ImportModule("ocrus.neural_network.network_api");
+    pDict = PyModule_GetDict(pMod);
+    pFunc = PyDict_GetItemString(pDict, "recognition_img");
+}
+void WapOcrApi::loadDict()
+{
+    ifstream dict_file(dict_path.c_str());
+    while (!dict_file.eof())
+    {
+        int id;
+        string val;
+        dict_file >>id >> val;
+        dict.push_back(val);
+        //cout << val << endl;
+    }
+    dict_file.close();
 }
 void WapOcrApi::release() {
   if (api != NULL) {
@@ -23,15 +61,9 @@ void WapOcrApi::release() {
     delete api;
     api = NULL;
   }
+  Py_Finalize();
 }
-int AlgorithmUtil::connect_threshold = 0;
-//Mat WapOcrApi::img;
-tesseract::TessBaseAPI *WapOcrApi::api;
-/*
- * overlap ratio (0.0 ~ 1.0)to judge as overlap
- * */
-double WapOcrApi::epsY = 0.5;
-double WapOcrApi::epsX = -0.3;
+
 string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
                                     int cut_level, OcrDetailResult* result) {
   if (result == NULL) {
@@ -511,3 +543,84 @@ void WapOcrApi::mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
   }
 }
 
+// recoginition the image with CNN
+
+void WapOcrApi::recognitionWithCNN(const cv::Mat &img, ResultUnit &result) {
+   // format the img
+   // make the image to 28 * 28 without distortion
+   int square_size = max(img.rows, img.cols);
+   Mat square(square_size, square_size, CV_8UC1, 255);
+   int offset_x = (square_size - img.cols) / 2;
+   int offset_y = (square_size - img.rows) / 2;
+   img.copyTo(square(cv::Rect(offset_x, offset_y, img.cols, img.rows)));
+   cv::resize(square, square, Size(28, 28));
+
+   // convert the image to  1d vector and rescale the value in range between (0, 1)
+   // 0 is white, 1 is black
+   vector<float> input_feature;
+   for (int r = 0; r < square.rows; r++)
+     for (int c = 0; c < square.cols; c++)
+     {
+         input_feature.push_back((255.0 - square.at<uchar>(r,c)) / 255.0);
+     }
+   // send the feature vector to the neutral network
+    if (!pFunc)
+      exit(-2);
+    if (PyCallable_Check(pFunc)) {
+      PyObject* pParm_tuple = PyTuple_New(input_feature.size());
+      for (int i = 0; i < input_feature.size(); i++) {
+        PyObject* pValue = Py_BuildValue("f", input_feature[i]);
+        if (!pValue) {
+          PyErr_Print();
+          return;
+        }
+        PyTuple_SetItem(pParm_tuple, i, pValue);
+      }
+      PyObject*ret_list = PyObject_CallObject(pFunc, pParm_tuple);
+      //printf("here3");
+      int target_id = 0;
+      for (int i = 0; i < PyTuple_GET_SIZE(ret_list); i++)
+      {
+          PyObject* value = PyTuple_GetItem(ret_list, i);
+          float item_value = 0;
+          if (i == 0)
+          {
+            float characer_id;
+            PyArg_Parse(value, "f", &characer_id);
+            result.content = dict[int(characer_id+1e-6)];
+          }
+          else if (i - 1 == target_id)
+          {
+            PyArg_Parse(value, "f", &item_value);
+            result.confidence = item_value;
+          }
+          //result.candidates.push_back(pair(valueint))
+      }
+      printf("%s %f\n", result.content.c_str(), result.confidence);
+    }
+
+}
+//
+std::string WapOcrApi::recognitionToTextByCNN(const cv::Mat &img, const std::string lang,
+                                   const int cutLevel,
+                                   OcrDetailResult* bboxes_result)
+{
+    if (pMod == NULL)
+    {
+       init();
+    }
+    //getBBox(img, bboxes_result);
+    //optimize(bboxes_result);
+    recognitionWithTesseract(img, lang, cutLevel, bboxes_result);
+    for (int i = 0; i < (*bboxes_result).getResultSize(); i++)
+    {
+        ResultUnit &ru = (*bboxes_result).getResultAt(i);
+        // cut the single character from the img
+        cv::Range row_range(ru.bounding_box[0].y, ru.bounding_box[1].y);
+        cv::Range col_range(ru.bounding_box[0].x, ru.bounding_box[1].x);
+        cv::Mat character_img = Mat(img, row_range, col_range);
+        recognitionWithCNN(character_img, ru);
+        //break;
+    }
+    return bboxes_result->toString();
+}

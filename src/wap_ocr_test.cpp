@@ -68,9 +68,9 @@ int main(int argc, char *argv[]) {
 
   //General::showImage(enhance_img);
   OcrDetailResult ocr_detail_result, enhance_result;
-  WapOcrApi::recognitionToText(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);
-  WapOcrApi::recognitionToText(enhance_img, "jpn+jpnRSN", 0, &enhance_result);
-  WapOcrApi::mergeOcrResult(binarize_img, enhance_img, &ocr_detail_result, &enhance_result );
+  WapOcrApi::recognitionToTextByCNN(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);
+  //WapOcrApi::recognitionToTextByCNN(enhance_img, "jpn+jpnRSN", 0, &enhance_result);
+  //WapOcrApi::mergeOcrResult(binarize_img, enhance_img, &ocr_detail_result, &enhance_result );
   for (auto ru : ocr_detail_result.getResult())
   {
 

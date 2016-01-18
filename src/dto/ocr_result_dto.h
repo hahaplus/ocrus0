@@ -81,7 +81,7 @@ class OcrDetailResult {
   {
     return symbols.size();
   }
-  string toString(int cut_level) {
+  string toString(int cut_level=0) {
     string res;
     switch (cut_level) {
       case 0:

@@ -285,6 +285,15 @@ class Network(object):
         gray_img = cv2.imread(path_gray_img, cv2.IMREAD_GRAYSCALE)
         gray_img = remove_white_border(gray_img)
         return self.predict_x(gray_img_to_mnist_array(gray_img))
+    # add by chenyuanqin
+
+    def predict_img_by_mat(self, mat):
+        '''
+        Predict the y_out and probability for each y
+        @param mat: the matrix of img in 1-d vector
+        @return (y_out, (prob_y1, prob_y2, ...))
+        '''
+        return self.predict_x(mat)
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             validation_data, test_data, lmbda=0.0):

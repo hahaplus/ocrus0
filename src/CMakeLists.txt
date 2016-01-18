@@ -3,7 +3,7 @@ set (LIBS
      opencv_ml opencv_video opencv_features2d opencv_calib3d 
      opencv_objdetect opencv_flann opencv_photo 
      opencv_stitching opencv_superres opencv_ts opencv_videostab 
-     lept tesseract gsl gslcblas)
+     lept tesseract gsl gslcblas python2.7)
 
 FILE(GLOB SRC api/*.cpp
               preprocessing/*/*.cpp
@@ -30,6 +30,9 @@ target_link_libraries(ocrus_ocr_draw ${LIBS})
 
 add_executable(wap_ocr_test wap_ocr_test.cpp ${SRC})
 target_link_libraries(wap_ocr_test ${LIBS})
+
+add_executable(tmp_test tmp_test.cpp ${SRC})
+target_link_libraries(tmp_test ${LIBS})
 
 INSTALL(TARGETS ocrus_bounding_box ocrus_candidates ocrus_ocr_draw wap_ocr_test
         RUNTIME DESTINATION bin)

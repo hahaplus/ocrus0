@@ -69,7 +69,7 @@ class OcrDetailResult {
   void push_back_symbol(ResultUnit &a) {
     symbols.push_back(a);
   }
-  vector<ResultUnit> getResult() const {
+  vector<ResultUnit> getResult() const{
     return symbols;
   }
   ResultUnit& getResultAt(int index)

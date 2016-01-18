@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
   //binarize_img
   Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0);
-  Enhancement::enhancementAndBinarize(gray_img, enhance_img, 0.6);
+ // Enhancement::enhancementAndBinarize(gray_img, enhance_img, 0.6);
   //DenoiseLinePoint::removeNoise(binarize_img);
 
   //General::showImage(enhance_img);
@@ -73,7 +73,6 @@ int main(int argc, char *argv[]) {
   //WapOcrApi::mergeOcrResult(binarize_img, enhance_img, &ocr_detail_result, &enhance_result );
   for (auto ru : ocr_detail_result.getResult())
   {
-
     printf("word: '%s';  \tconf: %.2f; bounding_box: %d,%d,%d,%d;\n", ru.content == "" ? "?" : ru.content.c_str(),
                  ru.confidence, ru.bounding_box[0].x, ru.bounding_box[0].y, ru.bounding_box[1].x, ru.bounding_box[1].y);
   }

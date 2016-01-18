@@ -11,19 +11,22 @@
 #include <set>
 #include <fstream>
 #include "recognition/recognition.h"
+#include "util/general.h"
 using namespace std;
 using namespace tesseract;
 using namespace cv;
 int AlgorithmUtil::connect_threshold = 0;
-//Mat WapOcrApi::img;
+
 tesseract::TessBaseAPI *WapOcrApi::api;
 //dict of all the character
 vector<string> WapOcrApi::dict;
-string WapOcrApi::dict_path = "/home/michael/workspace/ocrus0_build/networkModel/chars_id.txt";
-
+string WapOcrApi::dict_path =
+    "/home/michael/workspace/ocrus0_build/networkModel/chars_id_full.txt";
+// src image
+Mat WapOcrApi::src_img;
 //for the deeplearning
 PyObject* WapOcrApi::pMod = NULL;
-PyObject* WapOcrApi::pFunc = NULL;
+PyObject* WapOcrApi::single_img_func = NULL, *WapOcrApi::multi_img_func = NULL;
 PyObject* WapOcrApi::pDict = NULL;
 /*
  * overlap ratio (0.0 ~ 1.0)to judge as overlap
@@ -33,27 +36,25 @@ double WapOcrApi::epsX = -0.3;
 WapOcrApi::WapOcrApi() {
   // TODO Auto-generated constructor stub
 }
-void WapOcrApi::init()
-{
-    loadDict();
-    // Load the network module
-    Py_Initialize();
-    pMod = PyImport_ImportModule("ocrus.neural_network.network_api");
-    pDict = PyModule_GetDict(pMod);
-    pFunc = PyDict_GetItemString(pDict, "recognition_img");
+void WapOcrApi::init() {
+  loadDict();
+  // Load the network module
+  Py_Initialize();
+  pMod = PyImport_ImportModule("ocrus.neural_network.network_api");
+  pDict = PyModule_GetDict(pMod);
+  single_img_func = PyDict_GetItemString(pDict, "recognition_img");
+  multi_img_func = PyDict_GetItemString(pDict, "recognition_img_list");
 }
-void WapOcrApi::loadDict()
-{
-    ifstream dict_file(dict_path.c_str());
-    while (!dict_file.eof())
-    {
-        int id;
-        string val;
-        dict_file >>id >> val;
-        dict.push_back(val);
-        //cout << val << endl;
-    }
-    dict_file.close();
+void WapOcrApi::loadDict() {
+  ifstream dict_file(dict_path.c_str());
+  while (!dict_file.eof()) {
+    int id;
+    string val;
+    dict_file >> id >> val;
+    dict.push_back(val);
+    //cout << val << endl;
+  }
+  dict_file.close();
 }
 void WapOcrApi::release() {
   if (api != NULL) {
@@ -163,7 +164,7 @@ void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
     api = new tesseract::TessBaseAPI();
   }
   char *config[] = { (char*) ("wap") };
-
+  src_img = src;
   if (api->Init(NULL, lang.c_str(), OEM_DEFAULT, config, 1, NULL, NULL,
                 false)) {
     printf("Could not initialize tesseract.\n");
@@ -316,7 +317,7 @@ void WapOcrApi::mergeAndSplit(vector<ResultUnit> &line) {
     if (!overlap(next_interval, interval_back,
                  epsX * ((next_interval.second - next_interval.first)))) {
       interval_back = make_pair(-1, -1);
-      handle(segment);
+      //handle(segment);
       for (int j = 0; j < segment.size(); j++) {
         new_line.push_back(segment[j]);
       }
@@ -337,8 +338,8 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
   double mean_confi = 0;
   ResultUnit merge_unit;
   vector<ResultUnit> split_units;
-  for (int i = 0; i < segment.size(); i++) {
-    ResultUnit ru = segment[i];
+  bool need_merge =false;
+  for (ResultUnit ru : segment) {
     merge_bounding_box[0].x = min(ru.bounding_box[0].x,
                                   merge_bounding_box[0].x);
     merge_bounding_box[0].y = min(ru.bounding_box[0].y,
@@ -347,7 +348,10 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
                                   merge_bounding_box[1].x);
     merge_bounding_box[1].y = max(ru.bounding_box[1].y,
                                   merge_bounding_box[1].y);
-    mean_confi += ru.confidence;
+    //recognizeUnit(ru);
+    //mean_confi += ru.confidence;
+    if (ru.confidence > 90)
+      need_merge = true;
   }
   merge_unit.bounding_box = merge_bounding_box;
   merge_unit.line_index = segment[0].line_index;
@@ -393,37 +397,23 @@ void WapOcrApi::handle(vector<ResultUnit> &segment) {
       segment.push_back(split_units[i]);
     }
   } else {
-    recognizeUnit(merge_unit);
-    segment.clear();
-    segment.push_back(merge_unit);
+
+    //recognizeUnit(merge_unit);
+    if(need_merge)
+    {
+      segment.clear();
+      segment.push_back(merge_unit);
+    }
   }
 }
 int tmp_cnt = 0;
 void WapOcrApi::recognizeUnit(ResultUnit &ru) {
-  return;
-  /*
-   api->SetPageSegMode(tesseract::PSM_SINGLE_CHAR);
-
+  //return;
    Mat character_unit;
-   cutImage(img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
-   ru.bounding_box[1].x - ru.bounding_box[0].x,
-   ru.bounding_box[1].y - ru.bounding_box[0].y);
-   double scale_size = 20;
-   scaleImage(character_unit, character_unit.cols * scale_size,
-   character_unit.rows * scale_size);
-   //Mat out;
-
-   //character_unit = out;
-   imwrite(
-   "/home/michael/tmp_output/" + StringUtil::toString(tmp_cnt++) + ".jpg",
-   character_unit);
-
-   api->SetImage((uchar*) character_unit.data, character_unit.cols,
-   character_unit.rows, img.channels(), character_unit.cols);
-   ru.confidence = api->MeanTextConf();
-   ru.content = api->GetUTF8Text()/*"a";
-   character_unit.deallocate();
-   */
+   cutImage(src_img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
+   ru.bounding_box[1].x - ru.bounding_box[0].x + 1,
+   ru.bounding_box[1].y - ru.bounding_box[0].y + 1);
+   recognitionWithCNN(character_unit, ru);
 }
 void WapOcrApi::cutImage(const Mat &src, Mat &dst, int x, int y, int width,
                          int height) {
@@ -544,83 +534,170 @@ void WapOcrApi::mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
 }
 
 // recoginition the image with CNN
-
+// param: img is a single image
 void WapOcrApi::recognitionWithCNN(const cv::Mat &img, ResultUnit &result) {
-   // format the img
-   // make the image to 28 * 28 without distortion
-   int square_size = max(img.rows, img.cols);
-   Mat square(square_size, square_size, CV_8UC1, 255);
-   int offset_x = (square_size - img.cols) / 2;
-   int offset_y = (square_size - img.rows) / 2;
-   img.copyTo(square(cv::Rect(offset_x, offset_y, img.cols, img.rows)));
-   cv::resize(square, square, Size(28, 28));
-
-   // convert the image to  1d vector and rescale the value in range between (0, 1)
-   // 0 is white, 1 is black
-   vector<float> input_feature;
-   for (int r = 0; r < square.rows; r++)
-     for (int c = 0; c < square.cols; c++)
-     {
-         input_feature.push_back((255.0 - square.at<uchar>(r,c)) / 255.0);
-     }
-   // send the feature vector to the neutral network
-    if (!pFunc)
-      exit(-2);
-    if (PyCallable_Check(pFunc)) {
-      PyObject* pParm_tuple = PyTuple_New(input_feature.size());
-      for (int i = 0; i < input_feature.size(); i++) {
-        PyObject* pValue = Py_BuildValue("f", input_feature[i]);
-        if (!pValue) {
-          PyErr_Print();
-          return;
-        }
-        PyTuple_SetItem(pParm_tuple, i, pValue);
-      }
-      PyObject*ret_list = PyObject_CallObject(pFunc, pParm_tuple);
-      //printf("here3");
-      int target_id = 0;
-      for (int i = 0; i < PyTuple_GET_SIZE(ret_list); i++)
-      {
-          PyObject* value = PyTuple_GetItem(ret_list, i);
-          float item_value = 0;
-          if (i == 0)
-          {
-            float characer_id;
-            PyArg_Parse(value, "f", &characer_id);
-            result.content = dict[int(characer_id+1e-6)];
-          }
-          else if (i - 1 == target_id)
-          {
-            PyArg_Parse(value, "f", &item_value);
-            result.confidence = item_value;
-          }
-          //result.candidates.push_back(pair(valueint))
-      }
-      printf("%s %f\n", result.content.c_str(), result.confidence);
+  // format the img
+  // make the image to 28 * 28 without distortion
+  int square_size = max(img.rows, img.cols);
+  Mat square(square_size, square_size, CV_8UC1, 255);
+  int offset_x = (square_size - img.cols) / 2;
+  int offset_y = (square_size - img.rows) / 2;
+  img.copyTo(square(cv::Rect(offset_x, offset_y, img.cols, img.rows)));
+  cv::resize(square, square, Size(28, 28));
+  // sharpen
+  Mat kernel(3, 3, CV_32F, Scalar(-1)), sharp_result;
+  kernel.at<float>(1, 1) = 9;
+  // for (int i = 0; i < 3; i++)
+  filter2D(square, square, square.depth(), kernel);
+  //General::showImage(square);
+  // convert the image to  1d vector and rescale the value in range between (0, 1)
+  // 0 is white, 1 is black
+  vector<float> input_feature;
+  for (int r = 0; r < square.rows; r++)
+    for (int c = 0; c < square.cols; c++) {
+      input_feature.push_back((255.0 - square.at<uchar>(r, c)) / 255.0);
     }
+  // send the feature vector to the neutral network
+  if (!single_img_func)
+    exit(-2);
+  if (PyCallable_Check(single_img_func)) {
+    PyObject* pParm_tuple = PyTuple_New(input_feature.size());
+    for (int i = 0; i < input_feature.size(); i++) {
+      PyObject* pValue = Py_BuildValue("f", input_feature[i]);
+      if (!pValue) {
+        PyErr_Print();
+        return;
+      }
+      PyTuple_SetItem(pParm_tuple, i, pValue);
+    }
+    PyObject*ret_list = PyObject_CallObject(single_img_func, pParm_tuple);
+    //printf("here3");
+    int target_id = 0;
+    for (int i = 0; i < PyTuple_GET_SIZE(ret_list); i++) {
+      PyObject* value = PyTuple_GetItem(ret_list, i);
+      float item_value = 0;
+      if (i == 0) {
+        float characer_id;
+        PyArg_Parse(value, "f", &characer_id);
+        result.content = dict[int(characer_id + 1e-6)];
+      } else if (i - 1 == target_id) {
+        PyArg_Parse(value, "f", &item_value);
+        result.confidence = item_value * 100;
+      }
+      //result.candidates.push_back(pair(valueint))
+    }
+    printf("%s %f\n", result.content.c_str(), result.confidence);
+  }
+}
 
+// recoginition the image with CNN
+// param: img_list is a single image
+void WapOcrApi::recognitionWithCNN(const vector<cv::Mat> &img_list,
+                                   vector<ResultUnit> &result) {
+  vector<float> input_feature;
+  result.resize(img_list.size());
+  Size img_size(28, 28);
+  for (auto img : img_list) {
+    int square_size = max(img.rows, img.cols);
+    Mat square(square_size, square_size, CV_8UC1, 255);
+    int offset_x = (square_size - img.cols) / 2;
+    int offset_y = (square_size - img.rows) / 2;
+    img.copyTo(square(cv::Rect(offset_x, offset_y, img.cols, img.rows)));
+    cv::resize(square, square, img_size);
+    // sharpen
+    Mat kernel(3, 3, CV_32F, Scalar(-1)), sharp_result;
+    kernel.at<float>(1, 1) = 9;
+    // for (int i = 0; i < 3; i++)
+    filter2D(square, square, square.depth(), kernel);
+    //General::showImage(square);
+    // convert the image to  1d vector and rescale the value in range between (0, 1)
+    // 0 is white, 1 is black
+
+    for (int r = 0; r < square.rows; r++)
+      for (int c = 0; c < square.cols; c++) {
+        input_feature.push_back((255.0 - square.at<uchar>(r, c)) / 255.0);
+      }
+  }
+  // send the feature vector to the neutral network
+  if (!multi_img_func)
+    exit(-2);
+  if (PyCallable_Check(multi_img_func)) {
+    PyObject* pParm_tuple = PyTuple_New(input_feature.size() + 1);
+
+    for (int i = 0; i < input_feature.size(); i++) {
+      PyObject* pValue = Py_BuildValue("f", input_feature[i]);
+      if (!pValue) {
+        PyErr_Print();
+        return;
+      }
+      PyTuple_SetItem(pParm_tuple, i, pValue);
+    }
+    // input the number of image
+    PyTuple_SetItem(pParm_tuple, input_feature.size(), Py_BuildValue("i", img_size.height * img_size.width));
+    PyObject*ret_list = PyObject_CallObject(multi_img_func, pParm_tuple);
+    //printf("here3");
+    int target_id = 0;
+    for (int i = 0; i < PyTuple_GET_SIZE(ret_list); i++) {
+      PyObject* value = PyTuple_GetItem(ret_list, i);
+      float item_value = 0;
+      if ((i % 2) == 0) {
+        float characer_id;
+        PyArg_Parse(value, "f", &characer_id);
+        result[i/2].content = dict[int(characer_id + 1e-6)];
+      } else{
+        PyArg_Parse(value, "f", &item_value);
+        result[i/2].confidence = item_value * 100;
+      }
+      //result.candidates.push_back(pair(valueint))
+    }
+    //for (auto ru : result)
+   //    printf("%s %f\n", ru.content.c_str(), ru.confidence);
+  }
 }
 //
-std::string WapOcrApi::recognitionToTextByCNN(const cv::Mat &img, const std::string lang,
-                                   const int cutLevel,
-                                   OcrDetailResult* bboxes_result)
-{
-    if (pMod == NULL)
-    {
-       init();
+std::string WapOcrApi::recognitionToTextByCNN(const cv::Mat &img,
+                                              const std::string lang,
+                                              const int cutLevel,
+                                              OcrDetailResult* bboxes_result) {
+  if (pMod == NULL) {
+    init();
+  }
+  src_img = img;
+
+  // first pass to recognize all the single connect component
+   getBBox(img, bboxes_result);
+  //recognitionWithTesseract(img, lang, cutLevel, bboxes_result);
+  optimize(bboxes_result);
+  vector<Mat> img_list;
+  for (int i = 0; i < (*bboxes_result).getResultSize(); i++) {
+    ResultUnit &ru = (*bboxes_result).getResultAt(i);
+    // cut the single character from the img
+    cv::Range row_range(ru.bounding_box[0].y, ru.bounding_box[1].y);
+    cv::Range col_range(ru.bounding_box[0].x, ru.bounding_box[1].x);
+    cv::Mat character_img = Mat(img, row_range, col_range);
+    img_list.push_back(character_img);
+    //break;
+  }
+  vector<ResultUnit> ru_list = bboxes_result->getResult();
+  recognitionWithCNN(img_list, ru_list);
+  bboxes_result->setResult(ru_list);
+
+
+  // second pass try to optimize the box
+  /*optimize(bboxes_result);
+  img_list.clear();
+  for (int i = 0; i < (*bboxes_result).getResultSize(); i++) {
+      ResultUnit &ru = (*bboxes_result).getResultAt(i);
+      // cut the single character from the img
+      cv::Range row_range(ru.bounding_box[0].y, ru.bounding_box[1].y);
+      cv::Range col_range(ru.bounding_box[0].x, ru.bounding_box[1].x);
+      cv::Mat character_img = Mat(img, row_range, col_range);
+      img_list.push_back(character_img);
+      //break;
     }
-    //getBBox(img, bboxes_result);
-    //optimize(bboxes_result);
-    recognitionWithTesseract(img, lang, cutLevel, bboxes_result);
-    for (int i = 0; i < (*bboxes_result).getResultSize(); i++)
-    {
-        ResultUnit &ru = (*bboxes_result).getResultAt(i);
-        // cut the single character from the img
-        cv::Range row_range(ru.bounding_box[0].y, ru.bounding_box[1].y);
-        cv::Range col_range(ru.bounding_box[0].x, ru.bounding_box[1].x);
-        cv::Mat character_img = Mat(img, row_range, col_range);
-        recognitionWithCNN(character_img, ru);
-        //break;
-    }
-    return bboxes_result->toString();
+
+  ru_list = bboxes_result->getResult();
+  recognitionWithCNN(img_list, ru_list);
+  bboxes_result->setResult(ru_list);*/
+  return bboxes_result->toString();
 }

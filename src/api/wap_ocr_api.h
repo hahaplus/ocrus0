@@ -40,9 +40,10 @@ private:
 	static vector<string> dict;
 	// for the deep learning network
 	static PyObject* pMod;
-	static PyObject* pFunc;
+	static PyObject* single_img_func;
+	static PyObject* multi_img_func;
 	static PyObject* pDict;
-	//static cv::Mat img;
+	static cv::Mat src_img;
 	// merge and split
 	static void getBBox(const cv::Mat &img, OcrDetailResult* odr); // get The bounding box of the character
 	static void optimize(OcrDetailResult*);
@@ -64,6 +65,9 @@ private:
   // param: img is a matrix of a single character
   // output-param: result is the recognition result of the single character
   static void recognitionWithCNN(const cv::Mat &img, ResultUnit &result);
+  // param: img_list is a list of many single characters
+  // output-param: result is the recognition result of the character list
+  static void recognitionWithCNN(const vector<cv::Mat> &img_list, vector<ResultUnit> &result);
 
   // dict path
   static string dict_path;

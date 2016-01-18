@@ -368,24 +368,25 @@ class Network(object):
                 if iteration % 1000 == 0:
                     print("Training mini-batch number {0}".format(iteration))
                 cost_ij = train_mb(minibatch_index)
-                if (iteration + 1) % num_training_batches == 0:
+                if (iteration + 1) % (num_training_batches / 5) == 0:
                     validation_accuracy = np.mean(
                         [validate_mb_accuracy(j)
                          for j in xrange(num_validation_batches)])
-                    print("Epoch {0}: validation accuracy {1:.2%}".format(
+                    print("Epoch {0}: validation accuracy {1:.8%}".format(
                         epoch, validation_accuracy))
-                    if validation_accuracy >= best_validation_accuracy:
+                    if validation_accuracy > best_validation_accuracy:
                         print("This is the best validation accuracy to date.")
-                        print("Save parameters ...")
-                        self.save_params(self.path_params)
                         best_validation_accuracy = validation_accuracy
                         best_iteration = iteration
-                        if test_data:
-                            test_accuracy = np.mean(
-                                [test_mb_accuracy(j)
-                                 for j in xrange(num_test_batches)])
-                            print(
-                                'The corresponding test accuracy is {0:.2%}'.format(test_accuracy))
+                        if validation_accuracy > 0.05:
+                            print("Save parameters ...")
+                            self.save_params(self.path_params)
+                            if test_data:
+                                test_accuracy = np.mean(
+                                    [test_mb_accuracy(j)
+                                     for j in xrange(num_test_batches)])
+                                print(
+                                    'The corresponding test accuracy is {0:.8%}'.format(test_accuracy))
         print("Finished training network.")
         print(
             "Best validation accuracy of {0:.2%} obtained at iteration {1}".format(

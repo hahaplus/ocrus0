@@ -77,6 +77,7 @@ MONEY_PREFIX_REPLACE_REG = {
     u'辛': u'￥',
     u'卒': u'￥',
     u'洋': u'￥',
+    u'藥': u'￥',
 }
 
 MONEY_PREFIX_REPLACE = dict(
@@ -306,50 +307,6 @@ def extract_money(s):
     return result
 
 
-def in_number_field(ch):
-    return ch.isdigit() or ch in DIGITS_REPLACE or ch in BLANK_REPLACE
-
-
-def in_symbol_field(ch):
-    return not in_number_field(ch)
-
-
-def search_field(ocr_chars, pos, in_field):
-    '''
-    Search for a field in ocr_chars
-    @param ocr_chars: OCR chars
-    @param pos: Position in ocr_chars to search backward and forward
-    @param in_field: in_field(ocr_chars[...]['text']) should be True
-    @return: A tuple (field_start, field_end) or
-            None if pos is invalid or in_field(ocr_chars[pos]['text']) is False
-    '''
-    if pos < 0 or pos >= len(ocr_chars):
-        return None
-    if not in_field(ocr_chars[pos]['text']):
-        return None
-    field_start = pos
-    while field_start >= 0 and \
-            in_field(ocr_chars[field_start]['text']):
-        field_start -= 1
-    field_start += 1
-
-    field_end = pos
-    while field_end < len(ocr_chars) and \
-            in_field(ocr_chars[field_end]['text']):
-        field_end += 1
-    field_end -= 1
-
-    return (field_start, field_end)
-
-
-def count_digits_similar(ocr_chars):
-    count = 0
-    for ocr_char in ocr_chars:
-        if ocr_char['text'].isdigit() or ocr_char['text'] in DIGITS_REPLACE:
-            count += 1
-    return count
-
-
 def to_ocr_lines(ocr_chars):
     '''
     Convert ocr_chars to ocr_lines plus some post-processing
@@ -448,41 +405,6 @@ def to_ocr_lines(ocr_chars):
     for ocr_line in ocr_lines:
         ocr_line['chars'] = [
             ch for ch in ocr_line['chars'] if ch['text'].strip() != '']
-
-    # Remove characters that are far away
-#     for ocr_line in ocr_lines:
-#         dists = []
-#         centers = []
-#
-#         for ch in ocr_line['chars']:
-#             bbox = map(float, ch['bounding_box'])
-#             center_x, center_y = (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3])
-#             centers.append((center_x, center_y))
-#         if len(centers) >= 2:
-#             for pos in range(1, len(centers)):
-#                 dists.append(math.sqrt(
-#                     (centers[pos][0] - centers[pos - 1][0])**2 +
-#                     (centers[pos][1] - centers[pos - 1][1])**2))
-#             dist_average = sum(dists) / len(dists)
-#             ocr_chars = []
-#             start = 0
-#             end = len(dists) - 1
-#             '''
-#             0           1   2    3    4               5
-#             c1          c2  c3   c4   c5              c6
-#                   0        1   2    3          4
-#                         start      end
-#             '''
-#             while start < len(dists) and \
-#                     dists[start] > dist_average * 2:
-#                 start += 1
-#             while end >= 0 and \
-#                     dists[end] > dist_average * 2:
-#                 end -= 1
-#
-#             for pos in range(start, end + 2):
-#                 ocr_chars.append(ocr_line['chars'][pos])
-#             ocr_line['chars'] = ocr_chars
 
     return ocr_lines
 

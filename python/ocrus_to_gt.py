@@ -45,8 +45,9 @@ for path_image in open(path_image_list):
 
     ocr_chars = []
     for line in codecs.open(path_txt, encoding='utf-8'):
-        d = parse_line_v1(line)
-        ocr_chars.append(d)
+        if line.startswith('word:'):
+            d = parse_line_v1(line)
+            ocr_chars.append(d)
 
     ocr_lines = to_ocr_lines(ocr_chars)
 

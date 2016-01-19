@@ -9,10 +9,11 @@ Created on Dec 4, 2015
 @author: Chang Sun
 '''
 
-from PIL import Image, ImageDraw, ImageFont
 import os
 import json
 import sys
+
+from PIL import Image, ImageDraw, ImageFont
 
 FONT_PATH = '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf'
 # FONT_PATH = '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc'
@@ -81,4 +82,3 @@ if __name__ == '__main__':
             os.path.basename(sys.argv[0])
         sys.exit(0)
     draw_ocr_lines(sys.argv[1], sys.argv[2], sys.argv[3])
-    pass

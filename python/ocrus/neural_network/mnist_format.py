@@ -14,6 +14,7 @@ def remove_white_border(gray_img):
     '''
     Remove white border of gray image, 255 for background
     @param gray_img: A gray image to remove upon
+    @return: A gray image with white border removed
     '''
     height, width = gray_img.shape
     y1 = 0
@@ -36,14 +37,15 @@ def remove_white_border(gray_img):
         gray_img = gray_img[y1: y2 + 1, :]
     if x1 <= x2:
         gray_img = gray_img[:, x1: x2 + 1]
+
     return gray_img
 
 
 def gray_img_to_mnist_array(gray_img):
     '''
-    Convert a gray image to mnist array.
-    In the image, 255 for background
+    Convert a gray image to mnist array, 255 for background
     @param gray_img: A gray image
+    @return: A mnist float image array
     '''
     height, width = gray_img.shape
 
@@ -67,9 +69,18 @@ def gray_img_to_mnist_array(gray_img):
     return float_img
 
 
+def remove_white_to_mnist_array(gray_img):
+    '''
+    Remove white border and convert to mnist array, 255 for background
+    @param gray_img: A gray image to process
+    @return: A mnist float image array
+    '''
+    return gray_img_to_mnist_array(remove_white_border(gray_img))
+
+
 def mnist_array_to_gray_img(mnist_array):
     '''
-    Convert mnist array to gray image
+    Convert mnist array to gray image, 255 for background
     @param mnist_arry: A mnist array image
     '''
     gray_img = np.empty((28, 28), np.uint8)

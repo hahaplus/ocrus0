@@ -67,6 +67,17 @@ def gray_img_to_mnist_array(gray_img):
     return float_img
 
 
+def mnist_array_to_gray_img(mnist_array):
+    '''
+    Convert mnist array to gray image
+    @param mnist_arry: A mnist array image
+    '''
+    gray_img = np.empty((28, 28), np.uint8)
+    for i, v in enumerate(mnist_array):
+        gray_img[i / 28][i % 28] = int((1 - v) * 255)
+    return gray_img
+
+
 def pretty_print_char(float_img, f=sys.stdout):
     '''
     Pretty print a char of a mnist float img

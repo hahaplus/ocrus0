@@ -29,12 +29,13 @@ DIGITS_REPLACE_REG = {
     # For CNN
     u'Q': u'0',
     u'り': u'0',
-    u'j': u'1', u'l': u'1',
+    u'j': u'1', u'l': u'1', u'r': u'1',
     u'z': u'2', u'Z': u'2', u'ヨ': u'3',
     u'ゔ': u'5',
     u'守': u'5',
     u'e': u'6',
     u'ミ': u'8',
+    u'尽': u'8',
 }
 
 DIGITS_REPLACE = dict(
@@ -75,6 +76,7 @@ MONEY_PREFIX_REPLACE_REG = {
     u'y': u'￥',
     u'辛': u'￥',
     u'卒': u'￥',
+    u'洋': u'￥',
 }
 
 MONEY_PREFIX_REPLACE = dict(
@@ -88,6 +90,9 @@ MONEY_SUFFIX_REPLACE = {
     u'丹': u'円',
     u'm': u'円',
     u'嗜': u'円',
+    u'凹': u'円',
+    u'H': u'円',
+    u'内': u'円',
 }
 
 # Replace table for year symbol
@@ -114,6 +119,8 @@ DAY_SYM_REPLACE = {
     u'甘': u'日',
     u'臼': u'日',
     u'H': u'日',
+    u'B': u'日',
+    u'旦': u'日',
 }
 
 digit = ur'0-9\[\]' + u''.join(DIGITS_REPLACE_REG)

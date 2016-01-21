@@ -34,6 +34,8 @@ DIGITS_REPLACE_REG = {
     u'ゔ': u'5',
     u'守': u'5',
     u'e': u'6',
+    u'b': u'6',
+    u'プ': u'7',
     u'ミ': u'8',
     u'尽': u'8',
 }
@@ -59,6 +61,7 @@ BLANK_REPLACE = {
     # For CNN
     u'・': u' ',
     u'，': u' ',
+    u'・': u' ',
 }
 
 DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())

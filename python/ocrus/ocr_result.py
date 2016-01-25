@@ -16,7 +16,7 @@ import math
 
 # Replace table for digits
 DIGITS_REPLACE_REG = {
-    u'。': u'0', u'〇': u'0', u'o': u'0', u'O': u'0', u'U': u'0', u'u': u'0',
+    u'。': u'0', u'〇': u'0', u'o': u'0', u'O': u'0',  # u'U': u'0', u'u': u'0',
     u'囗': u'0', u'D': u'0', u'ロ': u'0',
     # u'ー': u'1', u'一': u'1',
     u'ュ': u'1', u'エ': u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
@@ -29,11 +29,14 @@ DIGITS_REPLACE_REG = {
     # For CNN
     u'Q': u'0',
     u'り': u'0',
-    u'j': u'1', u'l': u'1', u'r': u'1',
+    u'd': u'0',
+    u'j': u'1', u'J': u'1', u'l': u'1', u'r': u'1', u"'": u'1',
     u'z': u'2', u'Z': u'2', u'ヨ': u'3',
-    u'ゔ': u'5',
+    u'ゔ': u'5', u'う': u'5',
     u'守': u'5',
     u'e': u'6',
+    u'b': u'6',
+    u'プ': u'7',
     u'ミ': u'8',
     u'尽': u'8',
 }
@@ -46,7 +49,7 @@ BLANK_REPLACE = {
     u' ': u' ',
     u'~': u' ',
     u',': u' ',
-    u"'": u' ',
+    # u"'": u' ',
     u'"': u' ',
     u'〟': u' ',
     u'丶': u' ',
@@ -59,6 +62,8 @@ BLANK_REPLACE = {
     # For CNN
     u'・': u' ',
     u'，': u' ',
+    u'・': u' ',
+    u'皺': u' ',
 }
 
 DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())
@@ -90,11 +95,10 @@ MONEY_SUFFIX_REPLACE = {
 
     # For CNN
     u'丹': u'円',
-    u'm': u'円',
-    u'嗜': u'円',
     u'凹': u'円',
-    u'H': u'円',
     u'内': u'円',
+    u'H': u'円',
+    u'm': u'円',
 }
 
 # Replace table for year symbol
@@ -287,8 +291,7 @@ def extract_money(s):
                         if i == 0:
                             g_str = replace_if_exist(g, MONEY_PREFIX_REPLACE)
                             if u'￥' not in g_str:
-                                g_str = replace_if_exist(
-                                    g_str, {u'-': u'1'})
+                                pass
                             else:
                                 all_digits = False
                             replaced.append(g_str)
@@ -398,6 +401,22 @@ def to_ocr_lines(ocr_chars):
             ocr_chars = []
             for pos in range(pos_head, pos_tail + 1):
                 ocr_chars.append(ocr_line['chars'][pos])
+            if (len(ocr_chars) > 0 and ocr_chars[0]['text'] == u'￥' and
+                    pos_head > 0 and
+                    ocr_line['chars'][pos_head - 1]['text'] == u'-'):
+                bbox_yen = ocr_chars[0]['bounding_box']
+                bbox_minus = ocr_line['chars'][pos_head - 1]['bounding_box']
+                w_yen = bbox_yen[2] - bbox_yen[0]
+                w_minus = bbox_minus[2] - bbox_minus[0]
+                top_yen, bot_yen = bbox_yen[1], bbox_yen[3]
+                mid_yen = (top_yen + bot_yen) / 2
+
+                top_minus, bot_minus = bbox_minus[1], bbox_minus[3]
+                if (w_yen * 0.6 < w_minus < w_yen * 1.7 and
+                        mid_yen - w_yen / 3 < top_minus and
+                        bot_minus < mid_yen + w_yen / 3):
+                    ocr_chars.insert(0, ocr_line['chars'][pos_head - 1])
+
             ocr_line['chars'] = ocr_chars
 
             print 'pos_head, pos_tail: %s, %s' % (pos_head, pos_tail)

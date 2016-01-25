@@ -19,15 +19,17 @@ echo Build and install ...
 make
 sudo make install
 
+ocrus_draw_all.py XXX draw 4 symbol $PATH_IMAGE_LIST
+
 echo Generate ocr_lines files ...
 ocrus_to_ocr_lines.py symbol $PATH_IMAGE_LIST
 
 echo Draw ocr_lines ...
-ocrus_draw_ocr_lines_all.py $PATH_IMAGE_LIST
+#ocrus_draw_ocr_lines_all.py $PATH_IMAGE_LIST
 
 echo Calculate accuracy ...
-ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS_DATE date
-ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS_MONEY money
+#ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS_DATE date
+#ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS_MONEY money
 ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS
 echo Accuracy results stored in $PATH_STATS
 

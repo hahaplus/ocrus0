@@ -110,6 +110,7 @@ YEAR_SYM_REPLACE = {
 MONTH_SYM_REPLACE = {
     u'乃': u'月',
     u'刀': u'月',
+    u'且': u'月',
     u'ノ': u'/',
 }
 
@@ -310,6 +311,18 @@ def extract_money(s):
     return result
 
 
+def good_minus_symbol(bbox_minus, bbox_yen):
+    w_yen = bbox_yen[2] - bbox_yen[0]
+    w_minus = bbox_minus[2] - bbox_minus[0]
+    top_yen, bot_yen = bbox_yen[1], bbox_yen[3]
+    mid_yen = (top_yen + bot_yen) / 2
+
+    top_minus, bot_minus = bbox_minus[1], bbox_minus[3]
+    return (w_yen * 0.6 < w_minus < w_yen * 1.7 and
+            mid_yen - w_yen / 3 < top_minus and
+            bot_minus < mid_yen + w_yen / 3)
+
+
 def to_ocr_lines(ocr_chars):
     '''
     Convert ocr_chars to ocr_lines plus some post-processing
@@ -405,20 +418,22 @@ def to_ocr_lines(ocr_chars):
                     ocr_line['chars'][pos_head - 1]['text'] == u'-'):
                 bbox_yen = ocr_chars[0]['bounding_box']
                 bbox_minus = ocr_line['chars'][pos_head - 1]['bounding_box']
-                w_yen = bbox_yen[2] - bbox_yen[0]
-                w_minus = bbox_minus[2] - bbox_minus[0]
-                top_yen, bot_yen = bbox_yen[1], bbox_yen[3]
-                mid_yen = (top_yen + bot_yen) / 2
-
-                top_minus, bot_minus = bbox_minus[1], bbox_minus[3]
-                if (w_yen * 0.6 < w_minus < w_yen * 1.7 and
-                        mid_yen - w_yen / 3 < top_minus and
-                        bot_minus < mid_yen + w_yen / 3):
+                if good_minus_symbol(bbox_minus, bbox_yen):
                     ocr_chars.insert(0, ocr_line['chars'][pos_head - 1])
 
             ocr_line['chars'] = ocr_chars
 
             print 'pos_head, pos_tail: %s, %s' % (pos_head, pos_tail)
+
+    # Remove bad minus symbol
+    for ocr_line in ocr_lines:
+        ocr_chars = ocr_line['chars']
+        if (len(ocr_chars) >= 2 and ocr_chars[0]['text'] == u'-' and
+                ocr_chars[1]['text'] == u'￥'):
+            bbox_minus = ocr_chars[0]['bounding_box']
+            bbox_yen = ocr_chars[1]['bounding_box']
+            if not good_minus_symbol(bbox_minus, bbox_yen):
+                del ocr_line['chars'][0]
 
     # Remove whitespace characters
     for ocr_line in ocr_lines:

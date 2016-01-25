@@ -16,6 +16,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "preprocessing/enhancement/enhancement.h"
 #include "preprocessing/denoise/remove_line.h"
+#include <segmentation/segmentator.h>
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printf("Print the bounding boxes of an image\n"
@@ -63,14 +64,15 @@ int main(int argc, char *argv[]) {
 
   //binarize_img
   Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0);
- // Enhancement::enhancementAndBinarize(gray_img, enhance_img, 0.6);
+  //Enhancement::enhancementAndBinarize(gray_img, enhance_img, 0.6);
   //DenoiseLinePoint::removeNoise(binarize_img);
 
   //General::showImage(enhance_img);
   OcrDetailResult ocr_detail_result, enhance_result;
-  WapOcrApi::recognitionToTextByCNN(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);
-  //WapOcrApi::recognitionToTextByCNN(enhance_img, "jpn+jpnRSN", 0, &enhance_result);
-  //WapOcrApi::mergeOcrResult(binarize_img, enhance_img, &ocr_detail_result, &enhance_result );
+  Segmentator::segmentImg(binarize_img, &ocr_detail_result);
+  //WapOcrApi::recognitionToTextByCNN(binarize_img, "jpn+jpnRSN", 0, &ocr_detail_result);
+ // WapOcrApi::recognitionToTextByCNN(enhance_img, "jpn+jpnRSN", 0, &enhance_result);
+ // WapOcrApi::mergeOcrResult(binarize_img, enhance_img, &ocr_detail_result, &enhance_result );
   for (auto ru : ocr_detail_result.getResult())
   {
     printf("word: '%s';  \tconf: %.2f; bounding_box: %d,%d,%d,%d;\n", ru.content == "" ? "?" : ru.content.c_str(),

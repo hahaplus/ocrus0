@@ -9,8 +9,11 @@
 #include "util/string_util.h"
 #include "util/algorithm_util.h"
 #include <set>
+#include <map>
 #include <fstream>
+#include "segmentation/segmentator.h"
 #include "recognition/recognition.h"
+#include <recognition/recognition_by_CNN.h>
 #include "util/general.h"
 using namespace std;
 using namespace tesseract;
@@ -19,15 +22,10 @@ int AlgorithmUtil::connect_threshold = 0;
 
 tesseract::TessBaseAPI *WapOcrApi::api;
 //dict of all the character
-vector<string> WapOcrApi::dict;
-string WapOcrApi::dict_path =
-    "/home/michael/workspace/ocrus0_build/networkModel/chars_id_full.txt";
 // src image
-Mat WapOcrApi::src_img;
-//for the deeplearning
-PyObject* WapOcrApi::pMod = NULL;
-PyObject* WapOcrApi::single_img_func = NULL, *WapOcrApi::multi_img_func = NULL;
-PyObject* WapOcrApi::pDict = NULL;
+Mat* WapOcrApi::src_img;
+
+
 /*
  * overlap ratio (0.0 ~ 1.0)to judge as overlap
  * */
@@ -36,33 +34,14 @@ double WapOcrApi::epsX = -0.3;
 WapOcrApi::WapOcrApi() {
   // TODO Auto-generated constructor stub
 }
-void WapOcrApi::init() {
-  loadDict();
-  // Load the network module
-  Py_Initialize();
-  pMod = PyImport_ImportModule("ocrus.neural_network.network_api");
-  pDict = PyModule_GetDict(pMod);
-  single_img_func = PyDict_GetItemString(pDict, "recognition_img");
-  multi_img_func = PyDict_GetItemString(pDict, "recognition_img_list");
-}
-void WapOcrApi::loadDict() {
-  ifstream dict_file(dict_path.c_str());
-  while (!dict_file.eof()) {
-    int id;
-    string val;
-    dict_file >> id >> val;
-    dict.push_back(val);
-    //cout << val << endl;
-  }
-  dict_file.close();
-}
+
+
 void WapOcrApi::release() {
   if (api != NULL) {
     api->End();
     delete api;
     api = NULL;
   }
-  Py_Finalize();
 }
 
 string WapOcrApi::recognitionToText(const cv::Mat &src, const string lang,
@@ -164,7 +143,7 @@ void WapOcrApi::recognitionWithTesseract(const cv::Mat &src,
     api = new tesseract::TessBaseAPI();
   }
   char *config[] = { (char*) ("wap") };
-  src_img = src;
+  src_img = (Mat*)&src;
   if (api->Init(NULL, lang.c_str(), OEM_DEFAULT, config, 1, NULL, NULL,
                 false)) {
     printf("Could not initialize tesseract.\n");
@@ -233,21 +212,7 @@ void WapOcrApi::getBBox(const cv::Mat &img, OcrDetailResult* odr) {
     avg_width.push_back(ru.bounding_box[1].x - ru.bounding_box[0].x + 1);
     odr->push_back_symbol(ru);
   }
-  double avg_h = AlgorithmUtil::getAverageValue<double>(avg_height);
-  double avg_w = AlgorithmUtil::getAverageValue<double>(avg_width);
-  // filt too small box, they are noise
-  vector<ResultUnit> filted_result;
-  for (int i = 0; i < odr->getResultSize(); i++) {
-    ResultUnit ru = odr->getResultAt(i);
-    pair<double, double> box_size(
-        ru.bounding_box[1].x - ru.bounding_box[0].x + 1,
-        ru.bounding_box[1].y - ru.bounding_box[0].y + 1);
-    if (box_size.first < avg_w || box_size.second < avg_h) {
-      //continue;
-    }
-    filted_result.push_back(ru);
-  }
-  odr->setResult(filted_result);
+
 }
 bool WapOcrApi::overlap(pair<int, int> a, pair<int, int> b, int eps) {
   if (a.first > b.first) {
@@ -410,13 +375,18 @@ int tmp_cnt = 0;
 void WapOcrApi::recognizeUnit(ResultUnit &ru) {
   //return;
    Mat character_unit;
-   cutImage(src_img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
+   cutImage(*src_img, character_unit, ru.bounding_box[0].x, ru.bounding_box[0].y,
    ru.bounding_box[1].x - ru.bounding_box[0].x + 1,
    ru.bounding_box[1].y - ru.bounding_box[0].y + 1);
-   recognitionWithCNN(character_unit, ru);
+   RecognitionByCNN::recognition(character_unit, ru);
 }
 void WapOcrApi::cutImage(const Mat &src, Mat &dst, int x, int y, int width,
                          int height) {
+
+  if (x+width >= src.cols)
+    width = src.cols - 1 - x;
+  if (y+height >= src.rows)
+    height = src.rows - 1 - y;
   dst = Mat(src, cv::Rect2i(x, y, width, height));
 
   //printf( "%d %d\n", width, height);
@@ -477,7 +447,7 @@ void WapOcrApi::mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
                                OcrDetailResult* main_result,
                                OcrDetailResult* assit_result) {
 
-  // write the main_result into man_map
+  // write the main_result into main_map
   vector<vector<int> > main_map(main_img.rows, vector<int>(main_img.cols, -1));
   for (int i = 0; i < main_result->getResultSize(); i++) {
     ResultUnit ru = main_result->getResultAt(i);
@@ -488,6 +458,9 @@ void WapOcrApi::mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
   }
 
   // check the assist_result
+  // if it is added into new_result
+  vector<bool> is_added(main_result->getResultSize(), false);
+  map<int, vector<ResultUnit> >  add_map;
   for (auto ru : assit_result->getResult()) {
     double cnt = 0;
     set<int> index_set;
@@ -506,15 +479,25 @@ void WapOcrApi::mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
         }
       }
     //assert((ru.getHeight() * ru.getWidth()) != 0);
-    if (index_set.size() == 1 && cnt / (ru.getHeight() * ru.getWidth()) > 0.8) {
-      //assert(*index_set.begin() >=0 && *index_set.begin() < main_result->getResultSize() );
-      ResultUnit &ori_ru = main_result->getResultAt(*index_set.begin());
 
-      if (cnt / (ori_ru.getHeight() * ori_ru.getWidth()) > 0.8
-          && ori_ru.confidence <= ru.confidence) {
+    if (index_set.size() != 0) {
+      //assert(*index_set.begin() >=0 && *index_set.begin() < main_result->getResultSize() );
+      double average = 0;
+      for (set<int>::iterator it = index_set.begin(); it != index_set.end(); it++)
+      {
+        //cout << "index" << *it << " " << main_result->getResultSize()<< endl;
+        ResultUnit ori_ru = main_result->getResultAt(*it);
+        average += ori_ru.confidence;
+      }
+      average /= index_set.size();
+
+      if (average <= ru.confidence) {
         //assert((ori_ru.getHeight() * ori_ru.getWidth()) != 0);
         // replace the result
-        ori_ru = ru;
+        //new_result.push_back(ru);
+        add_map[*index_set.begin()].push_back(ru);
+        for (auto index: index_set)
+          is_added[index] = true;
         for (int j = 0; j < ru.getHeight(); j++)
           for (int k = 0; k < ru.getWidth(); k++) {
             // assert(j + ru.bounding_box[0].y < main_img.rows && k + ru.bounding_box[0].x < main_img.cols);
@@ -531,173 +514,156 @@ void WapOcrApi::mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
       }
     }
   }
+  // merge result
+   vector<ResultUnit> new_result;
+  for (int i = 0; i < main_result->getResultSize(); i++)
+  {
+      if (is_added[i] == false)
+      {
+        new_result.push_back(main_result->getResultAt(i));
+      }
+      else if (add_map.count(i))
+      {
+        for (auto &ru : add_map[i])
+        {
+          new_result.push_back(ru);
+        }
+      }
+  }
+  main_result->setResult(new_result);
 }
+void WapOcrApi::splitBox(const cv::Mat &img, ResultUnit &ru, vector<ResultUnit> &split_boxes)
+{
+    split_boxes.clear();
+    Mat crop_img;
+    cutImage(img, crop_img, ru.bounding_box[0].x, ru.bounding_box[0].y, ru.getWidth(),
+                        ru.getHeight());
 
-// recoginition the image with CNN
-// param: img is a single image
-void WapOcrApi::recognitionWithCNN(const cv::Mat &img, ResultUnit &result) {
-  // format the img
-  // make the image to 28 * 28 without distortion
-  int square_size = max(img.rows, img.cols);
-  Mat square(square_size, square_size, CV_8UC1, 255);
-  int offset_x = (square_size - img.cols) / 2;
-  int offset_y = (square_size - img.rows) / 2;
-  img.copyTo(square(cv::Rect(offset_x, offset_y, img.cols, img.rows)));
-  cv::resize(square, square, Size(28, 28));
-  // sharpen
-  Mat kernel(3, 3, CV_32F, Scalar(-1)), sharp_result;
-  kernel.at<float>(1, 1) = 9;
-  // for (int i = 0; i < 3; i++)
-  filter2D(square, square, square.depth(), kernel);
-  //General::showImage(square);
-  // convert the image to  1d vector and rescale the value in range between (0, 1)
-  // 0 is white, 1 is black
-  vector<float> input_feature;
-  for (int r = 0; r < square.rows; r++)
-    for (int c = 0; c < square.cols; c++) {
-      input_feature.push_back((255.0 - square.at<uchar>(r, c)) / 255.0);
+    vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<
+        Vec<uchar, 1> >(crop_img, 0, 0);
+    sort(block_list.begin(), block_list.end(), CompBlockAsSize());
+    double averag = 0;
+    for (int i = 0; i < block_list.size(); i++)
+    {
+         averag += block_list[i].size();
     }
-  // send the feature vector to the neutral network
-  if (!single_img_func)
-    exit(-2);
-  if (PyCallable_Check(single_img_func)) {
-    PyObject* pParm_tuple = PyTuple_New(input_feature.size());
-    for (int i = 0; i < input_feature.size(); i++) {
-      PyObject* pValue = Py_BuildValue("f", input_feature[i]);
-      if (!pValue) {
-        PyErr_Print();
-        return;
-      }
-      PyTuple_SetItem(pParm_tuple, i, pValue);
+    averag /= block_list.size();
+    for (auto block : block_list)
+    {
+        if (block.size() > averag * 0.3)
+        {
+            ResultUnit new_ru;
+            Rect2i rect = AlgorithmUtil::getBoundingBox(block);
+            new_ru.bounding_box[0] = cv::Point2i(ru.bounding_box[0].x +rect.x, ru.bounding_box[0].y + rect.y);
+            new_ru.bounding_box[1] = cv::Point2i(new_ru.bounding_box[0].x + rect.width - 1, new_ru.bounding_box[0].y + rect.height -1 );
+            split_boxes.push_back(new_ru);
+        }
     }
-    PyObject*ret_list = PyObject_CallObject(single_img_func, pParm_tuple);
-    //printf("here3");
-    int target_id = 0;
-    for (int i = 0; i < PyTuple_GET_SIZE(ret_list); i++) {
-      PyObject* value = PyTuple_GetItem(ret_list, i);
-      float item_value = 0;
-      if (i == 0) {
-        float characer_id;
-        PyArg_Parse(value, "f", &characer_id);
-        result.content = dict[int(characer_id + 1e-6)];
-      } else if (i - 1 == target_id) {
-        PyArg_Parse(value, "f", &item_value);
-        result.confidence = item_value * 100;
-      }
-      //result.candidates.push_back(pair(valueint))
+    // if box overlap will not split
+    if (split_boxes.size() >= 2 && ResultUnit::isOverlap(split_boxes[0], split_boxes[1]))
+    {
+      split_boxes.clear();
+      split_boxes.push_back(ru);
+      return;
     }
-    printf("%s %f\n", result.content.c_str(), result.confidence);
-  }
-}
-
-// recoginition the image with CNN
-// param: img_list is a single image
-void WapOcrApi::recognitionWithCNN(const vector<cv::Mat> &img_list,
-                                   vector<ResultUnit> &result) {
-  vector<float> input_feature;
-  result.resize(img_list.size());
-  Size img_size(28, 28);
-  for (auto img : img_list) {
-    int square_size = max(img.rows, img.cols);
-    Mat square(square_size, square_size, CV_8UC1, 255);
-    int offset_x = (square_size - img.cols) / 2;
-    int offset_y = (square_size - img.rows) / 2;
-    img.copyTo(square(cv::Rect(offset_x, offset_y, img.cols, img.rows)));
-    cv::resize(square, square, img_size);
-    // sharpen
-    Mat kernel(3, 3, CV_32F, Scalar(-1)), sharp_result;
-    kernel.at<float>(1, 1) = 9;
-    // for (int i = 0; i < 3; i++)
-    filter2D(square, square, square.depth(), kernel);
-    //General::showImage(square);
-    // convert the image to  1d vector and rescale the value in range between (0, 1)
-    // 0 is white, 1 is black
-
-    for (int r = 0; r < square.rows; r++)
-      for (int c = 0; c < square.cols; c++) {
-        input_feature.push_back((255.0 - square.at<uchar>(r, c)) / 255.0);
+    if (split_boxes.size() > 2)
+    {
+      //cout << "here" << endl;
+       // do not split it
+      cv::Point2i centera = (split_boxes[0].bounding_box[0] + split_boxes[0].bounding_box[1]) / 2;
+      cv::Point2i centerb = (split_boxes[1].bounding_box[0] + split_boxes[1].bounding_box[1]) / 2;
+      // if blocks are too far away save the largest
+      cv::Vec2f dis(centera.x - centerb.x, centera.y - centerb.y);
+      if (sqrt(dis[0] * dis[0] + dis[1] * dis[1]) >max(split_boxes[0].getHeight(), split_boxes[1].getHeight())*1.2)
+      {
+        ResultUnit largest = split_boxes[0];
+        split_boxes.clear();
+        split_boxes.push_back(largest);
       }
-  }
-  // send the feature vector to the neutral network
-  if (!multi_img_func)
-    exit(-2);
-  if (PyCallable_Check(multi_img_func)) {
-    PyObject* pParm_tuple = PyTuple_New(input_feature.size() + 1);
-
-    for (int i = 0; i < input_feature.size(); i++) {
-      PyObject* pValue = Py_BuildValue("f", input_feature[i]);
-      if (!pValue) {
-        PyErr_Print();
-        return;
+      else
+      {
+        split_boxes.clear();
+        split_boxes.push_back(ru);
       }
-      PyTuple_SetItem(pParm_tuple, i, pValue);
     }
-    // input the number of image
-    PyTuple_SetItem(pParm_tuple, input_feature.size(), Py_BuildValue("i", img_size.height * img_size.width));
-    PyObject*ret_list = PyObject_CallObject(multi_img_func, pParm_tuple);
-    //printf("here3");
-    int target_id = 0;
-    for (int i = 0; i < PyTuple_GET_SIZE(ret_list); i++) {
-      PyObject* value = PyTuple_GetItem(ret_list, i);
-      float item_value = 0;
-      if ((i % 2) == 0) {
-        float characer_id;
-        PyArg_Parse(value, "f", &characer_id);
-        result[i/2].content = dict[int(characer_id + 1e-6)];
-      } else{
-        PyArg_Parse(value, "f", &item_value);
-        result[i/2].confidence = item_value * 100;
+    else if (split_boxes.size() == 2)
+    {
+      //cout << "here2" << endl;
+       // only split "left-right structure"
+      cv::Point2i centera = (split_boxes[0].bounding_box[0] + split_boxes[0].bounding_box[1]) / 2;
+      cv::Point2i centerb = (split_boxes[1].bounding_box[0] + split_boxes[1].bounding_box[1]) / 2;
+      cv::Vec2f dir(centera.x - centerb.x, centera.y - centerb.y);
+      double dis = sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
+      normalize(dir, dir);
+      cv::Vec2f hori( 1.0, 0);
+      if (abs(dir[0]*hori[0]) < 0.5 ) // up-down structure
+      {
+        if (dis > max(split_boxes[0].getHeight(), split_boxes[1].getHeight())*1.2)
+         {
+                  ResultUnit largest = split_boxes[0];
+                  split_boxes.clear();
+                  split_boxes.push_back(largest);
+         }
+        else
+        {
+                 split_boxes.clear();
+                 split_boxes.push_back(ru);
+        }
       }
-      //result.candidates.push_back(pair(valueint))
+      else  // left-right structrue
+      {
+         if (dis < max(split_boxes[0].getWidth(), split_boxes[1].getWidth()))
+         {
+                     split_boxes.clear();
+                     split_boxes.push_back(ru);
+         }
+      }
     }
-    //for (auto ru : result)
-   //    printf("%s %f\n", ru.content.c_str(), ru.confidence);
-  }
+    sort(split_boxes.begin(), split_boxes.end(), CompX());
 }
 //
 std::string WapOcrApi::recognitionToTextByCNN(const cv::Mat &img,
                                               const std::string lang,
                                               const int cutLevel,
                                               OcrDetailResult* bboxes_result) {
-  if (pMod == NULL) {
-    init();
-  }
-  src_img = img;
+  src_img = (Mat*)&img;
 
   // first pass to recognize all the single connect component
-   getBBox(img, bboxes_result);
-  //recognitionWithTesseract(img, lang, cutLevel, bboxes_result);
-  optimize(bboxes_result);
+  // getBBox(img, bboxes_result);
+  recognitionWithTesseract(img, lang, cutLevel, bboxes_result);
+  //return "";
+  //optimize(bboxes_result);
   vector<Mat> img_list;
+  vector<ResultUnit> newBoxes;
   for (int i = 0; i < (*bboxes_result).getResultSize(); i++) {
-    ResultUnit &ru = (*bboxes_result).getResultAt(i);
-    // cut the single character from the img
-    cv::Range row_range(ru.bounding_box[0].y, ru.bounding_box[1].y);
-    cv::Range col_range(ru.bounding_box[0].x, ru.bounding_box[1].x);
-    cv::Mat character_img = Mat(img, row_range, col_range);
-    img_list.push_back(character_img);
+    ResultUnit ru = (*bboxes_result).getResultAt(i);
+    vector<ResultUnit> split_boxes;
+    splitBox(img, ru, split_boxes);
+    (*bboxes_result).setResultAt(i, ru);
+    for (ResultUnit new_ru : split_boxes)
+      newBoxes.push_back(new_ru);
+    //img_list.push_back(character_img);
     //break;
   }
-  vector<ResultUnit> ru_list = bboxes_result->getResult();
-  recognitionWithCNN(img_list, ru_list);
-  bboxes_result->setResult(ru_list);
+  bboxes_result->setResult(newBoxes);
 
 
   // second pass try to optimize the box
-  /*optimize(bboxes_result);
+  //optimize(bboxes_result);
+  // spilt each box
+
   img_list.clear();
   for (int i = 0; i < (*bboxes_result).getResultSize(); i++) {
-      ResultUnit &ru = (*bboxes_result).getResultAt(i);
+      ResultUnit ru = (*bboxes_result).getResultAt(i);
       // cut the single character from the img
-      cv::Range row_range(ru.bounding_box[0].y, ru.bounding_box[1].y);
-      cv::Range col_range(ru.bounding_box[0].x, ru.bounding_box[1].x);
-      cv::Mat character_img = Mat(img, row_range, col_range);
+      Mat character_img;
+      cutImage(img, character_img, ru.bounding_box[0].x, ru.bounding_box[0].y, ru.getWidth(), ru.getHeight());
       img_list.push_back(character_img);
       //break;
-    }
+  }
 
-  ru_list = bboxes_result->getResult();
-  recognitionWithCNN(img_list, ru_list);
-  bboxes_result->setResult(ru_list);*/
+  vector<ResultUnit> ru_list = bboxes_result->getResult();
+  RecognitionByCNN::recognition(img_list, ru_list);
+  bboxes_result->setResult(ru_list);
   return bboxes_result->toString();
 }

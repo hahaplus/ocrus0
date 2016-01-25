@@ -58,6 +58,20 @@ public:
 	  imshow(window_name, src);
 	  waitKey();
 	}
+	static void cutImage(const Mat &src, Mat &dst, int x, int y, int width,
+	                         int height) {
+
+	  if (x+width >= src.cols)
+	    width = src.cols - 1 - x;
+	  if (y+height >= src.rows)
+	    height = src.rows - 1 - y;
+	  dst = Mat(src, cv::Rect2i(x, y, width, height));
+
+	  //printf( "%d %d\n", width, height);
+	  //namedWindow("xx",CV_WINDOW_NORMAL);
+	  //imshow("xx", dst);
+	  //waitKey();
+	}
 private:
 	Mat _image;
 };

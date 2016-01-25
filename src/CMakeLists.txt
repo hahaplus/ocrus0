@@ -10,9 +10,10 @@ FILE(GLOB SRC api/*.cpp
               preprocessing/*/*.cc
               util/*.cpp
               binarization/*.cc
-              
+              segmentation/*.cpp
               textDetect/*.cpp
-              recognition/recognition.cc)
+              recognition/recognition.cc
+              recognition/*.cpp)
 
 add_executable(ImageProcess main.cpp ${SRC})
 target_link_libraries(ImageProcess ${LIBS})

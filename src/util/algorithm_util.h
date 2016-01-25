@@ -39,6 +39,8 @@ using namespace cv;
     */
    template <typename T>
    static T getAverageValue(vector<T>&);
+   static cv::Rect2i getBoundingBox(vector<pair<int,int> > &block);
+
 private:
   static int connect_threshold;
 
@@ -120,4 +122,24 @@ T AlgorithmUtil::getAverageValue(vector<T> &list)
     res /= list.size();
     return res;
 }
+
+// get bounding box
+// attention the points are (row, col)
+
+// compare two block as their size
+// descend
+class CompBlockAsSize {
+ public:
+  bool operator ()(const vector<pair<int,int> >& a, const vector<pair<int,int> >& b) {
+    return a.size() > b.size();
+  }
+};
+// compare two block as their postion
+// from left to right
+class CompBlockAsPostion {
+ public:
+  bool operator ()(const vector<pair<int,int> >& a, const vector<pair<int,int> >& b) {
+    return a.size() > b.size();
+  }
+};
 #endif /* SRC_UTIL_ALGORITHM_UTIL_H_ */

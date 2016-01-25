@@ -78,6 +78,7 @@ MONEY_PREFIX_REPLACE_REG = {
     u'卒': u'￥',
     u'洋': u'￥',
     u'藥': u'￥',
+    u'薬': u'￥',
 }
 
 MONEY_PREFIX_REPLACE = dict(

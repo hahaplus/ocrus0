@@ -33,17 +33,11 @@ private:
 	/*
 	 * overlap ratio (0.0 ~ 1.0)to be judged as overlap
 	 * */
-	static void init();
+
 	static double epsX, epsY;
+	static cv::Mat* src_img;
 	static tesseract::TessBaseAPI *api;
 	// the dictionary for each character
-	static vector<string> dict;
-	// for the deep learning network
-	static PyObject* pMod;
-	static PyObject* single_img_func;
-	static PyObject* multi_img_func;
-	static PyObject* pDict;
-	static cv::Mat src_img;
 	// merge and split
 	static void getBBox(const cv::Mat &img, OcrDetailResult* odr); // get The bounding box of the character
 	static void optimize(OcrDetailResult*);
@@ -61,18 +55,10 @@ private:
 	static void writeCharacter(const cv::Mat &src, cv::Mat &dst, ResultUnit unit, int x, int y);
 	// recognition with tesseract
   static void recognitionWithTesseract(const cv::Mat &img, const std::string lang = "eng+jpn+chi_sim", const int cutLevel = 0, OcrDetailResult* result = NULL);
-  // recognition with conventional network
-  // param: img is a matrix of a single character
-  // output-param: result is the recognition result of the single character
-  static void recognitionWithCNN(const cv::Mat &img, ResultUnit &result);
-  // param: img_list is a list of many single characters
-  // output-param: result is the recognition result of the character list
-  static void recognitionWithCNN(const vector<cv::Mat> &img_list, vector<ResultUnit> &result);
 
-  // dict path
-  static string dict_path;
-  // load dict
-  static void loadDict();
+
+  // split the box to fit one character in one box without noise point
+  static void splitBox(const cv::Mat &img, ResultUnit &ru, vector<ResultUnit> &split_boxes);
 };
 
 #endif /* SRC_API_WAP_OCR_API_H_ */

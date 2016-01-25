@@ -14,14 +14,14 @@
 #include <algorithm>
 
 #include <opencv2/opencv.hpp>
-#include <tesseract/baseapi.h>
-#include <tesseract/ltrresultiterator.h>
+//#include <tesseract/baseapi.h>
+//#include <tesseract/ltrresultiterator.h>
 
 #include "dto/ocr_result_dto.h"
 
 namespace ocrus {
 
-void ocrPrintBoundingBox(const cv::Mat& src,
+/*void ocrPrintBoundingBox(const cv::Mat& src,
                          tesseract::PageSegMode page_seg_mode,
                          tesseract::PageIteratorLevel level,
                          const std::string& lang) {
@@ -102,7 +102,7 @@ void ocrPrintCandidates(const cv::Mat& gray_img, const std::string& lang) {
   }
   api.End();
 }
-
+*/
 void drawOcrResult(const cv::Mat &in_img, const OcrDetailResult &result,
                    cv::Mat *out_img) {
   const char *path_text = "/tmp/temp.txt";

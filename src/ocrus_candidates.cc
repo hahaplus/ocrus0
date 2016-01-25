@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
   // DenoiseLinePoint::removeNoise(binarize_img);
 
-  ocrus::ocrPrintCandidates(binarize_img, "jpn+jpnRSN");
+  //ocrus::ocrPrintCandidates(binarize_img, "jpn+jpnRSN");
 
   cv::imwrite(path_img + "_gray.png", gray_img);
 

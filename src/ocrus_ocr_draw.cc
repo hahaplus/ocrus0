@@ -7,7 +7,8 @@
  */
 
 #include "recognition/recognition.h"
-#include "workflow/processor.h"
+//#include "workflow/processor.h"
+#include "binarization/wap_binarize.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
@@ -34,12 +35,12 @@ int main(int argc, char *argv[]) {
   cv::Mat gray_img, binarize_img, out_img;
 
   gray_img = cv::imread(path_img, CV_LOAD_IMAGE_GRAYSCALE);
-  Binarize::binarize(gray_img, binarize_img);
+  ocrus::binarize(gray_img, binarize_img);
 
   cv::Mat in_img = binarize_img.clone();
 
   OcrDetailResult result;
-  WapOcrApi::recognitionToText(binarize_img, "eng+jpn", cut_level, &result);
+ // WapOcrApi::recognitionToText(binarize_img, "eng+jpn", cut_level, &result);
 
   ocrus::drawOcrResult(in_img, result, &out_img);
   cv::imwrite(path_out_img, out_img);

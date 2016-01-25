@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 
   //Enhancement::enhancementAndBinarize(gray_img, binarize_img, 0);
 
-  ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "jpn+jpnRSN");
+  //ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "jpn+jpnRSN");
   //ocrus::ocrPrintBoundingBox(binarize_img, page_seg_mode, level_, "chi_sim+eng");
 
   cv::imwrite(path_img + "_gray.png", gray_img);

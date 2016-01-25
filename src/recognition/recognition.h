@@ -12,7 +12,7 @@
 #include <string>
 
 #include <opencv2/opencv.hpp>
-#include <tesseract/baseapi.h>
+//#include <tesseract/baseapi.h>
 
 #include "dto/ocr_result_dto.h"
 
@@ -29,7 +29,7 @@ namespace ocrus {
  * @param level This value can be tesseract::RIL_WORD or tesseract::RIL_SYMBOL
  * @param lang Language setting that tesseract accepts, eg. eng+jpn
  */
-void ocrPrintBoundingBox(const cv::Mat& src,
+/*void ocrPrintBoundingBox(const cv::Mat& src,
                          tesseract::PageSegMode page_seg_mode,
                          tesseract::PageIteratorLevel level,
                          const std::string& lang);
@@ -41,7 +41,7 @@ void ocrPrintBoundingBox(const cv::Mat& src,
  * @param gray_image: A grayscale image
  * @param lang: Language setting that tesseract accepts, eg. eng+jpn
  */
-void ocrPrintCandidates(const cv::Mat& gray_img, const std::string& lang);
+//void ocrPrintCandidates(const cv::Mat& gray_img, const std::string& lang);
 
 /**
  * Draw the OCR result to image
@@ -50,6 +50,7 @@ void ocrPrintCandidates(const cv::Mat& gray_img, const std::string& lang);
  * @param result OCR result
  * @param out_img Image with result drawn on
  */
+
 void drawOcrResult(const cv::Mat &src_img, const OcrDetailResult& result,
                    cv::Mat *out_img);
 

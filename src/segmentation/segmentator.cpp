@@ -42,7 +42,7 @@ void Segmentator::filterBigBox(cv::Mat &img, OcrDetailResult* seg_result) {
             unit_set.insert(a);
         }
       }
-    if (unit_set.size() < 4) {
+    if (unit_set.size() < 5) {
       new_result.push_back(ru);
     }
   }
@@ -51,6 +51,7 @@ void Segmentator::filterBigBox(cv::Mat &img, OcrDetailResult* seg_result) {
 void Segmentator::mergeSmallBox(cv::Mat &img, OcrDetailResult* seg_result)
 {
    // TODO
+
 }
 void Segmentator::segmentImg(cv::Mat &image, OcrDetailResult* seg_result) {
   vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<

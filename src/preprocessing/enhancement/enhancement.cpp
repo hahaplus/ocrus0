@@ -139,7 +139,7 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst,
   IplImage gray_output = *cvCreateImage(cvGetSize(&gray_input), 8, 1);
   imageStretchByHistogram(&gray_input, &gray_output);
   Mat gray_img = cv::cvarrToMat(&gray_output);
-  //for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++)
   GaussianBlur(gray_img, gray_img, Size(3, 3), 0, 0);
   //bilateralFilter(gray_img, dst, 10, 40, 40);
   // gray_img = dst;

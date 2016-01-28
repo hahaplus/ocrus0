@@ -2,7 +2,7 @@ import network3
 from network3 import *
 import numpy
 import json
-mini_batch_size = 50
+mini_batch_size = 100
 net = Network([
     ConvPoolLayer(image_shape=(mini_batch_size, 1, 28, 28),
                   filter_shape=(20, 1, 5, 5),

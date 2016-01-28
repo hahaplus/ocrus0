@@ -64,6 +64,30 @@ class ResultUnit {
     }
     return b.first <= a.second;
   }
+  static double getOverlapArea(ResultUnit a, ResultUnit b)
+  {
+     pair<int, int> ax(a.bounding_box[0].x, a.bounding_box[1].x);
+     pair<int, int> ay(a.bounding_box[0].y, a.bounding_box[1].y);
+     pair<int, int> bx(b.bounding_box[0].x, b.bounding_box[1].x);
+     pair<int, int> by(b.bounding_box[0].y, b.bounding_box[1].y);
+
+     pair<int, int> overlapx, overlapy;
+     overlapx.first = max(ax.first, bx.first);
+     overlapx.second = min(ax.second, bx.second);
+
+     overlapy.first = max(ay.first, by.first);
+     overlapy.second = min(ay.second, by.second);
+
+     if (overlapx.first > overlapx.second || overlapy.first > overlapy.second)
+       return 0;
+     return (overlapx.second - overlapx.first + 1)*(overlapy.second - overlapy.first + 1);
+  }
+  static ResultUnit getMergeUnit(ResultUnit a, ResultUnit b)
+  {
+     vector<ResultUnit> unit_list;
+     unit_list.push_back(a), unit_list.push_back(b);
+     return getMergeUnit(unit_list);
+  }
   static ResultUnit getMergeUnit(vector<ResultUnit> &segment_list)
   {
       ResultUnit res;
@@ -132,6 +156,9 @@ class OcrDetailResult {
     }
     return res;
   }
+  static void mergeOcrResult(cv::Mat &main_img, cv::Mat assit_img,
+                             OcrDetailResult* main_result,
+                             OcrDetailResult* assit_result);
 };
 
 //compare as x

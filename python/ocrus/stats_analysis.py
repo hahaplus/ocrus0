@@ -60,49 +60,76 @@ def bbox_almost_overlap(bbox1, bbox2, percent):
                                              bbox_area(bbox2)) > percent
 
 
-def calc_correct_lines(ocr_lines_gt, ocr_lines):
+def calc_correct_recognized_lines(ocr_lines_gt, ocr_lines):
     '''
-    Return the number of correct lines in ocr_lines by comparing to
-         the ground truth ocr_lines_gt
+    Compare ocr_lines_gt and ocr_lines,
+        and set recognized in ocr_lines_gt, set correct in ocr_lines
 
     @param ocr_lines_gt: Ground truth OCR lines
     @param ocr_lines: OCR lines
-    @return: An integer
+    @return: (number_recognized, number_correct)
     '''
-    num_correct_lines = 0
-    for ocr_line_gt in ocr_lines_gt:
+    num_recognized = calc_ok_in_lines1(ocr_lines_gt, ocr_lines)
+    num_correct = calc_ok_in_lines1(ocr_lines, ocr_lines_gt)
 
-        line_ok = False
+    return num_recognized, num_correct
 
-        for ocr_line in ocr_lines:
-            if ocr_line['type'] != ocr_line_gt['type'] or \
-                    len(ocr_line['chars']) != len(ocr_line_gt['chars']):
-                continue
 
-            texts = [ch['text'] for ch in ocr_line['chars']]
-            texts_gt = [ch['text'] for ch in ocr_line_gt['chars']]
-            if texts != texts_gt:
-                continue
+def calc_ok_in_lines1(ocr_lines1, ocr_lines2):
+    '''
+    Set ok in ocr_lines1 by giving ocr_lines2,
+        if ocr_line1 is ok in ocr_lines2, then ocr_line1['ok'] is True
 
-            box_ok = True
-            for pos in range(len(ocr_line['chars'])):
-                box = ocr_line['chars'][pos]['bounding_box']
-                box_gt = ocr_line_gt['chars'][pos]['bounding_box']
-                if not bbox_almost_overlap(box, box_gt, OVERLAP_PERCENT):
-                    box_ok = False
-                    break
+    @param ocr_lines1: OCR lines
+    @param ocr_lines2: OCR lines
+    @return: num_ok
+    '''
+    num_ok = 0
+    for ocr_line1 in ocr_lines1:
 
-            if box_ok:
-                line_ok = True
-                break
+        line_ok = ok_in_ocr_lines2(ocr_line1, ocr_lines2)
 
         if line_ok:
-            num_correct_lines += 1
-            ocr_line_gt['recognized'] = True
+            num_ok += 1
+            ocr_line1['ok'] = True
         else:
-            ocr_line_gt['recognized'] = False
+            ocr_line1['ok'] = False
+    return num_ok
 
-    return num_correct_lines
+
+def ok_in_ocr_lines2(ocr_line1, ocr_lines2):
+    '''
+    Return True if ocr_line1 exists in ocr_lines2, otherwise Fase
+
+    @param ocr_line1: OCR line
+    @param ocr_lines2: OCR lines
+    @return: A bool value
+    '''
+    line_ok = False
+
+    for ocr_line2 in ocr_lines2:
+        if ocr_line2['type'] != ocr_line1['type'] or \
+                len(ocr_line2['chars']) != len(ocr_line1['chars']):
+            continue
+
+        texts = [ch['text'] for ch in ocr_line2['chars']]
+        texts_gt = [ch['text'] for ch in ocr_line1['chars']]
+        if texts != texts_gt:
+            continue
+
+        box_ok = True
+        for pos in range(len(ocr_line2['chars'])):
+            box = ocr_line2['chars'][pos]['bounding_box']
+            box1 = ocr_line1['chars'][pos]['bounding_box']
+            if not bbox_almost_overlap(box, box1, OVERLAP_PERCENT):
+                box_ok = False
+                break
+
+        if box_ok:
+            line_ok = True
+            break
+
+    return line_ok
 
 
 def pretty_print_stats(stats, f=sys.stdout):

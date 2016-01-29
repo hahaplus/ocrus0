@@ -13,7 +13,9 @@ FILE(GLOB SRC api/*.cpp
               segmentation/*.cpp
               textDetect/*.cpp
               recognition/recognition.cc
-              recognition/*.cpp)
+              recognition/*.cpp
+              image_similarity/*.cpp
+              dto/*.cpp)
 
 add_executable(ImageProcess main.cpp ${SRC})
 target_link_libraries(ImageProcess ${LIBS})

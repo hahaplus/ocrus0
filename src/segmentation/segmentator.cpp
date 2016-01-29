@@ -55,35 +55,35 @@ void Segmentator::filterBigBox(cv::Mat &img, OcrDetailResult* seg_result) {
 void Segmentator::mergeSmallBox(cv::Mat &img, OcrDetailResult* seg_result) {
   // TODO
   int iterate = 2;
-  while (iterate--){
-  vector<bool> is_delete(seg_result->getResultSize(), false);
-  for (int i = 0; i < seg_result->getResultSize(); i++)
-    for (int j = 0; j < seg_result->getResultSize(); j++) {
-      if (i == j)
-        continue;
+  while (iterate--) {
+    vector<bool> is_delete(seg_result->getResultSize(), false);
+    for (int i = 0; i < seg_result->getResultSize(); i++)
+      for (int j = 0; j < seg_result->getResultSize(); j++) {
+        if (i == j)
+          continue;
 
-      ResultUnit unit_i = seg_result->getResultAt(i);
-      ResultUnit unit_j = seg_result->getResultAt(j);
-      if (unit_i.getHeight() * unit_i.getWidth()
-          < unit_j.getHeight() * unit_j.getWidth())
-        continue;
-      double overlap_area = ResultUnit::getOverlapArea(unit_i, unit_j);
-      if (overlap_area / (unit_j.getWidth() * unit_j.getHeight()) >= 0.4) {
-        is_delete[j] = true;
-        ResultUnit merge_one = ResultUnit::getMergeUnit(unit_i, unit_j);
-        merge_one.confidence = unit_i.confidence;
-        merge_one.content = unit_i.content;
-        seg_result->setResultAt(i, merge_one);
+        ResultUnit unit_i = seg_result->getResultAt(i);
+        ResultUnit unit_j = seg_result->getResultAt(j);
+        if (unit_i.getHeight() * unit_i.getWidth()
+            < unit_j.getHeight() * unit_j.getWidth())
+          continue;
+        double overlap_area = ResultUnit::getOverlapArea(unit_i, unit_j);
+        if (overlap_area / (unit_j.getWidth() * unit_j.getHeight()) > 0.3) {
+          is_delete[j] = true;
+          ResultUnit merge_one = ResultUnit::getMergeUnit(unit_i, unit_j);
+          merge_one.confidence = unit_i.confidence;
+          merge_one.content = unit_i.content;
+          seg_result->setResultAt(i, merge_one);
+        }
+      }
+    vector<ResultUnit> new_result;
+    for (int i = 0; i < seg_result->getResultSize(); i++) {
+      if (!is_delete[i]) {
+        new_result.push_back(seg_result->getResultAt(i));
       }
     }
-  vector<ResultUnit> new_result;
-  for (int i = 0; i < seg_result->getResultSize(); i++) {
-    if (!is_delete[i]) {
-      new_result.push_back(seg_result->getResultAt(i));
-    }
-  }
 
-  seg_result->setResult(new_result);
+    seg_result->setResult(new_result);
   }
 }
 void Segmentator::segmentImg(cv::Mat &image, OcrDetailResult* seg_result) {
@@ -270,18 +270,29 @@ void Segmentator::handleEachRowInit(Mat &image,
   result_map.resize(row_map.size());
   set<string> do_not_handle;
   set<string> do_not_merge;
-  do_not_merge.insert("1");do_not_merge.insert("2");
-  do_not_merge.insert("3");do_not_merge.insert("4");
-  do_not_merge.insert("5");do_not_merge.insert("6");
-  do_not_merge.insert("7");do_not_merge.insert("8");
-  do_not_merge.insert("9");do_not_merge.insert("0");
-  do_not_merge.insert("年");do_not_merge.insert("月");
-  do_not_merge.insert("日");do_not_merge.insert("￥");
-  do_not_merge.insert("円");do_not_merge.insert("o");
+  do_not_merge.insert("1");
+  do_not_merge.insert("2");
+  do_not_merge.insert("3");
+  do_not_merge.insert("4");
+  do_not_merge.insert("5");
+  do_not_merge.insert("6");
+  do_not_merge.insert("7");
+  do_not_merge.insert("8");
+  do_not_merge.insert("9");
+  do_not_merge.insert("0");
+  do_not_merge.insert("年");
+  do_not_merge.insert("月");
+  do_not_merge.insert("日");
+  do_not_merge.insert("￥");
+  do_not_merge.insert("円");
+  do_not_merge.insert("o");
   do_not_merge.insert("。");
-  do_not_handle.insert("-");
-  do_not_handle.insert("一");
-  do_not_handle.insert(".");
+  do_not_merge.insert("O");
+  do_not_merge.insert("O");
+  do_not_merge.insert("ヨ");
+  /*do_not_handle.insert("-");
+   do_not_handle.insert("一");
+   do_not_handle.insert(".");*/
   vector<Mat> imagelist;
   for (auto row : row_map) {
     vector<ResultUnit> &rs = row.second;
@@ -311,7 +322,8 @@ void Segmentator::handleEachRowInit(Mat &image,
     vector<ResultUnit> &rs = row.second;
     // get histogram
     vector<int> x_histogram(image.cols, 0);
-    double average_width = 0;
+    double average_width = 0, average_height = 0;
+    double y_center = 0;
     for (ResultUnit &ru : rs) {
       for (int i = ru.bounding_box[0].y; i <= ru.bounding_box[1].y; i++)
         for (int j = ru.bounding_box[0].x; j <= ru.bounding_box[1].x; j++) {
@@ -320,8 +332,14 @@ void Segmentator::handleEachRowInit(Mat &image,
           }
         }
       average_width += ru.getWidth();
+      average_height += ru.getHeight();
     }
     average_width /= rs.size();
+    average_height /= rs.size();
+    for (ResultUnit &ru : rs) {
+      y_center += (ru.bounding_box[0].y + ru.bounding_box[1].y) / 2.0;
+    }
+    y_center /= rs.size();
     vector<bool> is_num(rs.size(), false);
     vector<bool> cant_merge(rs.size(), false);
     for (int size = 1; size <= 4; size++) {
@@ -331,10 +349,33 @@ void Segmentator::handleEachRowInit(Mat &image,
               != string::npos) {
             is_num[i] = true;
           }
-          if (do_not_merge.count(result[req_cnt + i].content))
-          {
+          if (do_not_merge.count(result[req_cnt + i].content)) {
             cant_merge[i] = true;
             result[req_cnt + i].confidence = 100;
+          }
+
+          // remove noise '-'
+          if (result[req_cnt + i].content == "-"
+              || result[req_cnt + i].content == "'"
+              || result[req_cnt + i].content == "I") {
+            if (rs.size() == 1)
+            {
+              result[req_cnt + i].content ="";
+              continue;
+            }
+            double unit_center = (rs[i].bounding_box[0].y
+                + rs[i].bounding_box[1].y) / 2.0;
+            cout << result[req_cnt + i].content << endl;
+            result[req_cnt + i].content ="";
+            ResultUnit neighbour_unit =
+            (i == (rs.size() - 1)) ?
+                rs[i - 1] : rs[i + 1];
+
+            double neighbour_center = (neighbour_unit.bounding_box[0].y
+                +neighbour_unit.bounding_box[1].y) / 2.0;
+            if (abs(unit_center - neighbour_center) >  neighbour_unit.getHeight() * 0.3) {
+              result[req_cnt + i].content = "";
+            }
           }
         }
       }
@@ -343,54 +384,55 @@ void Segmentator::handleEachRowInit(Mat &image,
         // get the largest width of the whitespace area
         int white_cnt = 0, largest_cnt = 0;
         if (size > 1)
-        for (int j = rs[i].bounding_box[0].x;
-            j <= rs[i + size - 1].bounding_box[1].x; j++) {
-          if (x_histogram[j] == 0) {
-            white_cnt++;
-          } else {
-            largest_cnt = max(white_cnt, largest_cnt);
-            white_cnt = 0;
+          for (int j = rs[i].bounding_box[0].x;
+              j <= rs[i + size - 1].bounding_box[1].x; j++) {
+            if (x_histogram[j] == 0) {
+              white_cnt++;
+            } else {
+              largest_cnt = max(white_cnt, largest_cnt);
+              white_cnt = 0;
+            }
           }
-        }
-        /*
+
          vector<ResultUnit> segment;
          for ( int k = i; k < i + size; k++)
          {
          segment.push_back(rs[k]);
          }
          ResultUnit merge_ru = ResultUnit::getMergeUnit(segment);
-         */
+
         // do not merge two numbers
         /*int num_cnt = 0;
-        bool merge_ok = true;
-        for (int k = i; k < i + size; k++) {
-           if (is_num[k])
-             num_cnt++;
-           if (cant_merge[k])
-             merge_ok = false;
-        }
-        if (num_cnt >= 2 || !merge_ok)
-        {
-           result[req_cnt].confidence = 0;
-        }
-        else if (result[req_cnt].confidence > 50
-            && !do_not_handle.count(result[req_cnt].content))
-          result[req_cnt].confidence = getSimilarity(imagelist[req_cnt],
-                                                     result[req_cnt].content);
+         bool merge_ok = true;
+         for (int k = i; k < i + size; k++) {
+         if (is_num[k])
+         num_cnt++;
+         if (cant_merge[k])
+         merge_ok = false;
+         }
+         if (num_cnt >= 2 || !merge_ok)
+         {
+         result[req_cnt].confidence = 0;
+         }
+         else if (result[req_cnt].confidence > 50
+         && !do_not_handle.count(result[req_cnt].content))
+         result[req_cnt].confidence = getSimilarity(imagelist[req_cnt],
+         result[req_cnt].content);
 
-        double geometry_cost = largest_cnt / average_width * 50;
-        if (geometry_cost > 0)
-          result[req_cnt].confidence -= geometry_cost;
-        else
-          result[req_cnt].confidence += 10;*/
-        if (size > 1)
-        {
-          if (do_not_merge.count(result[req_cnt].content))
-          {
-           result[req_cnt].confidence = 100;
-          }
-          else
-          {
+         double geometry_cost = largest_cnt / average_width * 50;
+         if (geometry_cost > 0)
+         result[req_cnt].confidence -= geometry_cost;
+         else
+         result[req_cnt].confidence += 10;*/
+        if (size > 1) {
+          if (do_not_merge.count(result[req_cnt].content)) {
+            if (merge_ru.getWidth() / merge_ru.getHeight() > 1.4)
+            {
+              result[req_cnt].confidence = 0;
+            }
+            else
+            result[req_cnt].confidence = 100;
+          } else {
             result[req_cnt].confidence = 0;
           }
         }

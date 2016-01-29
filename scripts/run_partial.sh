@@ -10,6 +10,8 @@ PATH_RESULT="$2"
 
 mkdir -p "${PATH_RESULT}"
 
+PATH_RESULT=`realpath $PATH_RESULT`
+
 PATH_STATS=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats.json
 PATH_STATS_DATE=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_date.json
 PATH_STATS_MONEY=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_money.json
@@ -34,18 +36,22 @@ ocrus_calc_accuracy.py $PATH_IMAGE_LIST $PATH_STATS
 echo Accuracy results stored in $PATH_STATS
 
 echo Copying results ...
-rm -rf ${PATH_RESULT}/bad_lines
-mkdir -p ${PATH_RESULT}/bad_lines
-rm -rf ${PATH_RESULT}/bad
-mkdir -p ${PATH_RESULT}/bad
-rm -rf ${PATH_RESULT}/good
-mkdir -p ${PATH_RESULT}/good
+for tag in recall precision; do
+  for suffix in bad_lines bad good; do
+    rm -rf ${PATH_RESULT}/${tag}_${suffix}
+    mkdir -p ${PATH_RESULT}/${tag}_${suffix}
+  done
+done
+
 for PATH_IMG in `cat $PATH_IMAGE_LIST`
 do
   cp ${PATH_IMG}_symbol.* "$PATH_RESULT"
-  mv `dirname ${PATH_IMG}`/bad_lines/*.png ${PATH_RESULT}/bad_lines/ 2> /dev/null
-  mv `dirname ${PATH_IMG}`/bad/*_ocr_lines.* ${PATH_RESULT}/bad/ 2> /dev/null
-  mv `dirname ${PATH_IMG}`/good/*_ocr_lines.* ${PATH_RESULT}/good/ 2> /dev/null
+
+  for tag in recall precision; do
+    mv `dirname ${PATH_IMG}`/${tag}_bad_lines/*.png ${PATH_RESULT}/${tag}_bad_lines/ 2> /dev/null
+    mv `dirname ${PATH_IMG}`/${tag}_bad/*_ocr_lines.* ${PATH_RESULT}/${tag}_bad/ 2> /dev/null
+    mv `dirname ${PATH_IMG}`/${tag}_good/_ocr_lines.* ${PATH_RESULT}/${tag}_good/ 2> /dev/null
+  done
 done
 
 echo Exited

@@ -20,7 +20,7 @@ DIGITS_REPLACE_REG = {
     u'囗': u'0', u'D': u'0', u'ロ': u'0',
     # u'ー': u'1', u'一': u'1',
     u'ュ': u'1', u'エ': u'1', u'ェ': u'1', u'L': u'1', u'l': u'1', u'‡': u'1',
-    u'ユ': u'1', u'工': u'1', u'I': u'1', u'i': u'1',
+    u'ユ': u'1', u'工': u'1', u'I': u'1', u'i': u'1', u'\'': u'1',
     u'ら': u'5', u'ヲ': u'5', u's': u'5', u'S': u'5',
     u'フ': u'7',
     u'B': u'8',
@@ -157,7 +157,8 @@ def parse_line_v1(line):
         word: 'g';      conf: 61.91; bounding_box: 411,1778,431,1906;
 
     @param line: Line to parse
-    @return: A dict
+    @return: A dictif ()
+               {
     '''
     d = {'text': None, 'bounding_box': None, 'confidence': None}
     for seg in map(unicode.strip, line.split(';')):
@@ -184,7 +185,8 @@ def replace_by_table(s, table):
 
 
 def normalize_ocr_lines(path_ocr_lines):
-    '''
+    '''if ()
+               {
     Convert the rect in char to bounding_box
     @param path_ocr_lines: Path of ocr_lines
     '''
@@ -320,8 +322,8 @@ def good_minus_symbol(bbox_minus, bbox_yen):
 
     top_minus, bot_minus = bbox_minus[1], bbox_minus[3]
     return (w_yen * 0.6 < w_minus < w_yen * 1.7 and
-            mid_yen - w_yen / 3 < top_minus and
-            bot_minus < mid_yen + w_yen / 3)
+            mid_yen - w_yen / 3 <= top_minus and
+            bot_minus <= mid_yen + w_yen / 3)
 
 
 def to_ocr_lines(ocr_chars):
@@ -360,6 +362,11 @@ def to_ocr_lines(ocr_chars):
             ocr_chars[pos]['text'] = replaced_s[pos - start_pos]
             ocr_line['chars'].append(ocr_chars[pos])
         ocr_lines.append(ocr_line)
+
+    # Remove whitespace characters
+    for ocr_line in ocr_lines:
+        ocr_line['chars'] = [
+            ch for ch in ocr_line['chars'] if ch['text'].strip() != '']
 
     # Remove characters that are far away from key characters
     '''
@@ -402,7 +409,8 @@ def to_ocr_lines(ocr_chars):
                     break
                 pos_tail += 1
 
-            pos_head = max(0, pos_tail - 1)
+            pos_head = max(0, pos_min)
+            pos_head = min(pos_head, pos_tail - 1)
             while pos_head > 0:
                 normal_dist = float(sum(dists[pos_head:pos_tail])) / \
                     len(dists[pos_head:pos_tail])
@@ -435,11 +443,6 @@ def to_ocr_lines(ocr_chars):
             bbox_yen = ocr_chars[1]['bounding_box']
             if not good_minus_symbol(bbox_minus, bbox_yen):
                 del ocr_line['chars'][0]
-
-    # Remove whitespace characters
-    for ocr_line in ocr_lines:
-        ocr_line['chars'] = [
-            ch for ch in ocr_line['chars'] if ch['text'].strip() != '']
 
     return ocr_lines
 

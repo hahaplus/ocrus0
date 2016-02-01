@@ -137,6 +137,27 @@ void Segmentator::segmentImg(cv::Mat &image, OcrDetailResult* seg_result) {
   // seg_result->clear();
   seg_result->setResult(new_result);
   mergeSmallBox(image, seg_result);
+  //
+  // remove noise '-'
+  for (int i = 0; i < seg_result->getResultSize(); i++){
+    ResultUnit ru = seg_result->getResultAt(i);
+    if (ru.content == "-"
+           || ru.content == "'"
+           || ru.content == "I") {
+         double unit_center = (ru.bounding_box[0].y
+             + ru.bounding_box[1].y) / 2.0;
+         ResultUnit neighbour_unit =
+         (i == (seg_result->getResultSize() - 1)) ?
+             seg_result->getResultAt(i - 1) : seg_result->getResultAt(i + 1);
+
+         double neighbour_center = (neighbour_unit.bounding_box[0].y
+             +neighbour_unit.bounding_box[1].y) / 2.0;
+         if (abs(unit_center - neighbour_center) >  neighbour_unit.getHeight() * 0.3) {
+           ru.content = ",";
+           seg_result->setResultAt(i, ru);
+         }
+       }
+  }
 }
 void Segmentator::getRow(cv::Mat &image, OcrDetailResult* seg_result) {
   //vector<int> y_hist(image.rows, 0);
@@ -269,27 +290,26 @@ void Segmentator::handleEachRowInit(Mat &image,
   confidence.resize(row_map.size());
   result_map.resize(row_map.size());
   set<string> do_not_handle;
-  set<string> do_not_merge;
-  do_not_merge.insert("1");
-  do_not_merge.insert("2");
-  do_not_merge.insert("3");
-  do_not_merge.insert("4");
-  do_not_merge.insert("5");
-  do_not_merge.insert("6");
-  do_not_merge.insert("7");
-  do_not_merge.insert("8");
-  do_not_merge.insert("9");
-  do_not_merge.insert("0");
-  do_not_merge.insert("年");
-  do_not_merge.insert("月");
-  do_not_merge.insert("日");
-  do_not_merge.insert("￥");
-  do_not_merge.insert("円");
-  do_not_merge.insert("o");
-  do_not_merge.insert("。");
-  do_not_merge.insert("O");
-  do_not_merge.insert("O");
-  do_not_merge.insert("ヨ");
+  set<string> key_word;
+  key_word.insert("1");
+  key_word.insert("2");
+  key_word.insert("3");
+  key_word.insert("4");
+  key_word.insert("5");
+  key_word.insert("6");
+  key_word.insert("7");
+  key_word.insert("8");
+  key_word.insert("9");
+  key_word.insert("0");
+  key_word.insert("年");
+  key_word.insert("月");
+  key_word.insert("日");
+  key_word.insert("￥");
+  key_word.insert("円"); key_word.insert("内");
+  key_word.insert("o");
+  key_word.insert("。");
+  key_word.insert("O");
+  key_word.insert("ヨ");
   /*do_not_handle.insert("-");
    do_not_handle.insert("一");
    do_not_handle.insert(".");*/
@@ -341,7 +361,8 @@ void Segmentator::handleEachRowInit(Mat &image,
     }
     y_center /= rs.size();
     vector<bool> is_num(rs.size(), false);
-    vector<bool> cant_merge(rs.size(), false);
+    vector<bool> is_keyword(rs.size(), false);
+    vector<ResultUnit> single_units;
     for (int size = 1; size <= 4; size++) {
       if (size == 1) {
         for (int i = 0; i < (int) rs.size(); i++) {
@@ -349,47 +370,24 @@ void Segmentator::handleEachRowInit(Mat &image,
               != string::npos) {
             is_num[i] = true;
           }
-          if (do_not_merge.count(result[req_cnt + i].content)) {
-            cant_merge[i] = true;
+          if (key_word.count(result[req_cnt + i].content)) {
+            is_keyword[i] = true;
             result[req_cnt + i].confidence = 100;
           }
-
-          // remove noise '-'
-          if (result[req_cnt + i].content == "-"
-              || result[req_cnt + i].content == "'"
-              || result[req_cnt + i].content == "I") {
-            if (rs.size() == 1)
-            {
-              result[req_cnt + i].content ="";
-              continue;
-            }
-            double unit_center = (rs[i].bounding_box[0].y
-                + rs[i].bounding_box[1].y) / 2.0;
-            cout << result[req_cnt + i].content << endl;
-            result[req_cnt + i].content ="";
-            ResultUnit neighbour_unit =
-            (i == (rs.size() - 1)) ?
-                rs[i - 1] : rs[i + 1];
-
-            double neighbour_center = (neighbour_unit.bounding_box[0].y
-                +neighbour_unit.bounding_box[1].y) / 2.0;
-            if (abs(unit_center - neighbour_center) >  neighbour_unit.getHeight() * 0.3) {
-              result[req_cnt + i].content = "";
-            }
-          }
+          single_units.push_back(result[req_cnt + i]);
         }
       }
 
       for (int i = 0; i < (int) rs.size() - size + 1; i++) {
         // get the largest width of the whitespace area
-        int white_cnt = 0, largest_cnt = 0;
+        int white_cnt = 0, largest_white_cnt = 0;
         if (size > 1)
           for (int j = rs[i].bounding_box[0].x;
               j <= rs[i + size - 1].bounding_box[1].x; j++) {
             if (x_histogram[j] == 0) {
               white_cnt++;
             } else {
-              largest_cnt = max(white_cnt, largest_cnt);
+              largest_white_cnt = max(white_cnt, largest_white_cnt);
               white_cnt = 0;
             }
           }
@@ -402,39 +400,57 @@ void Segmentator::handleEachRowInit(Mat &image,
          ResultUnit merge_ru = ResultUnit::getMergeUnit(segment);
 
         // do not merge two numbers
-        /*int num_cnt = 0;
+         int keyword_cnt = 0;
          bool merge_ok = true;
          for (int k = i; k < i + size; k++) {
-         if (is_num[k])
-         num_cnt++;
-         if (cant_merge[k])
-         merge_ok = false;
+         if (is_keyword[k])
+           keyword_cnt++;
          }
-         if (num_cnt >= 2 || !merge_ok)
+         /*if (num_cnt >= 2 || !merge_ok)
          {
          result[req_cnt].confidence = 0;
          }
          else if (result[req_cnt].confidence > 50
          && !do_not_handle.count(result[req_cnt].content))
          result[req_cnt].confidence = getSimilarity(imagelist[req_cnt],
-         result[req_cnt].content);
+         result[req_cnt].content);*/
 
-         double geometry_cost = largest_cnt / average_width * 50;
+         /*double geometry_cost = largest_cnt / average_width * 50;
          if (geometry_cost > 0)
          result[req_cnt].confidence -= geometry_cost;
          else
          result[req_cnt].confidence += 10;*/
         if (size > 1) {
-          if (do_not_merge.count(result[req_cnt].content)) {
-            if (merge_ru.getWidth() / merge_ru.getHeight() > 1.4)
+          if (key_word.count(result[req_cnt].content)) {
+            // it's a number
+
+            if ((result[req_cnt].content.find_first_of
+                ("0123456789oO") != string::npos || result[req_cnt].content == "。")
+                && largest_white_cnt >= merge_ru.getWidth() * 0.1
+                )
             {
-              result[req_cnt].confidence = 0;
+                result[req_cnt].confidence = 0;
             }
             else
-            result[req_cnt].confidence = 100;
+            {
+               /*if (result[req_cnt].content == "1" && single_units[i + 1].content == "￥")
+               {
+                   cout << white_cnt << " " << merge_ru.getWidth() << " dd"<< endl;
+               }*/
+               result[req_cnt].confidence = 100;
+            }
           } else {
             result[req_cnt].confidence = 0;
           }
+          // for debug
+          /*if (size == 3)
+          {
+             if (single_units[i].content == "I" )
+             {
+                result[req_cnt].confidence  = 100;
+                cout << i << " "<< result[req_cnt].content << "  ct" << endl;
+             }
+          }*/
         }
         //result[req_cnt].bounding_box = merge_ru.bounding_box;
         confidence[row.first][i][i + size - 1] = result[req_cnt].confidence;

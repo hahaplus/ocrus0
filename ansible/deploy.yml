@@ -1,7 +1,0 @@
----
-#
-
-- hosts: server
-  remote_user: ubuntu
-  roles:
-    - update

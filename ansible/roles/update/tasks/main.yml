@@ -1,5 +1,0 @@
----
-#
-- name: run whole test
-  shell: ./bin/run_image.sh chdir=~/ocr-test-env
-

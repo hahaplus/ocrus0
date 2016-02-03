@@ -30,7 +30,7 @@ DIGITS_REPLACE_REG = {
     u'ゔ': u'5', u'う': u'5', u'守': u'5',
     u'e': u'6', u'b': u'6',
     u'プ': u'7',
-    u'ミ': u'8', u'尽': u'8',
+    u'ミ': u'8', u'尽': u'8', u'呂': u'8',
 }
 
 DIGITS_REPLACE = dict(
@@ -66,7 +66,8 @@ MONEY_SUFFIX_REPLACE = {
     u'川': u'円',
 
     # For CNN
-    u'丹': u'円', u'凹': u'円', u'内': u'円', u'H': u'円', u'm': u'円',
+    u'丹': u'円', u'凹': u'円',
+    # u'内': u'円', u'H': u'円', u'm': u'円',
 }
 
 # Replace table for year symbol

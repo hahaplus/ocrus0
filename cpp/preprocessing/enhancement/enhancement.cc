@@ -66,7 +66,7 @@ void Enhancement::imageStretchByHistogram(IplImage *src1, IplImage *dst1)
 
 }
 void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst,
-                                         double k) {
+                                         double k, double e) {
 
   /*Mat out;
    int center = 100;
@@ -79,12 +79,12 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst,
   Mat binarize_img, enhanced_binarize_img;
 
   //======================get the original binarize image as a mask=======================
-  ocrus::binarize(src, binarize_img);
+  ocrus::binarize(src, binarize_img, k);
 
   Rect text_area = SimpleTextDetect::simpleDetect(src);
 
   DenoiseLinePoint::removeNoise(binarize_img, &text_area);
-  if (abs(k) < 1e-6)   // k is very low then do not need enhance
+  if (abs(e) < 1e-6)   // k is very low then do not need enhance
   {
     dst = binarize_img;
     return;
@@ -120,7 +120,7 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst,
   GaussianBlur(gray_img, gray_img, Size(3, 3), 0, 0);
   //bilateralFilter(gray_img, dst, 10, 40, 40);
   // gray_img = dst;
-  ocrus::binarize(gray_img, enhanced_binarize_img, 1.0 - k);
+  ocrus::binarize(gray_img, enhanced_binarize_img, 1.0 - e);
   //General::showImage(enhanced_binarize_img);
   vector<vector<pair<int, int> > > block_list = AlgorithmUtil::floodFillInMat<
       Vec<uchar, 1> >(enhanced_binarize_img, 0, 0);
@@ -151,4 +151,3 @@ void Enhancement::enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst,
   dst = enhanced_binarize_img;
    //General::showImage(dst);
 }
-

@@ -16,7 +16,8 @@ class Enhancement {
    * k ranges from [0,1] means the intention of the enhancement
    * the larger k gives a stronger enhancement
    */
-  static void enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst, double k = 0);
+  static void enhancementAndBinarize(const cv::Mat &src, cv::Mat &dst,
+                                     double k = 0.1, double e = 0.0);
   virtual ~Enhancement();
  private:
   static void imageStretchByHistogram(IplImage *src1,IplImage *dst1);

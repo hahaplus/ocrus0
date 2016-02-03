@@ -10,6 +10,7 @@ import json
 import sys
 
 from PIL import Image, ImageDraw, ImageFont
+import cv2
 
 FONT_PATH = '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf'
 # FONT_PATH = '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc'
@@ -31,8 +32,9 @@ def draw_ocr_lines(path_ocr_lines, path_img, path_output_img):
     '''
     ext_output_img = os.path.splitext(path_output_img)[1][1:]
 
-    img = Image.open(path_img)
-    img.load()
+    img_binary = cv2.imread(path_img, cv2.IMREAD_GRAYSCALE)
+    img_rgb = cv2.cvtColor(img_binary, cv2.COLOR_GRAY2RGB)
+    img = Image.fromarray(img_rgb)
     draw = ImageDraw.Draw(img)
 
     ocr_lines = json.load(open(path_ocr_lines))

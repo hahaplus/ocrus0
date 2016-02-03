@@ -13,7 +13,7 @@ import sys
 
 import cv2
 
-from ocrus.preprocessing.binarize import binarize_img
+from ocrus.preprocessing.preprocessing import preprocess_img
 from ocrus.recognition.neural_network.net_v1 import create_network, NET_ID
 from ocrus.segmentation.row_analysis import backward_create_rows
 from ocrus.segmentation.row_analysis import backward_create_rows_twice
@@ -29,6 +29,7 @@ from ocrus.util import load_data
 sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 
 K_BINARIZE = 0.1
+E_ENHANCE = 0
 SHOW_CV2_IMG = False
 DEBUG_SINGLE_IMG = False
 
@@ -43,7 +44,7 @@ def process_img(path_img, net, id_to_char):
     print 'Process image', path_img
     path_img_binary = '{path_img}_binarize.png'.format(
         path_img=path_img)
-    binarize_img(path_img, path_img_binary, K_BINARIZE)
+    preprocess_img(path_img, path_img_binary, K_BINARIZE, E_ENHANCE)
 
     path_img_contour4 = '{path_img}_contour4.png'.format(
         path_img=path_img)
@@ -59,12 +60,6 @@ def process_img(path_img, net, id_to_char):
     h, w = img_binary.shape[:2]
 
     bboxes = []
-    for contour in contours:
-        bbox = {'rect': cv2.boundingRect(contour),
-                'type': None,
-                'merged': False}
-        if bbox['rect'][2] >= W_AT_LEAST or bbox['rect'][2] >= H_AT_LEAST:
-            bboxes.append(bbox)
 
     loaded = False
     if os.path.exists(path_bboxes):
@@ -74,6 +69,12 @@ def process_img(path_img, net, id_to_char):
         except Exception:
             loaded = False
     if not loaded:
+        for contour in contours:
+            bbox = {'rect': cv2.boundingRect(contour),
+                    'type': None,
+                    'merged': False}
+            if bbox['rect'][2] >= W_AT_LEAST or bbox['rect'][2] >= H_AT_LEAST:
+                bboxes.append(bbox)
         recognize_bboxes(img_binary, bboxes, net, id_to_char)
         cPickle.dump(bboxes, open(path_bboxes, 'wb'))
 
@@ -139,6 +140,8 @@ def process_img(path_img, net, id_to_char):
                 (bboxes[pos]['ch'], bboxes[pos]['prob'] * 100,
                  rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3])
             f_symbol.write(line)
+        line = "word: '#';  \tconf: 0.0; bounding_box: 0,0,0,0;\n"
+        f_symbol.write(line)
     f_symbol.close()
 
 

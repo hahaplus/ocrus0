@@ -4,7 +4,10 @@
 import sys
 import codecs
 import os
+
 from PIL import Image, ImageDraw, ImageFont
+import cv2
+
 from ocrus.postprocessing.ocr_result import parse_line_v1
 from ocrus.util.ocr_drawing import FONT_PATH
 
@@ -31,8 +34,10 @@ ext_output_img = os.path.splitext(path_output_img)[1][1:]
 font_word = ImageFont.truetype(FONT_PATH, 24, encoding='utf-8')
 font_confidence = ImageFont.truetype(FONT_PATH, 12, encoding='utf-8')
 
-img = Image.open(path_img)
-img.load()
+img_binary = cv2.imread(path_img, cv2.IMREAD_GRAYSCALE)
+img_rgb = cv2.cvtColor(img_binary, cv2.COLOR_GRAY2RGB)
+
+img = Image.fromarray(img_rgb)
 draw = ImageDraw.Draw(img)
 
 for line in codecs.open(path_txt, encoding='utf-8'):

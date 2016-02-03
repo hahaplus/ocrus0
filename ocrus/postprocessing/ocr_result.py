@@ -42,7 +42,7 @@ BLANK_REPLACE = {
     u'_': u' ', u'・': u' ', u'`': u' ', u'_': u' ', u'〝': u' ',
 
     # For CNN
-    u'・': u' ', u'，': u' ',
+    u'・': u' ', u'，': u' ', u"'": u' ',
 }
 
 DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())

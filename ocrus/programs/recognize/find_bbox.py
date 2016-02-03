@@ -15,7 +15,6 @@ import cv2
 
 from ocrus.preprocessing.binarize import binarize_img
 from ocrus.recognition.neural_network.net_v1 import create_network, NET_ID
-from ocrus.segmentation.row_analysis import all_bad_bbox_are_in_row
 from ocrus.segmentation.row_analysis import backward_create_rows
 from ocrus.segmentation.row_analysis import backward_create_rows_twice
 from ocrus.segmentation.row_analysis import delete_inner_bbox
@@ -23,7 +22,7 @@ from ocrus.segmentation.row_analysis import draw_rows, draw_save_rows
 from ocrus.segmentation.row_analysis import forward_create_rows_repeated
 from ocrus.segmentation.row_analysis import recognize_bboxes
 from ocrus.segmentation.row_analysis import rm_too_small_from_row
-from ocrus.segmentation.row_analysis import select_a_bad_as_key
+from ocrus.segmentation.row_analysis import select_remaining_bad_as_key
 from ocrus.segmentation.row_analysis import update_bbox_type
 from ocrus.util import load_data
 
@@ -32,6 +31,9 @@ sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 K_BINARIZE = 0.1
 SHOW_CV2_IMG = False
 DEBUG_SINGLE_IMG = False
+
+W_AT_LEAST = 2
+H_AT_LEAST = 2
 
 PATH_PARAMS = '/home/csuncs89/0-priceless/programming/ocrus0_build/%s_jpn_param.pkl' % NET_ID
 PATH_CHARS_ID = '/home/csuncs89/0-priceless/programming/ocrus0_build/%s_chars_id.json' % NET_ID
@@ -56,10 +58,14 @@ def process_img(path_img, net, id_to_char):
 
     h, w = img_binary.shape[:2]
 
-    bboxes = [{'rect': cv2.boundingRect(contour),
-               'type': None,
-               'merged': False}
-              for contour in contours]
+    bboxes = []
+    for contour in contours:
+        bbox = {'rect': cv2.boundingRect(contour),
+                'type': None,
+                'merged': False}
+        if bbox['rect'][2] >= W_AT_LEAST or bbox['rect'][2] >= H_AT_LEAST:
+            bboxes.append(bbox)
+
     loaded = False
     if os.path.exists(path_bboxes):
         try:
@@ -93,28 +99,27 @@ def process_img(path_img, net, id_to_char):
         cv2.waitKey()
 
     rows, bboxes = forward_create_rows_repeated(rows, bboxes, img_binary,
-                                                net, id_to_char)
+                                                net, id_to_char, 5)
     if SHOW_CV2_IMG:
         print '  Forward repeated'
         cv2.imshow('rows', draw_rows(bboxes, contours, rows, w, h))
         cv2.waitKey()
 
     print 'Create bad rows ...'
-    while not all_bad_bbox_are_in_row(bboxes):
-        select_a_bad_as_key(bboxes)
-        rows, bboxes = backward_create_rows_twice(bboxes, img_binary,
-                                                  net, id_to_char)
-        if SHOW_CV2_IMG:
-            print '  Backward twice'
-            cv2.imshow('rows', draw_rows(bboxes, contours, rows, w, h))
-            cv2.waitKey()
+    select_remaining_bad_as_key(bboxes)
+    rows, bboxes = backward_create_rows_twice(bboxes, img_binary,
+                                              net, id_to_char)
+    if SHOW_CV2_IMG:
+        print '  Backward twice'
+        cv2.imshow('rows', draw_rows(bboxes, contours, rows, w, h))
+        cv2.waitKey()
 
-        rows, bboxes = forward_create_rows_repeated(rows, bboxes, img_binary,
-                                                    net, id_to_char)
-        if SHOW_CV2_IMG:
-            print '  Forward repeated'
-            cv2.imshow('rows', draw_rows(bboxes, contours, rows, w, h))
-            cv2.waitKey()
+    rows, bboxes = forward_create_rows_repeated(rows, bboxes, img_binary,
+                                                net, id_to_char, 5)
+    if SHOW_CV2_IMG:
+        print '  Forward repeated'
+        cv2.imshow('rows', draw_rows(bboxes, contours, rows, w, h))
+        cv2.waitKey()
 
     rows = rm_too_small_from_row(rows, bboxes)
 
@@ -138,7 +143,18 @@ def process_img(path_img, net, id_to_char):
 
 
 path_image_list = sys.argv[1].rstrip('/')
-list_path = []
+list_path = [
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/2592_1936_ipadmini/ipadmini_IMG_0054.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/differentR/ipadmini/diffR_ipadmini_IMG_0020.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/2592_1936_ipadmini/ipadmini_IMG_0348.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/2592_1936_ipadmini/ipadmini_IMG_0130.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/2592_1936_ipad/ipad_IMG_0191.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/2592_1936_ipadmini/ipadmini_IMG_0213.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/3264_2448_iphone/iphone_IMG_0151.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/differentR/iphone/diffR_iphone_IMG_0021.JPG',
+    #'/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/2592_1936_ipad/ipad_IMG_0035.JPG',
+    '/home/csuncs89/0-priceless/programming/ocrus0_dataset/406/differentR/ipad/diffR_ipad_IMG_0015.JPG',
+]
 if not DEBUG_SINGLE_IMG:
     list_path = load_data.load_image_list(path_image_list)
 

@@ -4,20 +4,17 @@ set (LIBS
      opencv_objdetect opencv_flann opencv_photo 
      opencv_stitching opencv_superres opencv_ts opencv_videostab)
 
-FILE(GLOB SRC 
-              preprocessing/*/*.cc
-              )
+FILE(GLOB SRC preprocessing/*/*.cc)
 
 add_executable(ocrus_binarize_img programs/ocrus_binarize_img.cc
                preprocessing/binarize/binarize.cc)
 target_link_libraries(ocrus_binarize_img ${LIBS})
 
-add_executable(ocrus_preprocessing programs/ocrus_preprocesing_img.cc
-               ${SRC}
-               )
-target_link_libraries(ocrus_preprocessing ${LIBS})
+add_executable(ocrus_preprocessing_img programs/ocrus_preprocesing_img.cc
+               ${SRC})
+target_link_libraries(ocrus_preprocessing_img ${LIBS})
 
-INSTALL(TARGETS 
+install(TARGETS 
         ocrus_binarize_img
-        ocrus_preprocessing                
+        ocrus_preprocessing_img                
         RUNTIME DESTINATION bin)

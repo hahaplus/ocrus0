@@ -15,6 +15,8 @@ from ocrus.util.geometric import overlap_ratio_in_second
 from ocrus.util.img_proc import get_img_roi
 from ocrus.util.mnist_format import remove_white_to_mnist_array
 
+W_AT_LEAST_GOOD = 5
+H_AT_LEAST_GOOD = 5
 
 ALPHA = 0.2
 OVERLAP_AT_LEAST = 0.3
@@ -22,7 +24,7 @@ OVERLAP_PREV2_AT_LEAST = 0.8
 
 K_TOP_SAVE = 50
 
-PROB_CHAR = 0.90
+PROB_CHAR = 0.95
 
 # Relax and get more bad chars, when update_bbox_type
 RATIO_RELAX_SMALL_W = 0.8  # <= 1.0
@@ -101,12 +103,19 @@ def update_bbox_type(bboxes):
     @param bboxes: Bounding boxes
     '''
 
+    for bbox in bboxes:
+        if (bbox['ch'] not in simple_chars and
+                bbox['prob'] > PROB_CHAR and
+                bbox['rect'][2] >= W_AT_LEAST_GOOD and
+                bbox['rect'][3] >= H_AT_LEAST_GOOD):
+            bbox['type'] = 'good'
+
     good_rect_ws = [bbox['rect'][2] for bbox in bboxes
                     if bbox['type'] == 'good']
     good_rect_hs = [bbox['rect'][3] for bbox in bboxes
                     if bbox['type'] == 'good']
-    max_rect_w, min_rect_w = max(good_rect_ws), min(good_rect_ws)
-    max_rect_h, min_rect_h = max(good_rect_hs), min(good_rect_hs)
+    max_rect_w, min_rect_w = max(good_rect_ws or [0]), min(good_rect_ws or [0])
+    max_rect_h, min_rect_h = max(good_rect_hs or [0]), min(good_rect_hs or [0])
 
     for bbox in bboxes:
         _, _, rect_w, rect_h = bbox['rect']
@@ -325,8 +334,6 @@ def recognize_bboxes(img_binary, bboxes, net, id_to_char):
             prob = result[1][i][y_out]
             j = pos_result_to_bboxes[i]
             bboxes[j]['ch'], bboxes[j]['prob'] = ch, prob
-            if ch not in simple_chars and prob > PROB_CHAR:
-                bboxes[j]['type'] = 'good'
 
             prob_y = result[1][i]
             top_y_out = prob_y.argsort()[-K_TOP_SAVE:][::-1]
@@ -414,7 +421,8 @@ def merge_absolute_in_row(rows, bboxes):
     return new_bboxes
 
 
-def forward_create_rows_repeated(rows, bboxes, img_binary, net, id_to_char):
+def forward_create_rows_repeated(rows, bboxes, img_binary, net, id_to_char,
+                                 max_iteration):
     '''
     Forward create rows repeatedly until the rows do not change
 
@@ -423,12 +431,14 @@ def forward_create_rows_repeated(rows, bboxes, img_binary, net, id_to_char):
     @param img_binary: Binary image
     @param net: A network3 object
     @param net: A dict map from id to char
+    @param max_iteration: Max number of iteration
 
     @return: rows, bboxes
     '''
     rows_saved = rows
     rows = forward_create_rows(bboxes)
-    while rows != rows_saved:
+    count_iteration = 0
+    while count_iteration < max_iteration and rows != rows_saved:
         bboxes = merge_absolute_in_row(rows, bboxes)
         recognize_bboxes(img_binary, bboxes, net, id_to_char)
         update_bbox_type(bboxes)
@@ -437,6 +447,8 @@ def forward_create_rows_repeated(rows, bboxes, img_binary, net, id_to_char):
 
         rows_saved = rows
         rows = forward_create_rows(bboxes)
+
+        count_iteration += 1
     return rows, bboxes
 
 
@@ -461,7 +473,11 @@ def backward_create_rows_twice(bboxes, img_binary, net, id_to_char):
     rows = backward_create_rows(bboxes)
 
     for row in rows:
-        bboxes[row['pos_bboxes'][-1]]['key_bbox'] = True
+        for pos in reversed(row['pos_bboxes']):
+            if (bboxes[pos]['rect'][2] >= W_AT_LEAST_GOOD and
+                    bboxes[pos]['rect'][3] >= H_AT_LEAST_GOOD):
+                bboxes[pos]['key_bbox'] = True
+                break
 
     return rows, bboxes
 
@@ -495,6 +511,18 @@ def select_a_bad_as_key(bboxes):
     bad_bboxes.sort(key=lambda x: -x['area'])
     if len(bad_bboxes) > 0:
         bboxes[bad_bboxes[0]['pos']]['key_bbox'] = True
+
+
+def select_remaining_bad_as_key(bboxes):
+    '''
+    Select the remaining not in row bad bbox as key_bbox
+
+    @param bboxes: Bounding boxes
+    '''
+
+    for _, bbox in enumerate(bboxes):
+        if bbox['type'] == 'bad' and not bbox['in_row']:
+            bbox['key_bbox'] = True
 
 
 def draw_save_contour_bboxes(path_img, bboxes, contours, w, h):

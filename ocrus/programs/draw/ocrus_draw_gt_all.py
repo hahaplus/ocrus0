@@ -4,8 +4,8 @@
 import shutil
 import os
 import sys
-from ocrus.ocr_drawing import draw_ocr_lines
-from ocrus.ocr_result import normalize_ocr_lines
+from ocrus.util.ocr_drawing import draw_ocr_lines
+from ocrus.postprocessing.ocr_result import normalize_ocr_lines
 
 if len(sys.argv) != 2:
     print '''Draw OCR ground truth to images

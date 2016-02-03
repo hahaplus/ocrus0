@@ -4,7 +4,7 @@
 import os
 import sys
 import json
-from ocrus.stats_analysis import pretty_print_stats_cmp
+from ocrus.statistic.stats_analysis import pretty_print_stats_cmp
 
 if len(sys.argv) != 3:
     print '''Compare stats and print comparing results

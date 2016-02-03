@@ -7,8 +7,8 @@ import codecs
 import json
 import io
 
-from ocrus.ocr_result import parse_line_v1
-from ocrus.ocr_result import to_ocr_lines
+from ocrus.postprocessing.ocr_result import parse_line_v1
+from ocrus.postprocessing.ocr_result import to_ocr_lines
 
 
 if len(sys.argv) != 3:

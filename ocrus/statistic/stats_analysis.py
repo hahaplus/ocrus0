@@ -8,71 +8,12 @@ Copyright (C) 2015 Works Applications, all rights reserved
 @author: Chang Sun
 '''
 
+
 import sys
 
+from ocrus.util.geometric import bbox_almost_overlap
+
 OVERLAP_PERCENT = 0.1
-
-
-def bbox_area(bbox):
-    '''
-    Return the area of the bounding box
-
-    @param bbox: A bounding ox
-    @return: Calcuated area
-    '''
-
-    '''
-    x1,y1
-    -------------
-    |           |
-    |           |
-    |           |
-    ------------x2,y2
-    '''
-    x1, y1, x2, y2 = bbox[0], bbox[1], bbox[2], bbox[3]
-    return (x2 - x1) * (y2 - y1)
-
-
-def bbox_almost_overlap(bbox1, bbox2, percent):
-    '''
-    Return True is two bounding box almost overlap, otherwise False
-    Almost overlap means the overlapping area / (bbox1 + bbox2) > percent
-
-    @param bbox1: Bounding box 1
-    @param bbox2: Bounding box 2
-    @return: A bool
-    '''
-
-    '''
-    x1,y1
-    -------------
-    |  x3,y3    |
-    |    -------------------
-    |    |      |          |
-    ------------x2,y2      |
-         |                 |
-         -------------------x4,y4
-    '''
-    x1, y1, x2, y2 = bbox1[0], bbox1[1], bbox1[2], bbox1[3]
-    x3, y3, x4, y4 = bbox2[0], bbox2[1], bbox2[2], bbox2[3]
-    bbox_overlap = max(x1, x3), max(y1, y3), min(x2, x4), min(y2, y4)
-    return float(bbox_area(bbox_overlap)) / (bbox_area(bbox1) +
-                                             bbox_area(bbox2)) > percent
-
-
-def calc_correct_recognized_lines(ocr_lines_gt, ocr_lines):
-    '''
-    Compare ocr_lines_gt and ocr_lines,
-        and set recognized in ocr_lines_gt, set correct in ocr_lines
-
-    @param ocr_lines_gt: Ground truth OCR lines
-    @param ocr_lines: OCR lines
-    @return: (number_recognized, number_correct)
-    '''
-    num_recognized = calc_ok_in_lines1(ocr_lines_gt, ocr_lines)
-    num_correct = calc_ok_in_lines1(ocr_lines, ocr_lines_gt)
-
-    return num_recognized, num_correct
 
 
 def calc_ok_in_lines1(ocr_lines1, ocr_lines2):

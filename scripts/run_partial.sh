@@ -8,18 +8,19 @@ fi
 PATH_IMAGE_LIST="$1"
 PATH_RESULT="$2"
 
+BASE_IMAGE_LIST="`basename $PATH_IMAGE_LIST`"
+
 mkdir -p "${PATH_RESULT}"
 
 PATH_RESULT=`realpath $PATH_RESULT`
 
-PATH_STATS=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats.json
-PATH_STATS_DATE=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_date.json
-PATH_STATS_MONEY=`realpath $PATH_RESULT`/${PATH_IMAGE_LIST}_stats_money.json
+PATH_STATS=`realpath $PATH_RESULT`/${BASE_IMAGE_LIST}_stats.json
+PATH_STATS_DATE=`realpath $PATH_RESULT`/${BASE_IMAGE_LIST}_stats_date.json
+PATH_STATS_MONEY=`realpath $PATH_RESULT`/${BASE_IMAGE_LIST}_stats_money.json
 
 
-echo Build and install ...
-make
-sudo make install
+echo Install ...
+sudo python setup.py install
 
 ocrus_draw_all.py XXX draw 4 symbol $PATH_IMAGE_LIST
 

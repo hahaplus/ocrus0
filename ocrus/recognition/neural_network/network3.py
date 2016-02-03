@@ -56,9 +56,8 @@ from theano.tensor.signal import downsample
 from theano.tensor.nnet import sigmoid
 # from theano.tensor import tanh
 
-from ocrus.neural_network.mnist_format import gray_img_to_mnist_array
-from ocrus.neural_network.mnist_format import remove_white_border
-
+from ocrus.util.mnist_format import gray_img_to_mnist_array
+from ocrus.util.mnist_format import remove_white_border
 
 # Constants
 GPU = False

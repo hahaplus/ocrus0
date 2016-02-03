@@ -7,7 +7,7 @@ import json
 import shutil
 from PIL import Image
 
-from ocrus.stats_analysis import pretty_print_stats, calc_ok_in_lines1
+from ocrus.statistic.stats_analysis import pretty_print_stats, calc_ok_in_lines1
 
 TAG_RECALL = 'recall'
 TAG_PRECISION = 'precision'

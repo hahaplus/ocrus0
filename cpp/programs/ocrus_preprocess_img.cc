@@ -1,5 +1,5 @@
 /*
- * A program that can binarize an image
+ * A program that can preprocess an image
  *
  * Copyright (C) 2016 Works Applications, all rights reserved
  */
@@ -12,11 +12,12 @@
 #include "preprocessing/binarize/binarize.h"
 #include "preprocessing/denoise/remove_line.h"
 #include "preprocessing/enhancement/enhancement.h"
+
 int main(int argc, char *argv[]) {
 
   if (argc != 4) {
-    printf("Binarize an image\n"
-           "Usage: ocrus_binarize_img input_path_img output_path_img k\n"
+    printf("Preprocess a color image (remove noise, enhance and then binarize)\n"
+           "Usage: ocrus_preprocessing_img input_path_img output_path_img k\n"
            "    k: The enhancement intention (0~1.0) \n"
            "       the larger k gives a stronger enhancement\n");
     return 0;
@@ -29,9 +30,12 @@ int main(int argc, char *argv[]) {
   cv::Mat img, img_gray, img_binary;
 
   img = cv::imread(path_img, CV_LOAD_IMAGE_COLOR);
+
   ocrus::removeRedLineFor406(img);
   cv::cvtColor(img, img_gray, cv::COLOR_BGR2GRAY);
   Enhancement::enhancementAndBinarize(img_gray, img_binary, k);
+
   cv::imwrite(path_img_binary, img_binary);
+
   return 0;
 }

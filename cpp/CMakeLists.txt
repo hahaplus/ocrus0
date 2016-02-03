@@ -10,11 +10,11 @@ add_executable(ocrus_binarize_img programs/ocrus_binarize_img.cc
                preprocessing/binarize/binarize.cc)
 target_link_libraries(ocrus_binarize_img ${LIBS})
 
-add_executable(ocrus_preprocessing_img programs/ocrus_preprocesing_img.cc
+add_executable(ocrus_preprocess_img programs/ocrus_preprocess_img.cc
                ${SRC})
-target_link_libraries(ocrus_preprocessing_img ${LIBS})
+target_link_libraries(ocrus_preprocess_img ${LIBS})
 
 install(TARGETS 
         ocrus_binarize_img
-        ocrus_preprocessing_img                
+        ocrus_preprocess_img                
         RUNTIME DESTINATION bin)

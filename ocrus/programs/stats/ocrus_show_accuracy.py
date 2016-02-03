@@ -5,7 +5,7 @@ import json
 import os
 import sys
 
-from ocrus.stats_analysis import pretty_print_stats
+from ocrus.statistic.stats_analysis import pretty_print_stats
 
 
 if len(sys.argv) not in [2, 3]:

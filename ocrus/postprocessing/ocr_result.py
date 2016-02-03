@@ -1,12 +1,8 @@
 # coding=utf-8
 '''
-Provide for dealing with all kinds of OCR result formats
+Post-processing for OCR result
 
-Copyright (C) 2015 Works Applications, all rights reserved
-
-Created on Dec 4, 2015
-
-@author: Chang Sun
+Copyright (C) 2016 Works Applications, all rights reserved
 '''
 
 import io
@@ -27,18 +23,14 @@ DIGITS_REPLACE_REG = {
     u'g': u'9',
 
     # For CNN
-    u'Q': u'0',
-    u'り': u'0',
-    u'd': u'0',
-    u'j': u'1', u'J': u'1', u'l': u'1', u'r': u'1',  # u"'": u'1',
-    u'z': u'2', u'Z': u'2', u'ヨ': u'3',
-    u'ゔ': u'5', u'う': u'5',
-    u'守': u'5',
-    u'e': u'6',
-    u'b': u'6',
+    u'Q': u'0', u'り': u'0', u'd': u'0',
+    u'j': u'1', u'J': u'1', u'l': u'1', u'r': u'1',
+    u'z': u'2', u'Z': u'2',
+    u'ヨ': u'3',
+    u'ゔ': u'5', u'う': u'5', u'守': u'5',
+    u'e': u'6', u'b': u'6',
     u'プ': u'7',
-    u'ミ': u'8',
-    u'尽': u'8',
+    u'ミ': u'8', u'尽': u'8',
 }
 
 DIGITS_REPLACE = dict(
@@ -46,24 +38,11 @@ DIGITS_REPLACE = dict(
 
 # These characters are in digit and are treated as blank
 BLANK_REPLACE = {
-    u' ': u' ',
-    u'~': u' ',
-    u',': u' ',
-    # u"'": u' ',
-    u'"': u' ',
-    u'〟': u' ',
-    u'丶': u' ',
-    u'_': u' ',
-    u'・': u' ',
-    u'`': u' ',
-    u'_': u' ',
-    u'〝': u' ',
+    u' ': u' ', u'~': u' ', u',': u' ', u'"': u' ', u'〟': u' ', u'丶': u' ',
+    u'_': u' ', u'・': u' ', u'`': u' ', u'_': u' ', u'〝': u' ',
 
     # For CNN
-    u'・': u' ',
-    u'，': u' ',
-    u'・': u' ',
-    u'皺': u' ',
+    u'・': u' ', u'，': u' ',
 }
 
 DIGITS_BLANK_REPLACE = dict(DIGITS_REPLACE.items() + BLANK_REPLACE.items())
@@ -75,15 +54,8 @@ MONEY_PREFIX_REPLACE_REG = {
     u'一': u'-', u'ー': u'-',
 
     # For CNN
-    u'ヤ': u'￥',
-    u'ギ': u'￥',
-    u'Y': u'￥',
-    u'y': u'￥',
-    u'辛': u'￥',
-    u'卒': u'￥',
-    u'洋': u'￥',
-    u'藥': u'￥',
-    u'薬': u'￥',
+    u'ヤ': u'￥', u'ギ': u'￥', u'Y': u'￥', u'y': u'￥', u'辛': u'￥',
+    u'卒': u'￥', u'洋': u'￥', u'藥': u'￥', u'薬': u'￥',
 }
 
 MONEY_PREFIX_REPLACE = dict(
@@ -94,25 +66,17 @@ MONEY_SUFFIX_REPLACE = {
     u'川': u'円',
 
     # For CNN
-    u'丹': u'円',
-    u'凹': u'円',
-    u'内': u'円',
-    u'H': u'円',
-    u'm': u'円',
+    u'丹': u'円', u'凹': u'円', u'内': u'円', u'H': u'円', u'm': u'円',
 }
 
 # Replace table for year symbol
 YEAR_SYM_REPLACE = {
-    u'午': u'年',
-    u'什': u'年',
+    u'午': u'年', u'什': u'年',
 }
 
 # Replace table for month symbol
 MONTH_SYM_REPLACE = {
-    u'乃': u'月',
-    u'刀': u'月',
-    u'且': u'月',
-    u'ノ': u'/',
+    u'乃': u'月', u'刀': u'月', u'且': u'月', u'ノ': u'/',
 }
 
 # Replace table for day symbol
@@ -122,11 +86,7 @@ DAY_SYM_REPLACE = {
     u'ロ': u'日', u'6': u'日', u'凵': u'日',
 
     # For CNN
-    u'H': u'日',
-    u'甘': u'日',
-    u'臼': u'日',
-    u'H': u'日',
-    u'B': u'日',
+    u'H': u'日', u'甘': u'日', u'臼': u'日', u'H': u'日', u'B': u'日',
     u'旦': u'日',
 }
 
@@ -151,14 +111,13 @@ digitblank_plus = digitblank1 + u'+'
 
 def parse_line_v1(line):
     '''
-    Parse the line and fill the dict (See doc/ocr_result_format.txt)
+    Parse the line and fill the dict (See docs/ocr_result_format.txt)
         {'text': None, 'bounding_box': None, 'confidence': None}
     Example line to parse:
         word: 'g';      conf: 61.91; bounding_box: 411,1778,431,1906;
 
     @param line: Line to parse
-    @return: A dictif ()
-               {
+    @return: A dict
     '''
     d = {'text': None, 'bounding_box': None, 'confidence': None}
     for seg in map(unicode.strip, line.split(';')):
@@ -171,23 +130,10 @@ def parse_line_v1(line):
     return d
 
 
-def replace_by_table(s, table):
-    '''
-    Replace a unicode string by a replacement table
-
-    @param s: A unicode string
-    @param table: A unicode table
-    @return: A new replaced unicode string
-    '''
-    return u''.join(
-        map(lambda x: table[x] if x in table else x,
-            list(s)))
-
-
 def normalize_ocr_lines(path_ocr_lines):
-    '''if ()
-               {
-    Convert the rect in char to bounding_box
+    '''
+    Convert the rect in char to bounding_box and replace original file
+
     @param path_ocr_lines: Path of ocr_lines
     '''
     ocr_lines = json.load(open(path_ocr_lines))
@@ -204,9 +150,9 @@ def normalize_ocr_lines(path_ocr_lines):
 
 def replace_if_exist(unicode_s, table):
     '''
-    Replace unicode_s by a substitute in table
-    if ch of unicode_s exists in table, otherwise keep
-    @param unicode: A unicode string
+    Replace ch in unicode_s by table[ch] if ch in table, otherwise keep ch
+
+    @param unicode_s: A unicode string
     @param table: A replacement table
     @return: A replaced unicode string
     '''
@@ -315,6 +261,14 @@ def extract_money(s):
 
 
 def good_minus_symbol(bbox_minus, bbox_yen):
+    '''
+    Determine whether the bounding box of a minus symbol before a ￥ symbol
+    is good enough
+
+    @param bbox_minus: Bounding box of a minus symbol
+    @param bbox_yen: Bounding box of ￥ symbol
+    @return: A bool value
+    '''
     w_yen = bbox_yen[2] - bbox_yen[0]
     w_minus = bbox_minus[2] - bbox_minus[0]
     top_yen, bot_yen = bbox_yen[1], bbox_yen[3]

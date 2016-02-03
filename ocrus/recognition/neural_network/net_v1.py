@@ -4,11 +4,11 @@ Definition for network net_v1
 Copyright (C) 2016 Works Applications, all rights reserved
 '''
 
-from ocrus.neural_network.network3 import ConvPoolLayer
-from ocrus.neural_network.network3 import FullyConnectedLayer
-from ocrus.neural_network.network3 import Network
-from ocrus.neural_network.network3 import ReLU
-from ocrus.neural_network.network3 import SoftmaxLayer
+from network3 import ConvPoolLayer
+from network3 import FullyConnectedLayer
+from network3 import Network
+from network3 import ReLU
+from network3 import SoftmaxLayer
 
 NET_ID = 'net_v1'
 

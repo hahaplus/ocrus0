@@ -1,5 +1,5 @@
 '''
-Dealing with mnist data formt
+Deal with mnist data format
 
 Copyright (C) 2016 Works Applications, all rights reserved
 '''
@@ -9,36 +9,7 @@ import sys
 import numpy as np
 import cv2
 
-
-def remove_white_border(gray_img):
-    '''
-    Remove white border of gray image, 255 for background
-    @param gray_img: A gray image to remove upon
-    @return: A gray image with white border removed
-    '''
-    height, width = gray_img.shape
-    y1 = 0
-    while y1 < height and all(gray_img[y1, :] == 255):
-        y1 += 1
-
-    y2 = height - 1
-    while y2 >= 0 and all(gray_img[y2, :] == 255):
-        y2 -= 1
-
-    x1 = 0
-    while x1 < width and all(gray_img[:, x1] == 255):
-        x1 += 1
-
-    x2 = width - 1
-    while x2 >= 0 and all(gray_img[:, x2] == 255):
-        x2 -= 1
-
-    if y1 <= y2:
-        gray_img = gray_img[y1: y2 + 1, :]
-    if x1 <= x2:
-        gray_img = gray_img[:, x1: x2 + 1]
-
-    return gray_img
+from img_proc import remove_white_border
 
 
 def gray_img_to_mnist_array(gray_img):

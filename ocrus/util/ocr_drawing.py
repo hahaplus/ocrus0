@@ -1,12 +1,8 @@
 # coding=utf-8
 '''
-For drawing OCR results
+Draw OCR results
 
 Copyright (C) 2015 Works Applications, all rights reserved
-
-Created on Dec 4, 2015
-
-@author: Chang Sun
 '''
 
 import os
@@ -69,9 +65,8 @@ def draw_ocr_lines(path_ocr_lines, path_img, path_output_img):
                           confidence, CONFIDENCE_COLOR, font=font_confidence)
 
             if i == len(ocr_line['chars']) - 1:
-                draw.text(
-                    (x2 + 10, y2), ocr_line['type'],
-                    TEXT_COLOR, font=font_text)
+                draw.text((x2 + 10, y2), ocr_line['type'],
+                          TEXT_COLOR, font=font_text)
 
     img.save(path_output_img, ext_output_img)
 

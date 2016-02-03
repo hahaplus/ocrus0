@@ -1,5 +1,5 @@
 '''
-Functions for loading data
+Load various kinds of data
 
 Copyright (C) 2016 Works Applications, all rights reserved
 '''

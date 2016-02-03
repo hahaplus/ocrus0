@@ -3,7 +3,7 @@
 
 import os
 import sys
-from ocrus.ocr_drawing import draw_ocr_lines
+from ocrus.util.ocr_drawing import draw_ocr_lines
 
 if len(sys.argv) != 2:
     print '''Draw OCR lines to images

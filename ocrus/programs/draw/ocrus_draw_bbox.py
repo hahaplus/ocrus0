@@ -5,8 +5,8 @@ import sys
 import codecs
 import os
 from PIL import Image, ImageDraw, ImageFont
-from ocrus.ocr_result import parse_line_v1
-from ocrus.ocr_drawing import FONT_PATH
+from ocrus.postprocessing.ocr_result import parse_line_v1
+from ocrus.util.ocr_drawing import FONT_PATH
 
 
 WORD_COLOR = (255, 0, 0)
@@ -56,9 +56,9 @@ for line in codecs.open(path_txt, encoding='utf-8'):
         draw.line((x2, y2, x1, y2), BOX_COLOR, 1)
         draw.line((x1, y2, x1, y1), BOX_COLOR, 1)
 
-        draw.text(
-            ((x1 + x2) / 2 - 5, y2 - 5), word, WORD_COLOR, font=font_word)
-        draw.text(((x1 + x2) / 2 - 5, y1 - 15), '%.0f' %
-                  confidence, CONFIDENCE_COLOR, font=font_confidence)
+        draw.text(((x1 + x2) / 2 - 5, y2 - 5),
+                  word, WORD_COLOR, font=font_word)
+        draw.text(((x1 + x2) / 2 - 5, y1 - 15), '%.0f' % confidence,
+                  CONFIDENCE_COLOR, font=font_confidence)
 
-img.save(path_output_img, ext_output_img)
+img.save(path_output_img)
